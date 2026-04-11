@@ -12,7 +12,6 @@
         gap: 1rem;
         margin-bottom: 1.75rem;
     }
-
     .page-header__title {
         font-size: 1.5rem;
         font-weight: 800;
@@ -20,13 +19,11 @@
         color: var(--admin-on-surface);
         margin-bottom: 0.15rem;
     }
-
     .page-header__subtitle {
         font-size: 0.8rem;
         color: var(--admin-secondary);
         margin-bottom: 0;
     }
-
     .btn-add {
         display: inline-flex;
         align-items: center;
@@ -43,20 +40,13 @@
         transition: all 0.2s;
         box-shadow: 0 4px 12px -2px rgba(0, 87, 205, 0.3);
     }
-
     .btn-add:hover {
         transform: translateY(-1px);
         box-shadow: 0 6px 20px -4px rgba(0, 87, 205, 0.4);
         color: #fff;
     }
-
-    .btn-add:active {
-        transform: scale(0.97);
-    }
-
-    .btn-add .material-symbols-outlined {
-        font-size: 1.1rem;
-    }
+    .btn-add:active { transform: scale(0.97); }
+    .btn-add .material-symbols-outlined { font-size: 1.1rem; }
 
     /* ===== STATS ===== */
     .stats-row {
@@ -65,7 +55,6 @@
         margin-bottom: 1.5rem;
         flex-wrap: wrap;
     }
-
     .stat-chip {
         display: flex;
         align-items: center;
@@ -77,7 +66,6 @@
         flex: 1;
         min-width: 140px;
     }
-
     .stat-chip__icon {
         width: 2.25rem;
         height: 2.25rem;
@@ -86,31 +74,10 @@
         align-items: center;
         justify-content: center;
     }
-
-    .stat-chip__icon .material-symbols-outlined {
-        font-size: 1.15rem;
-    }
-
-    .stat-chip__icon.blue {
-        background: #eff6ff;
-        color: #2563eb;
-    }
-
-    .stat-chip__icon.green {
-        background: #ecfdf5;
-        color: #059669;
-    }
-
-    .stat-chip__icon.amber {
-        background: #fffbeb;
-        color: #d97706;
-    }
-
-    .stat-chip__icon.red {
-        background: #fef2f2;
-        color: #dc2626;
-    }
-
+    .stat-chip__icon .material-symbols-outlined { font-size: 1.15rem; }
+    .stat-chip__icon.blue  { background: #eff6ff; color: #2563eb; }
+    .stat-chip__icon.green { background: #ecfdf5; color: #059669; }
+    .stat-chip__icon.amber { background: #fffbeb; color: #d97706; }
     .stat-chip__label {
         font-size: 0.6rem;
         font-weight: 700;
@@ -119,7 +86,6 @@
         color: var(--admin-secondary);
         margin-bottom: 0;
     }
-
     .stat-chip__value {
         font-size: 1.1rem;
         font-weight: 800;
@@ -135,7 +101,6 @@
         border: 1px solid rgba(194, 198, 216, 0.05);
         overflow: hidden;
     }
-
     .table-toolbar {
         display: flex;
         flex-wrap: wrap;
@@ -145,7 +110,6 @@
         padding: 1.25rem 1.5rem;
         border-bottom: 1px solid var(--admin-surface-container);
     }
-
     .table-search {
         display: flex;
         align-items: center;
@@ -155,19 +119,16 @@
         border: 1px solid transparent;
         transition: all 0.2s;
     }
-
     .table-search:focus-within {
         border-color: var(--admin-primary);
         box-shadow: 0 0 0 3px rgba(0, 87, 205, 0.08);
         background: #fff;
     }
-
     .table-search .material-symbols-outlined {
         font-size: 1.1rem;
         color: var(--admin-outline);
         margin-right: 0.5rem;
     }
-
     .table-search input {
         border: none;
         background: transparent;
@@ -176,11 +137,7 @@
         width: 14rem;
         font-family: 'Inter', sans-serif;
     }
-
-    .table-search input::placeholder {
-        color: var(--admin-outline);
-    }
-
+    .table-search input::placeholder { color: var(--admin-outline); }
     .table-filter-btn {
         display: inline-flex;
         align-items: center;
@@ -196,15 +153,11 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-
     .table-filter-btn:hover {
         background: var(--admin-surface-low);
         border-color: var(--admin-primary-fixed-dim);
     }
-
-    .table-filter-btn .material-symbols-outlined {
-        font-size: 1rem;
-    }
+    .table-filter-btn .material-symbols-outlined { font-size: 1rem; }
 
     /* Table */
     .lapang-table {
@@ -212,7 +165,6 @@
         border-collapse: separate;
         border-spacing: 0;
     }
-
     .lapang-table thead th {
         background: var(--admin-surface-low);
         font-family: 'Inter', sans-serif;
@@ -225,7 +177,6 @@
         border-bottom: 1px solid var(--admin-surface-container);
         white-space: nowrap;
     }
-
     .lapang-table tbody td {
         font-family: 'Inter', sans-serif;
         font-size: 0.825rem;
@@ -234,60 +185,23 @@
         vertical-align: middle;
         color: var(--admin-on-surface);
     }
-
     .lapang-table tbody tr {
         transition: background 0.15s;
     }
-
     .lapang-table tbody tr:hover {
         background: rgba(0, 87, 205, 0.02);
     }
-
     .lapang-table tbody tr:last-child td {
         border-bottom: none;
     }
-
     .td-name {
         font-weight: 700;
         color: var(--admin-on-surface);
     }
-
-    .td-secondary {
-        color: var(--admin-secondary);
-        font-size: 0.72rem;
-    }
-
-    .td-code {
+    .td-price {
         font-weight: 700;
-        font-size: 0.78rem;
-        letter-spacing: 0.04em;
-        color: var(--admin-primary);
-    }
-
-    /* Thumbnail photo */
-    .td-photo {
-        width: 4.5rem;
-        height: 3.25rem;
-        border-radius: 0.5rem;
-        object-fit: cover;
-        border: 2px solid var(--admin-surface-container);
-        box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
-    }
-
-    .td-photo-placeholder {
-        width: 4.5rem;
-        height: 3.25rem;
-        border-radius: 0.5rem;
-        background: var(--admin-surface-low);
-        border: 2px dashed var(--admin-outline-variant);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .td-photo-placeholder .material-symbols-outlined {
-        font-size: 1.25rem;
-        color: var(--admin-outline);
+        font-size: 0.85rem;
+        color: var(--admin-on-surface);
     }
 
     /* Operating hours in table */
@@ -296,7 +210,6 @@
         flex-direction: column;
         gap: 0.15rem;
     }
-
     .td-hours-item {
         display: inline-flex;
         align-items: center;
@@ -304,7 +217,6 @@
         font-size: 0.68rem;
         color: var(--admin-on-surface-variant);
     }
-
     .td-hours-item .day {
         font-weight: 700;
         font-size: 0.62rem;
@@ -313,14 +225,13 @@
         color: var(--admin-secondary);
         min-width: 2.8rem;
     }
-
     .td-hours-item .time {
         font-weight: 600;
         color: var(--admin-on-surface);
         font-size: 0.72rem;
     }
 
-    /* Status & Type badges */
+    /* Status badges */
     .badge-pill {
         display: inline-flex;
         align-items: center;
@@ -332,80 +243,42 @@
         padding: 0.25rem 0.7rem;
         border-radius: 9999px;
     }
-
     .badge-pill .dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
     }
-
-    .badge-pill.aktif {
-        background: #ecfdf5;
-        color: #059669;
-    }
-
-    .badge-pill.aktif .dot {
-        background: #059669;
-    }
-
-    .badge-pill.nonaktif {
-        background: #fef2f2;
-        color: #dc2626;
-    }
-
-    .badge-pill.nonaktif .dot {
-        background: #dc2626;
-    }
-
-    .badge-pill.perbaikan {
-        background: #fffbeb;
-        color: #d97706;
-    }
-
-    .badge-pill.perbaikan .dot {
-        background: #d97706;
-    }
+    .badge-pill.dapat-digunakan       { background: #ecfdf5; color: #059669; }
+    .badge-pill.dapat-digunakan .dot  { background: #059669; }
+    .badge-pill.perbaikan             { background: #fffbeb; color: #d97706; }
+    .badge-pill.perbaikan .dot        { background: #d97706; }
 
     /* Action buttons */
     .action-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 2rem;
-        height: 2rem;
+        gap: 0.3rem;
+        padding: 0.35rem 0.65rem;
         border-radius: 0.375rem;
-        border: none;
+        border: 1.5px solid transparent;
         background: transparent;
         cursor: pointer;
         transition: all 0.15s;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.68rem;
+        font-weight: 600;
+        white-space: nowrap;
     }
-
-    .action-btn .material-symbols-outlined {
-        font-size: 1.1rem;
-    }
-
+    .action-btn .material-symbols-outlined { font-size: 0.95rem; }
     .action-btn.edit {
         color: var(--admin-primary);
-    }
-
-    .action-btn.edit:hover {
+        border-color: #dbeafe;
         background: #eff6ff;
     }
-
-    .action-btn.delete {
-        color: #dc2626;
-    }
-
-    .action-btn.delete:hover {
-        background: #fef2f2;
-    }
-
-    .action-btn.view {
-        color: var(--admin-secondary);
-    }
-
-    .action-btn.view:hover {
-        background: var(--admin-surface-low);
+    .action-btn.edit:hover {
+        background: #dbeafe;
+        border-color: #93c5fd;
     }
 
     /* Pagination */
@@ -417,17 +290,8 @@
         padding: 1rem 1.5rem;
         gap: 0.75rem;
     }
-
-    .table-footer__info {
-        font-size: 0.75rem;
-        color: var(--admin-secondary);
-    }
-
-    .pagination-custom {
-        display: flex;
-        gap: 0.25rem;
-    }
-
+    .table-footer__info { font-size: 0.75rem; color: var(--admin-secondary); }
+    .pagination-custom { display: flex; gap: 0.25rem; }
     .page-btn {
         display: inline-flex;
         align-items: center;
@@ -444,21 +308,9 @@
         cursor: pointer;
         transition: all 0.15s;
     }
-
-    .page-btn:hover {
-        background: var(--admin-surface-low);
-        border-color: var(--admin-primary-fixed-dim);
-    }
-
-    .page-btn.active {
-        background: var(--admin-primary);
-        color: #fff;
-        border-color: var(--admin-primary);
-    }
-
-    .page-btn .material-symbols-outlined {
-        font-size: 1rem;
-    }
+    .page-btn:hover { background: var(--admin-surface-low); border-color: var(--admin-primary-fixed-dim); }
+    .page-btn.active { background: var(--admin-primary); color: #fff; border-color: var(--admin-primary); }
+    .page-btn .material-symbols-outlined { font-size: 1rem; }
 
     /* ===== MODAL ===== */
     .modal-content {
@@ -466,12 +318,10 @@
         border-radius: 1rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
     }
-
     .modal-header {
         border-bottom: 1px solid var(--admin-surface-container);
         padding: 1.5rem 1.75rem 1.25rem;
     }
-
     .modal-title {
         font-family: 'Inter', sans-serif;
         font-size: 1.15rem;
@@ -481,21 +331,12 @@
         align-items: center;
         gap: 0.5rem;
     }
-
-    .modal-title .material-symbols-outlined {
-        font-size: 1.35rem;
-        color: var(--admin-primary);
-    }
-
-    .modal-body {
-        padding: 1.5rem 1.75rem;
-    }
-
+    .modal-title .material-symbols-outlined { font-size: 1.35rem; color: var(--admin-primary); }
+    .modal-body { padding: 1.5rem 1.75rem; }
     .modal-footer {
         border-top: 1px solid var(--admin-surface-container);
         padding: 1rem 1.75rem 1.25rem;
     }
-
     .form-label-custom {
         display: flex;
         align-items: center;
@@ -508,12 +349,7 @@
         color: var(--admin-on-surface-variant);
         margin-bottom: 0.4rem;
     }
-
-    .form-label-custom .material-symbols-outlined {
-        font-size: 0.95rem;
-        color: var(--admin-primary);
-    }
-
+    .form-label-custom .material-symbols-outlined { font-size: 0.95rem; color: var(--admin-primary); }
     .form-control-custom {
         width: 100%;
         padding: 0.6rem 0.85rem;
@@ -526,20 +362,12 @@
         outline: none;
         transition: all 0.2s;
     }
-
     .form-control-custom:focus {
         border-color: var(--admin-primary);
         box-shadow: 0 0 0 3px rgba(0, 87, 205, 0.08);
     }
-
-    .form-control-custom::placeholder {
-        color: var(--admin-outline);
-    }
-
-    select.form-control-custom {
-        cursor: pointer;
-    }
-
+    .form-control-custom::placeholder { color: var(--admin-outline); }
+    select.form-control-custom { cursor: pointer; }
     .btn-modal-save {
         display: inline-flex;
         align-items: center;
@@ -556,16 +384,8 @@
         transition: all 0.2s;
         box-shadow: 0 4px 12px -2px rgba(0, 87, 205, 0.3);
     }
-
-    .btn-modal-save:hover {
-        transform: translateY(-1px);
-        color: #fff;
-    }
-
-    .btn-modal-save .material-symbols-outlined {
-        font-size: 1rem;
-    }
-
+    .btn-modal-save:hover { transform: translateY(-1px); color: #fff; }
+    .btn-modal-save .material-symbols-outlined { font-size: 1rem; }
     .btn-modal-cancel {
         padding: 0.6rem 1.25rem;
         border: 1.5px solid var(--admin-outline-variant);
@@ -578,11 +398,7 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-
-    .btn-modal-cancel:hover {
-        background: var(--admin-surface-low);
-    }
-
+    .btn-modal-cancel:hover { background: var(--admin-surface-low); }
     .form-section-title {
         font-size: 0.7rem;
         font-weight: 700;
@@ -596,49 +412,24 @@
         align-items: center;
         gap: 0.375rem;
     }
+    .form-section-title .material-symbols-outlined { font-size: 1rem; }
 
-    .form-section-title .material-symbols-outlined {
-        font-size: 1rem;
-    }
-
-    /* ===== IMAGE UPLOAD ===== */
-    .img-upload-zone {
-        border: 2px dashed var(--admin-outline-variant);
-        border-radius: 0.75rem;
-        padding: 1.5rem;
+    /* Price input */
+    .price-input-wrap {
+        position: relative;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        min-height: 9rem;
-        background: var(--admin-surface-low);
     }
-
-    .img-upload-zone:hover {
-        border-color: var(--admin-primary-fixed-dim);
-        background: rgba(0, 87, 205, 0.03);
-    }
-
-    .img-upload-zone .material-symbols-outlined {
-        font-size: 2rem;
-        color: var(--admin-primary-fixed-dim);
-    }
-
-    .img-upload-zone p {
-        font-size: 0.72rem;
+    .price-input-wrap .prefix {
+        position: absolute;
+        left: 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 700;
         color: var(--admin-secondary);
-        margin-bottom: 0;
     }
+    .price-input-wrap input { padding-left: 2.5rem; }
 
-    .img-upload-zone span.hint {
-        font-size: 0.6rem;
-        color: var(--admin-outline);
-    }
-
-    /* Operating hours grid */
+    /* Operating hours rows */
     .hours-row {
         display: flex;
         align-items: center;
@@ -646,14 +437,12 @@
         padding: 0.4rem 0;
         font-size: 0.78rem;
     }
-
     .hours-row .day-label {
         width: 3.5rem;
         font-weight: 600;
         font-size: 0.7rem;
         color: var(--admin-on-surface-variant);
     }
-
     .hours-input {
         width: 5.5rem;
         padding: 0.35rem 0.5rem;
@@ -665,41 +454,14 @@
         outline: none;
         transition: all 0.2s;
     }
-
     .hours-input:focus {
         border-color: var(--admin-primary);
         box-shadow: 0 0 0 2px rgba(0, 87, 205, 0.06);
     }
-
     .hours-sep {
         font-size: 0.7rem;
         color: var(--admin-outline);
         font-weight: 600;
-    }
-
-    /* Price tag */
-    .price-input-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .price-input-wrap .prefix {
-        position: absolute;
-        left: 0.75rem;
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: var(--admin-secondary);
-    }
-
-    .price-input-wrap input {
-        padding-left: 2.5rem;
-    }
-
-    @media (max-width: 575.98px) {
-        .facility-check-grid {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
 
@@ -709,7 +471,7 @@
     <div class="page-header animate-in">
         <div>
             <h2 class="page-header__title">Kelola Lapang</h2>
-            <p class="page-header__subtitle">Manajemen data lapangan olahraga dan fasilitas</p>
+            <p class="page-header__subtitle">Manajemen data lapangan olahraga</p>
         </div>
         <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addLapangModal">
             <span class="material-symbols-outlined">add_circle</span>
@@ -723,27 +485,20 @@
             <div class="stat-chip__icon blue"><span class="material-symbols-outlined">stadium</span></div>
             <div>
                 <p class="stat-chip__label">Total Lapang</p>
-                <p class="stat-chip__value">12</p>
+                <p class="stat-chip__value">6</p>
             </div>
         </div>
         <div class="stat-chip">
             <div class="stat-chip__icon green"><span class="material-symbols-outlined">check_circle</span></div>
             <div>
-                <p class="stat-chip__label">Aktif</p>
-                <p class="stat-chip__value">9</p>
+                <p class="stat-chip__label">Dapat Digunakan</p>
+                <p class="stat-chip__value">5</p>
             </div>
         </div>
         <div class="stat-chip">
             <div class="stat-chip__icon amber"><span class="material-symbols-outlined">build</span></div>
             <div>
                 <p class="stat-chip__label">Perbaikan</p>
-                <p class="stat-chip__value">2</p>
-            </div>
-        </div>
-        <div class="stat-chip">
-            <div class="stat-chip__icon red"><span class="material-symbols-outlined">block</span></div>
-            <div>
-                <p class="stat-chip__label">Nonaktif</p>
                 <p class="stat-chip__value">1</p>
             </div>
         </div>
@@ -754,7 +509,7 @@
         <div class="table-toolbar">
             <div class="table-search">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" placeholder="Cari lapang, tipe..." />
+                <input type="text" placeholder="Cari nama lapang..." />
             </div>
             <div class="d-flex gap-2">
                 <button class="table-filter-btn">
@@ -770,187 +525,114 @@
             <table class="lapang-table">
                 <thead>
                     <tr>
-                        <th>Foto</th>
                         <th>Nama Lapang</th>
-                        <th>Harga/Jam</th>
-                        <th>Status</th>
                         <th>Jam Operasional</th>
+                        <th>Harga Per Jam</th>
+                        <th>Status</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Futsal A</span></td>
-                        <td style="font-weight:700;">Rp 150.000</td>
-                        <td><span class="badge-pill aktif"><span class="dot"></span>Aktif</span></td>
                         <td>
                             <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
                             </div>
                         </td>
+                        <td class="td-price">Rp 150.000</td>
+                        <td><span class="badge-pill dapat-digunakan"><span class="dot"></span>Dapat Digunakan</span></td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Futsal B</span></td>
-                        <td style="font-weight:700;">Rp 150.000</td>
-                        <td><span class="badge-pill aktif"><span class="dot"></span>Aktif</span></td>
                         <td>
                             <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
                             </div>
                         </td>
+                        <td class="td-price">Rp 150.000</td>
+                        <td><span class="badge-pill dapat-digunakan"><span class="dot"></span>Dapat Digunakan</span></td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Badminton 1</span></td>
-                        <td style="font-weight:700;">Rp 75.000</td>
-                        <td><span class="badge-pill aktif"><span class="dot"></span>Aktif</span></td>
                         <td>
                             <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
                             </div>
                         </td>
+                        <td class="td-price">Rp 75.000</td>
+                        <td><span class="badge-pill dapat-digunakan"><span class="dot"></span>Dapat Digunakan</span></td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Basket Indoor</span></td>
-                        <td style="font-weight:700;">Rp 200.000</td>
+                        <td>
+                            <div class="td-hours">
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
+                            </div>
+                        </td>
+                        <td class="td-price">Rp 200.000</td>
                         <td><span class="badge-pill perbaikan"><span class="dot"></span>Perbaikan</span></td>
-                        <td>
-                            <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
-                            </div>
-                        </td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Voli Outdoor</span></td>
-                        <td style="font-weight:700;">Rp 100.000</td>
-                        <td><span class="badge-pill aktif"><span class="dot"></span>Aktif</span></td>
                         <td>
                             <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
                             </div>
                         </td>
+                        <td class="td-price">Rp 100.000</td>
+                        <td><span class="badge-pill dapat-digunakan"><span class="dot"></span>Dapat Digunakan</span></td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            <div class="td-photo-placeholder">
-                                <span class="material-symbols-outlined">image</span>
-                            </div>
-                        </td>
                         <td><span class="td-name">Lapang Tenis Meja</span></td>
-                        <td style="font-weight:700;">Rp 50.000</td>
-                        <td><span class="badge-pill nonaktif"><span class="dot"></span>Nonaktif</span></td>
                         <td>
                             <div class="td-hours">
-                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 —
-                                        22:00</span></div>
-                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 —
-                                        23:00</span></div>
-                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 —
-                                        21:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sen-Jum</span> <span class="time">08:00 — 22:00</span></div>
+                                <div class="td-hours-item"><span class="day">Sabtu</span> <span class="time">07:00 — 23:00</span></div>
+                                <div class="td-hours-item"><span class="day">Minggu</span> <span class="time">07:00 — 21:00</span></div>
                             </div>
                         </td>
+                        <td class="td-price">Rp 50.000</td>
+                        <td><span class="badge-pill dapat-digunakan"><span class="dot"></span>Dapat Digunakan</span></td>
                         <td style="text-align:center;">
-                            <button class="action-btn view" title="Detail"><span
-                                    class="material-symbols-outlined">visibility</span></button>
-                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal"
-                                data-bs-target="#editLapangModal"><span
-                                    class="material-symbols-outlined">edit</span></button>
-                            <button class="action-btn delete" title="Hapus"><span
-                                    class="material-symbols-outlined">delete</span></button>
+                            <button class="action-btn edit" title="Edit" data-bs-toggle="modal" data-bs-target="#editLapangModal">
+                                <span class="material-symbols-outlined">edit</span> Edit
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -958,11 +640,10 @@
         </div>
 
         <div class="table-footer">
-            <span class="table-footer__info">Menampilkan 1-6 dari 12 data</span>
+            <span class="table-footer__info">Menampilkan 1-6 dari 6 data</span>
             <div class="pagination-custom">
                 <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
                 <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
                 <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
             </div>
         </div>
@@ -993,40 +674,25 @@
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">stadium</span> Nama Lapang
                             </label>
-                            <input type="text" class="form-control-custom" placeholder="Contoh: Lapang Futsal A"
-                                required />
+                            <input type="text" class="form-control-custom" placeholder="Contoh: Lapang Futsal A" required />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom">
-                                <span class="material-symbols-outlined">payments</span> Harga / Jam
+                                <span class="material-symbols-outlined">payments</span> Harga Per Jam
                             </label>
                             <div class="price-input-wrap">
                                 <span class="prefix">Rp</span>
-                                <input type="number" class="form-control-custom" placeholder="0" />
+                                <input type="number" class="form-control-custom" placeholder="0" required />
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">flag</span> Status
                             </label>
-                            <select class="form-control-custom">
-                                <option value="aktif">Aktif</option>
-                                <option value="perbaikan">Dalam Perbaikan</option>
-                                <option value="nonaktif">Nonaktif</option>
+                            <select class="form-control-custom" required>
+                                <option value="dapat_digunakan">Dapat Digunakan</option>
+                                <option value="perbaikan">Perbaikan</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <!-- Section: Foto Lapang -->
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">image</span>
-                        Foto Lapang
-                    </div>
-                    <div class="mb-4">
-                        <div class="img-upload-zone">
-                            <span class="material-symbols-outlined">cloud_upload</span>
-                            <p>Klik atau seret foto ke sini</p>
-                            <span class="hint">JPG, PNG • Maks. 2MB</span>
                         </div>
                     </div>
 
@@ -1036,15 +702,24 @@
                         Jam Operasional
                     </div>
                     <div class="mb-3">
-                        <div class="hours-row"><span class="day-label">Sen-Jum</span><input type="time"
-                                class="hours-input" value="08:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="22:00"></div>
-                        <div class="hours-row"><span class="day-label">Sabtu</span><input type="time"
-                                class="hours-input" value="07:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="23:00"></div>
-                        <div class="hours-row"><span class="day-label">Minggu</span><input type="time"
-                                class="hours-input" value="07:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="21:00"></div>
+                        <div class="hours-row">
+                            <span class="day-label">Sen-Jum</span>
+                            <input type="time" class="hours-input" value="08:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="22:00">
+                        </div>
+                        <div class="hours-row">
+                            <span class="day-label">Sabtu</span>
+                            <input type="time" class="hours-input" value="07:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="23:00">
+                        </div>
+                        <div class="hours-row">
+                            <span class="day-label">Minggu</span>
+                            <input type="time" class="hours-input" value="07:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="21:00">
+                        </div>
                     </div>
                 </form>
             </div>
@@ -1085,7 +760,7 @@
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom">
-                                <span class="material-symbols-outlined">payments</span> Harga / Jam
+                                <span class="material-symbols-outlined">payments</span> Harga Per Jam
                             </label>
                             <div class="price-input-wrap">
                                 <span class="prefix">Rp</span>
@@ -1097,23 +772,9 @@
                                 <span class="material-symbols-outlined">flag</span> Status
                             </label>
                             <select class="form-control-custom">
-                                <option value="aktif" selected>Aktif</option>
-                                <option value="perbaikan">Dalam Perbaikan</option>
-                                <option value="nonaktif">Nonaktif</option>
+                                <option value="dapat_digunakan" selected>Dapat Digunakan</option>
+                                <option value="perbaikan">Perbaikan</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <!-- Section: Foto Lapang -->
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">image</span>
-                        Foto Lapang
-                    </div>
-                    <div class="mb-4">
-                        <div class="img-upload-zone">
-                            <span class="material-symbols-outlined">cloud_upload</span>
-                            <p>Klik atau seret foto ke sini</p>
-                            <span class="hint">JPG, PNG • Maks. 2MB</span>
                         </div>
                     </div>
 
@@ -1123,15 +784,24 @@
                         Jam Operasional
                     </div>
                     <div class="mb-3">
-                        <div class="hours-row"><span class="day-label">Sen-Jum</span><input type="time"
-                                class="hours-input" value="08:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="22:00"></div>
-                        <div class="hours-row"><span class="day-label">Sabtu</span><input type="time"
-                                class="hours-input" value="07:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="23:00"></div>
-                        <div class="hours-row"><span class="day-label">Minggu</span><input type="time"
-                                class="hours-input" value="07:00"><span class="hours-sep">—</span><input type="time"
-                                class="hours-input" value="21:00"></div>
+                        <div class="hours-row">
+                            <span class="day-label">Sen-Jum</span>
+                            <input type="time" class="hours-input" value="08:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="22:00">
+                        </div>
+                        <div class="hours-row">
+                            <span class="day-label">Sabtu</span>
+                            <input type="time" class="hours-input" value="07:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="23:00">
+                        </div>
+                        <div class="hours-row">
+                            <span class="day-label">Minggu</span>
+                            <input type="time" class="hours-input" value="07:00">
+                            <span class="hours-sep">—</span>
+                            <input type="time" class="hours-input" value="21:00">
+                        </div>
                     </div>
                 </form>
             </div>
@@ -1144,7 +814,5 @@
         </div>
     </div>
 </div>
-
-
 
 <?= $this->endSection() ?>

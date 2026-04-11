@@ -326,15 +326,22 @@
             border-radius: 1.25rem;
             padding: 1.75rem 2rem;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
             animation-delay: 0.1s;
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .filter-label {
@@ -405,8 +412,8 @@
             border-radius: 1.25rem;
             padding: 1.75rem 2rem;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
             animation-delay: 0.18s;
         }
@@ -669,10 +676,21 @@
             animation: slideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        .schedule-card:nth-child(1) { animation-delay: 0.15s; }
-        .schedule-card:nth-child(2) { animation-delay: 0.22s; }
-        .schedule-card:nth-child(3) { animation-delay: 0.29s; }
-        .schedule-card:nth-child(4) { animation-delay: 0.36s; }
+        .schedule-card:nth-child(1) {
+            animation-delay: 0.15s;
+        }
+
+        .schedule-card:nth-child(2) {
+            animation-delay: 0.22s;
+        }
+
+        .schedule-card:nth-child(3) {
+            animation-delay: 0.29s;
+        }
+
+        .schedule-card:nth-child(4) {
+            animation-delay: 0.36s;
+        }
 
         .schedule-card--available {
             cursor: pointer;
@@ -734,7 +752,9 @@
         }
 
         @media (max-width: 575.98px) {
-            .schedule-card__divider { display: none; }
+            .schedule-card__divider {
+                display: none;
+            }
         }
 
         .schedule-card__info {
@@ -817,13 +837,21 @@
             transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
         }
 
-        .lapang-card:nth-child(1) .lapang-card { animation-delay: 0.1s; }
-        .lapang-card:nth-child(2) .lapang-card { animation-delay: 0.2s; }
-        .lapang-card:nth-child(3) .lapang-card { animation-delay: 0.3s; }
+        .lapang-card:nth-child(1) .lapang-card {
+            animation-delay: 0.1s;
+        }
+
+        .lapang-card:nth-child(2) .lapang-card {
+            animation-delay: 0.2s;
+        }
+
+        .lapang-card:nth-child(3) .lapang-card {
+            animation-delay: 0.3s;
+        }
 
         .lapang-card:hover {
             border-color: var(--primary-fixed-dim);
@@ -878,8 +906,15 @@
         }
 
         @keyframes fadeSlotIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to   { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .timeslot-box:hover {
@@ -1006,13 +1041,18 @@
             border-radius: 1.25rem;
             overflow: hidden;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        .bf-summary-card { animation-delay: 0.1s; }
-        .bf-form-card    { animation-delay: 0.18s; }
+        .bf-summary-card {
+            animation-delay: 0.1s;
+        }
+
+        .bf-form-card {
+            animation-delay: 0.18s;
+        }
 
         .bf-summary-header,
         .bf-form-header {
@@ -1041,7 +1081,7 @@
             padding: 0.625rem 0;
         }
 
-        .bf-summary-item + .bf-summary-item {
+        .bf-summary-item+.bf-summary-item {
             border-top: 1px solid rgba(194, 198, 216, 0.2);
         }
 
@@ -1256,6 +1296,7 @@
         }
 
         @media (max-width: 767.98px) {
+
             .bf-summary-body,
             .bf-form-body {
                 padding: 1.25rem;
@@ -1274,9 +1315,17 @@
             height: 100%;
         }
 
-        .ms-benefit-card:nth-child(1) { animation-delay: 0.1s; }
-        .ms-benefit-card:nth-child(2) { animation-delay: 0.18s; }
-        .ms-benefit-card:nth-child(3) { animation-delay: 0.26s; }
+        .ms-benefit-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .ms-benefit-card:nth-child(2) {
+            animation-delay: 0.18s;
+        }
+
+        .ms-benefit-card:nth-child(3) {
+            animation-delay: 0.26s;
+        }
 
         .ms-benefit-card:hover {
             border-color: var(--primary-fixed-dim);
@@ -1394,7 +1443,7 @@
         }
 
         .ms-pricing-header--popular .ms-pricing-badge--popular {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: #fff;
         }
 
@@ -1455,7 +1504,7 @@
         }
 
         .ms-pricing-header--popular .ms-pricing-save {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: #fff;
         }
 
@@ -1557,8 +1606,8 @@
             border-radius: 1.25rem;
             padding: 2rem;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
             animation-delay: 0.2s;
         }
@@ -1651,8 +1700,8 @@
             border-radius: 1.5rem;
             padding: 2.5rem 2rem;
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.04),
-                0 8px 24px -4px rgba(0,0,0,0.06);
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 8px 24px -4px rgba(0, 0, 0, 0.06);
             text-align: center;
             animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
             animation-delay: 0.1s;
@@ -1858,9 +1907,26 @@
         }
 
         @keyframes shakeX {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-            20%, 40%, 60%, 80% { transform: translateX(4px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-4px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(4px);
+            }
         }
 
         /* Help */
@@ -2039,6 +2105,7 @@
         }
 
         @media (max-width: 767.98px) {
+
             .booking-card,
             .booking-result-card,
             .booking-success-card {

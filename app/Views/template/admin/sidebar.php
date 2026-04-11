@@ -18,7 +18,7 @@
             <span class="material-symbols-outlined">stadium</span>
             <span>Kelola Lapang</span>
         </a>
-        <a href="#" class="sidebar-link">
+        <a href="<?= base_url('/admin/users') ?>" class="sidebar-link <?= uri_string() === 'admin/users' ? 'active' : '' ?>">
             <span class="material-symbols-outlined">group</span>
             <span>Users</span>
         </a>
