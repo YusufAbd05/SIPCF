@@ -13,4 +13,9 @@ $routes->get('/ubah-jadwal', 'Home::ubahJadwal');
 $routes->get('/admin', 'Home::adminDashboard');
 $routes->get('/admin/booking', 'Home::adminBooking');
 $routes->get('/admin/lapang', 'Home::adminLapang');
-$routes->get('/admin/users', 'Home::adminUsers');
+
+// User CRUD
+$routes->get('/admin/users', 'UserController::index');
+$routes->post('/admin/users/save', 'UserController::save');
+$routes->post('/admin/users/update', 'UserController::update');
+$routes->post('/admin/users/delete', 'UserController::delete');
