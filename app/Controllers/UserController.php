@@ -19,9 +19,9 @@ class UserController extends BaseController
         $totalMembership = count(array_filter($users, fn($u) => $u['role'] === 'Membership'));
 
         $data = [
-            'users'           => $users,
-            'totalUser'       => $totalUser,
-            'totalAdmin'      => $totalAdmin,
+            'users' => $users,
+            'totalUser' => $totalUser,
+            'totalAdmin' => $totalAdmin,
             'totalMembership' => $totalMembership,
         ];
 
@@ -33,11 +33,11 @@ class UserController extends BaseController
         $userModel = new UserModel();
 
         $data = [
-            'nama'     => $this->request->getPost('nama'),
-            'email'    => $this->request->getPost('email'),
-            'no_hp'    => $this->request->getPost('no_hp'),
+            'nama' => $this->request->getPost('nama'),
+            'email' => $this->request->getPost('email'),
+            'no_hp' => $this->request->getPost('no_hp'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role'     => $this->request->getPost('role'),
+            'role' => $this->request->getPost('role'),
         ];
 
         $userModel->insert($data);
@@ -51,10 +51,10 @@ class UserController extends BaseController
         $id = $this->request->getPost('id_user');
 
         $data = [
-            'nama'  => $this->request->getPost('nama'),
+            'nama' => $this->request->getPost('nama'),
             'email' => $this->request->getPost('email'),
             'no_hp' => $this->request->getPost('no_hp'),
-            'role'  => $this->request->getPost('role'),
+            'role' => $this->request->getPost('role'),
         ];
 
         // Jika password diisi, update password juga
