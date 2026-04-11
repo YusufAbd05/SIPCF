@@ -11,7 +11,22 @@ class Home extends BaseController
 
     public function ubahJadwal(): string
     {
-        return view('ubah_jadwal');
+        return view('UbahJadwal');
+    }
+
+    public function formulirBooking(): string
+    {
+        return view('FormulirBooking');
+    }
+
+    public function membership(): string
+    {
+        return view('Membership');
+    }
+
+    public function daftarMembership(): string
+    {
+        return view('DaftarMembership');
     }
 
     public function adminDashboard(): string
