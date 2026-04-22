@@ -19,6 +19,11 @@
             <span class="material-symbols-outlined">stadium</span>
             <span>Kelola Lapang</span>
         </a>
+        <a href="<?= base_url('/admin/tarif') ?>"
+            class="sidebar-link <?= uri_string() === 'admin/tarif' ? 'active' : '' ?>">
+            <span class="material-symbols-outlined">payments</span>
+            <span>Kelola Tarif</span>
+        </a>
         <a href="<?= base_url('/admin/users') ?>"
             class="sidebar-link <?= uri_string() === 'admin/users' ? 'active' : '' ?>">
             <span class="material-symbols-outlined">group</span>

@@ -26,6 +26,12 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('lapang/update', 'LapangController::update');
     $routes->post('lapang/delete', 'LapangController::delete');
 
+    // Tarif CRUD
+    $routes->get('tarif', 'TarifController::index');
+    $routes->post('tarif/save', 'TarifController::save');
+    $routes->post('tarif/update', 'TarifController::update');
+    $routes->post('tarif/delete', 'TarifController::delete');
+
     // User CRUD
     $routes->get('users', 'UserController::index');
     $routes->post('users/save', 'UserController::save');
