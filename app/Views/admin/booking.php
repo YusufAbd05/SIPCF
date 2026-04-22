@@ -70,7 +70,8 @@
         <div class="table-toolbar">
             <div class="table-search">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" id="searchBooking" placeholder="Cari kode booking, nama penyewa..." oninput="searchBookingTable()" />
+                <input type="text" id="searchBooking" placeholder="Cari kode booking, nama penyewa..."
+                    oninput="searchBookingTable()" />
             </div>
             <div class="d-flex gap-2">
                 <button class="table-filter-btn"><span class="material-symbols-outlined">download</span>
@@ -101,15 +102,19 @@
                             <div class="td-secondary">Member</div>
                         </td>
                         <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom" style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 09:00</div>
+                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
+                                    Booking</span></div>
+                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
+                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 09:00</div>
                         </td>
                         <td><span class="badge text-bg-warning">Menunggu Verifikasi</span></td>
                         <td class="td-currency">Rp 280.000</td>
                         <td><span class="badge-method transfer">Transfer</span></td>
                         <td style="text-align:center;">
                             <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal" data-bs-target="#buktiBayarModal"><span class="material-symbols-outlined">search_check</span> Cek</button>
+                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal"
+                                    data-bs-target="#buktiBayarModal"><span
+                                        class="material-symbols-outlined">search_check</span> Cek</button>
                             </div>
                         </td>
                     </tr>
@@ -121,15 +126,19 @@
                             <div class="td-secondary">Member</div>
                         </td>
                         <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom" style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 10:00</div>
+                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
+                                    Booking</span></div>
+                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
+                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 10:00</div>
                         </td>
                         <td><span class="badge text-bg-secondary">Menunggu Pembayaran</span></td>
                         <td class="td-currency">Rp 100.000</td>
                         <td><span class="badge-method transfer">Transfer</span></td>
                         <td style="text-align:center;">
                             <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal" data-bs-target="#buktiBayarModal"><span class="material-symbols-outlined">search</span> Cek</button>
+                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
+                                    data-bs-target="#buktiBayarModal"><span
+                                        class="material-symbols-outlined">search</span> Cek</button>
                             </div>
                         </td>
                     </tr>
@@ -141,15 +150,19 @@
                             <div class="td-secondary">Guest</div>
                         </td>
                         <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom" style="font-size:0.85rem;">calendar_month</span> 12 Apr 2026, 14:00</div>
+                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
+                                    Booking</span></div>
+                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
+                                    style="font-size:0.85rem;">calendar_month</span> 12 Apr 2026, 14:00</div>
                         </td>
                         <td><span class="badge text-bg-warning">Menunggu Verifikasi</span></td>
                         <td class="td-currency">Rp 400.000</td>
                         <td><span class="badge-method ewallet">E-Wallet</span></td>
                         <td style="text-align:center;">
                             <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal" data-bs-target="#buktiBayarModal"><span class="material-symbols-outlined">search_check</span> Cek</button>
+                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal"
+                                    data-bs-target="#buktiBayarModal"><span
+                                        class="material-symbols-outlined">search_check</span> Cek</button>
                             </div>
                         </td>
                     </tr>
@@ -161,15 +174,19 @@
                             <div class="td-secondary">Guest (Walk-in)</div>
                         </td>
                         <td>
-                            <div class="mb-1"><span class="badge text-bg-secondary" style="font-size:0.6rem;">Walk-in Offline</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom" style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 15:00</div>
+                            <div class="mb-1"><span class="badge text-bg-secondary" style="font-size:0.6rem;">Walk-in
+                                    Offline</span></div>
+                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
+                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 15:00</div>
                         </td>
                         <td><span class="badge text-bg-danger">Ditolak</span></td>
                         <td class="td-currency">Rp 100.000</td>
                         <td><span class="badge-method cash">Cash</span></td>
                         <td style="text-align:center;">
                             <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal" data-bs-target="#buktiBayarModal"><span class="material-symbols-outlined">search</span> Cek</button>
+                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
+                                    data-bs-target="#buktiBayarModal"><span
+                                        class="material-symbols-outlined">search</span> Cek</button>
                             </div>
                         </td>
                     </tr>
@@ -181,15 +198,19 @@
                             <div class="td-secondary">Member</div>
                         </td>
                         <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom" style="font-size:0.85rem;">calendar_month</span> 13 Apr 2026, 19:00</div>
+                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
+                                    Booking</span></div>
+                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
+                                    style="font-size:0.85rem;">calendar_month</span> 13 Apr 2026, 19:00</div>
                         </td>
                         <td><span class="badge text-bg-secondary">Menunggu Pembayaran</span></td>
                         <td class="td-currency">Rp 150.000</td>
                         <td><span class="badge-method qris">QRIS</span></td>
                         <td style="text-align:center;">
                             <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal" data-bs-target="#buktiBayarModal"><span class="material-symbols-outlined">search</span> Cek</button>
+                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
+                                    data-bs-target="#buktiBayarModal"><span
+                                        class="material-symbols-outlined">search</span> Cek</button>
                             </div>
                         </td>
                     </tr>
@@ -288,21 +309,22 @@
                                     <label class="form-label-custom">
                                         <span class="material-symbols-outlined">badge</span> Nama Penyewa
                                     </label>
-                                    <input type="text" name="nama_penyewa" class="form-control-custom" placeholder="Masukkan nama penyewa"
-                                        required />
+                                    <input type="text" name="nama_penyewa" class="form-control-custom"
+                                        placeholder="Masukkan nama penyewa" required />
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label-custom">
                                         <span class="material-symbols-outlined">mail</span> Email
                                     </label>
-                                    <input type="email" name="email" class="form-control-custom" placeholder="email@contoh.com"
-                                        required />
+                                    <input type="email" name="email" class="form-control-custom"
+                                        placeholder="email@contoh.com" required />
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label-custom">
                                         <span class="material-symbols-outlined">call</span> No. HP
                                     </label>
-                                    <input type="tel" name="no_hp" class="form-control-custom" placeholder="08xxxxxxxxxx" required />
+                                    <input type="tel" name="no_hp" class="form-control-custom"
+                                        placeholder="08xxxxxxxxxx" required />
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label-custom">
@@ -565,7 +587,7 @@
         </div>
     </div>
 </div>
- 
+
 
 <script>
     (function () {
