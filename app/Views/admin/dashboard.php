@@ -8,11 +8,16 @@
     <section class="mb-4 animate-in">
         <div class="welcome-banner">
             <div class="position-relative" style="z-index:1;max-width:36rem;">
-                <h2>Welcome back, Alexander!</h2>
-                <p>Your "Digital Atrium" is performing at peak efficiency today. We've detected a 12% increase in user retention since your last session.</p>
+                <h2>Selamat Datang, Admin!</h2>
+                <p>Sistem Digital Atrium Anda beroperasi dengan optimal hari ini. Terdapat <b>5 pesanan
+                        booking</b> yang sedang menunggu verifikasi pembayaran dari Anda.</p>
                 <div class="d-flex gap-3 mt-4">
-                    <button class="btn-welcome-primary">View Full Analytics</button>
-                    <button class="btn-welcome-ghost">Dismiss Update</button>
+                    <a href="laporan.html"
+                        class="btn-welcome-primary text-decoration-none d-inline-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined" style="font-size:1.1rem;">print</span>
+                        Ekspor Rekap Laporan
+                    </a>
+                    <button class="btn-welcome-ghost">Cek Log Sistem</button>
                 </div>
             </div>
             <div class="glow"></div>
@@ -21,59 +26,64 @@
 
     <!-- Metrics Grid -->
     <section class="row g-3 mb-4">
-        <!-- Total Users -->
+        <!-- Sewa Hari Ini -->
         <div class="col-12 col-md-6 col-lg-3 animate-in" style="animation-delay:.08s;">
             <div class="metric-card">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="metric-icon blue">
-                        <span class="material-symbols-outlined">group</span>
+                        <span class="material-symbols-outlined">event_available</span>
                     </div>
-                    <span class="metric-badge up">+4.2%</span>
+                    <span class="metric-badge up">+2 Sesi</span>
                 </div>
-                <p class="metric-label">Total Users</p>
-                <h3 class="metric-value">3,240</h3>
+                <p class="metric-label">Sewa Hari Ini</p>
+                <h3 class="metric-value">12 <span
+                        style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Sesi</span>
+                </h3>
             </div>
         </div>
 
-        <!-- Total Revenue -->
+        <!-- Menunggu Verifikasi -->
         <div class="col-12 col-md-6 col-lg-3 animate-in" style="animation-delay:.14s;">
+            <div class="metric-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="metric-icon amber">
+                        <span class="material-symbols-outlined">pending_actions</span>
+                    </div>
+                    <span class="metric-badge down" style="color:#d97706; background:#fffbeb;">Cek
+                        Detail</span>
+                </div>
+                <p class="metric-label">Menunggu Verifikasi</p>
+                <h3 class="metric-value">5 <span
+                        style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Pesanan</span>
+                </h3>
+            </div>
+        </div>
+
+        <!-- Omset Bulan Ini -->
+        <div class="col-12 col-md-6 col-lg-3 animate-in" style="animation-delay:.2s;">
             <div class="metric-card">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="metric-icon green">
                         <span class="material-symbols-outlined">payments</span>
                     </div>
-                    <span class="metric-badge up">+12.5%</span>
+                    <span class="metric-badge up">+15.2%</span>
                 </div>
-                <p class="metric-label">Total Revenue</p>
-                <h3 class="metric-value">$45,200</h3>
+                <p class="metric-label">Omset Bulan Ini (Lunas)</p>
+                <h3 class="metric-value" style="font-size:1.45rem;">Rp 8.450k</h3>
             </div>
         </div>
 
-        <!-- Active Sessions -->
-        <div class="col-12 col-md-6 col-lg-3 animate-in" style="animation-delay:.2s;">
-            <div class="metric-card">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="metric-icon amber">
-                        <span class="material-symbols-outlined">timer</span>
-                    </div>
-                    <span class="metric-badge down">-0.8%</span>
-                </div>
-                <p class="metric-label">Active Sessions</p>
-                <h3 class="metric-value">1,020</h3>
-            </div>
-        </div>
-
-        <!-- New Signups -->
+        <!-- Total Member -->
         <div class="col-12 col-md-6 col-lg-3 animate-in" style="animation-delay:.26s;">
             <div class="metric-card">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="metric-icon indigo">
-                        <span class="material-symbols-outlined">person_add</span>
+                        <span class="material-symbols-outlined">group</span>
                     </div>
-                    <span class="metric-badge up">+24%</span>
+                    <span class="metric-badge up">+4 New</span>
                 </div>
-                <p class="metric-label">New Signups</p>
-                <h3 class="metric-value">240</h3>
+                <p class="metric-label">Total Member Aktif</p>
+                <h3 class="metric-value">124</h3>
             </div>
         </div>
     </section>
@@ -108,8 +118,10 @@
                         <div class="chart-bar" style="height:50%"></div>
                     </div>
                     <div class="text-center position-relative" style="z-index:1;">
-                        <span class="material-symbols-outlined mb-3 d-block" style="font-size:3rem;color:#bfdbfe;">monitoring</span>
-                        <p class="mb-0" style="color:var(--admin-secondary);font-weight:500;">Real-time revenue visualization</p>
+                        <span class="material-symbols-outlined mb-3 d-block"
+                            style="font-size:3rem;color:#bfdbfe;">monitoring</span>
+                        <p class="mb-0" style="color:var(--admin-secondary);font-weight:500;">Real-time
+                            revenue visualization</p>
                     </div>
                 </div>
             </div>
@@ -173,5 +185,4 @@
     </section>
 
 </main>
-
 <?= $this->endSection() ?>

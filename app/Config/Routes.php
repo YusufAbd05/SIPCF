@@ -10,12 +10,21 @@ $routes->get('/booking', 'Home::formulirBooking');
 $routes->get('/membership', 'Home::membership');
 $routes->get('/daftar-membership', 'Home::daftarMembership');
 $routes->get('/ubah-jadwal', 'Home::ubahJadwal');
-$routes->get('/admin', 'Home::adminDashboard');
-$routes->get('/admin/booking', 'Home::adminBooking');
-$routes->get('/admin/lapang', 'Home::adminLapang');
 
-// User CRUD
-$routes->get('/admin/users', 'UserController::index');
-$routes->post('/admin/users/save', 'UserController::save');
-$routes->post('/admin/users/update', 'UserController::update');
-$routes->post('/admin/users/delete', 'UserController::delete');
+// Auth
+$routes->get('/login', 'AuthController::loginPage');
+$routes->post('/login', 'AuthController::login');
+$routes->get('/logout', 'AuthController::logout');
+
+// Admin (protected by auth filter)
+$routes->group('admin', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'Home::adminDashboard');
+    $routes->get('booking', 'Home::adminBooking');
+    $routes->get('lapang', 'Home::adminLapang');
+
+    // User CRUD
+    $routes->get('users', 'UserController::index');
+    $routes->post('users/save', 'UserController::save');
+    $routes->post('users/update', 'UserController::update');
+    $routes->post('users/delete', 'UserController::delete');
+});

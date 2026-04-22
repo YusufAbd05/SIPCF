@@ -1,4 +1,3 @@
-<!-- ================= FOOTER ================= -->
 <footer class="admin-footer">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
         <p class="mb-2 mb-md-0">© 2024 Digital Atrium. All rights reserved.</p>
