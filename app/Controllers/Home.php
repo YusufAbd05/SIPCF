@@ -36,7 +36,7 @@ class Home extends BaseController
 
     public function adminBooking(): string
     {
-        return view('admin/booking');
+        return view('admin/ViewBooking');
     }
 
 }

@@ -19,7 +19,15 @@ $routes->get('/logout', 'AuthController::logout');
 // Admin (protected by auth filter)
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Home::adminDashboard');
-    $routes->get('booking', 'Home::adminBooking');
+    // Booking CRUD
+    $routes->get('booking', 'BookingController::index');
+    $routes->post('booking/saveWalkIn', 'BookingController::saveWalkIn');
+    $routes->post('booking/update', 'BookingController::update');
+    $routes->post('booking/verifikasi', 'BookingController::verifikasi');
+    // Booking API (JSON)
+    $routes->get('booking/getBookedSlots', 'BookingController::getBookedSlots');
+    $routes->get('booking/getTarif', 'BookingController::getTarif');
+
     // Lapang CRUD
     $routes->get('lapang', 'LapangController::index');
     $routes->post('lapang/save', 'LapangController::save');

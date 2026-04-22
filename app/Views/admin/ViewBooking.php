@@ -31,7 +31,7 @@
             </div>
             <div>
                 <p class="stat-chip__label">Total Booking</p>
-                <p class="stat-chip__value">156</p>
+                <p class="stat-chip__value"><?= $totalBooking ?? 0 ?></p>
             </div>
         </div>
         <div class="stat-chip">
@@ -39,21 +39,21 @@
             </div>
             <div>
                 <p class="stat-chip__label">Lunas</p>
-                <p class="stat-chip__value">120</p>
+                <p class="stat-chip__value"><?= $lunas ?? 0 ?></p>
             </div>
         </div>
         <div class="stat-chip">
             <div class="stat-chip__icon amber"><span class="material-symbols-outlined">pending</span></div>
             <div>
                 <p class="stat-chip__label">Pending</p>
-                <p class="stat-chip__value">29</p>
+                <p class="stat-chip__value"><?= $pending ?? 0 ?></p>
             </div>
         </div>
         <div class="stat-chip">
             <div class="stat-chip__icon red"><span class="material-symbols-outlined">cancel</span></div>
             <div>
                 <p class="stat-chip__label">Batal</p>
-                <p class="stat-chip__value">7</p>
+                <p class="stat-chip__value"><?= $batal ?? 0 ?></p>
             </div>
         </div>
     </div>
@@ -94,141 +94,86 @@
                     </tr>
                 </thead>
                 <tbody id="bookingTableBody">
-                    <tr data-status="Menunggu Verifikasi">
-                        <td class="td-code">BK-20260411-001</td>
-                        <td><span class="td-name">Lapang Futsal A</span></td>
-                        <td>
-                            <div class="fw-bold">Ahmad Fauzi</div>
-                            <div class="td-secondary">Member</div>
-                        </td>
-                        <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
-                                    Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
-                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 09:00</div>
-                        </td>
-                        <td><span class="badge text-bg-warning">Menunggu Verifikasi</span></td>
-                        <td class="td-currency">Rp 280.000</td>
-                        <td><span class="badge-method transfer">Transfer</span></td>
-                        <td style="text-align:center;">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal"
-                                    data-bs-target="#buktiBayarModal"><span
-                                        class="material-symbols-outlined">search_check</span> Cek</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="Menunggu Pembayaran">
-                        <td class="td-code">BK-20260411-002</td>
-                        <td><span class="td-name">Lapang Badminton B</span></td>
-                        <td>
-                            <div class="fw-bold">Siti Rahmawati</div>
-                            <div class="td-secondary">Member</div>
-                        </td>
-                        <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
-                                    Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
-                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 10:00</div>
-                        </td>
-                        <td><span class="badge text-bg-secondary">Menunggu Pembayaran</span></td>
-                        <td class="td-currency">Rp 100.000</td>
-                        <td><span class="badge-method transfer">Transfer</span></td>
-                        <td style="text-align:center;">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
-                                    data-bs-target="#buktiBayarModal"><span
-                                        class="material-symbols-outlined">search</span> Cek</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="Menunggu Verifikasi">
-                        <td class="td-code">BK-20260412-003</td>
-                        <td><span class="td-name">Lapang Basket C</span></td>
-                        <td>
-                            <div class="fw-bold">Budi Santoso</div>
-                            <div class="td-secondary">Guest</div>
-                        </td>
-                        <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
-                                    Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
-                                    style="font-size:0.85rem;">calendar_month</span> 12 Apr 2026, 14:00</div>
-                        </td>
-                        <td><span class="badge text-bg-warning">Menunggu Verifikasi</span></td>
-                        <td class="td-currency">Rp 400.000</td>
-                        <td><span class="badge-method ewallet">E-Wallet</span></td>
-                        <td style="text-align:center;">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek & Verifikasi" data-bs-toggle="modal"
-                                    data-bs-target="#buktiBayarModal"><span
-                                        class="material-symbols-outlined">search_check</span> Cek</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="Ditolak">
-                        <td class="td-code">BK-20260411-004</td>
-                        <td><span class="td-name">Lapang Badminton B</span></td>
-                        <td>
-                            <div class="fw-bold">Dewi Lestari</div>
-                            <div class="td-secondary">Guest (Walk-in)</div>
-                        </td>
-                        <td>
-                            <div class="mb-1"><span class="badge text-bg-secondary" style="font-size:0.6rem;">Walk-in
-                                    Offline</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
-                                    style="font-size:0.85rem;">calendar_month</span> 11 Apr 2026, 15:00</div>
-                        </td>
-                        <td><span class="badge text-bg-danger">Ditolak</span></td>
-                        <td class="td-currency">Rp 100.000</td>
-                        <td><span class="badge-method cash">Cash</span></td>
-                        <td style="text-align:center;">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
-                                    data-bs-target="#buktiBayarModal"><span
-                                        class="material-symbols-outlined">search</span> Cek</button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr data-status="Menunggu Pembayaran">
-                        <td class="td-code">BK-20260413-005</td>
-                        <td><span class="td-name">Lapang Futsal A</span></td>
-                        <td>
-                            <div class="fw-bold">Rizky Pratama</div>
-                            <div class="td-secondary">Member</div>
-                        </td>
-                        <td>
-                            <div class="mb-1"><span class="badge text-bg-primary" style="font-size:0.6rem;">Online
-                                    Booking</span></div>
-                            <div class="td-secondary"><span class="material-symbols-outlined align-bottom"
-                                    style="font-size:0.85rem;">calendar_month</span> 13 Apr 2026, 19:00</div>
-                        </td>
-                        <td><span class="badge text-bg-secondary">Menunggu Pembayaran</span></td>
-                        <td class="td-currency">Rp 150.000</td>
-                        <td><span class="badge-method qris">QRIS</span></td>
-                        <td style="text-align:center;">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <button class="action-btn bukti" title="Cek Detail" data-bs-toggle="modal"
-                                    data-bs-target="#buktiBayarModal"><span
-                                        class="material-symbols-outlined">search</span> Cek</button>
-                            </div>
-                        </td>
-                    </tr>
+                    <?php if (!empty($bookings)): ?>
+                        <?php foreach ($bookings as $booking): ?>
+                            <?php
+                            // Tentukan warna badge status
+                            $statusBadgeClass = match ($booking['status_pesanan']) {
+                                'Dikonfirmasi', 'Selesai' => 'text-bg-success',
+                                'Menunggu Pembayaran' => 'text-bg-secondary',
+                                'Menunggu Verifikasi' => 'text-bg-warning',
+                                'Ditolak', 'Dibatalkan' => 'text-bg-danger',
+                                default => 'text-bg-light'
+                            };
+
+                            // Tentukan warna badge metode
+                            $metodeClass = strtolower(str_replace(' ', '', $booking['metode_pembayaran'] ?? 'cash'));
+                            if ($metodeClass === 'transferbank')
+                                $metodeClass = 'transfer';
+
+                            $isOnline = $booking['tipe_pesanan'] === 'Online';
+                            ?>
+                            <tr data-status="<?= esc($booking['status_pesanan']) ?>">
+                                <td class="td-code"><?= esc($booking['kode_sewa']) ?></td>
+                                <td><span class="td-name"><?= esc($booking['nama_lapangan']) ?></span></td>
+                                <td>
+                                    <div class="fw-bold"><?= esc($booking['nama_penyewa']) ?></div>
+                                    <div class="td-secondary">
+                                        <?= $booking['user_role'] ?? 'Guest' ?>          <?= !$isOnline ? ' (Walk-in)' : '' ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="mb-1">
+                                        <span class="badge <?= $isOnline ? 'text-bg-primary' : 'text-bg-secondary' ?>"
+                                            style="font-size:0.6rem;">
+                                            <?= $isOnline ? 'Online Booking' : 'Walk-in Offline' ?>
+                                        </span>
+                                    </div>
+                                    <div class="td-secondary">
+                                        <span class="material-symbols-outlined align-bottom"
+                                            style="font-size:0.85rem;">calendar_month</span>
+                                        <?= date('d M Y', strtotime($booking['tanggal_main'])) ?>,
+                                        <?= substr($booking['jam_mulai'], 0, 5) ?>
+                                    </div>
+                                </td>
+                                <td><span class="badge <?= $statusBadgeClass ?>"><?= esc($booking['status_pesanan']) ?></span>
+                                </td>
+                                <td class="td-currency">Rp <?= number_format($booking['total_bayar'], 0, ',', '.') ?></td>
+                                <td>
+                                    <?php if ($booking['metode_pembayaran']): ?>
+                                        <span
+                                            class="badge-method <?= $metodeClass ?>"><?= esc($booking['metode_pembayaran']) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div class="d-flex gap-1 justify-content-center">
+                                        <button class="action-btn bukti" title="Cek Detail"
+                                            onclick="openBuktiModal('<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, '<?= esc($booking['url_bukti_bayar'] ?? '') ?>', <?= $booking['id_sewa'] ?>, '<?= esc($booking['status_pesanan']) ?>')">
+                                            <span
+                                                class="material-symbols-outlined"><?= $booking['status_pesanan'] === 'Menunggu Verifikasi' ? 'search_check' : 'search' ?></span>
+                                            Cek
+                                        </button>
+                                        <button class="action-btn edit" title="Edit Booking"
+                                            onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>)">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="8" style="text-align:center; padding:2rem;">Belum ada data booking.</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
         <div class="table-footer">
-            <span class="table-footer__info">Menampilkan 5 data</span>
-            <div class="pagination-custom">
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_left</span></button>
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">...</button>
-                <button class="page-btn">26</button>
-                <button class="page-btn"><span class="material-symbols-outlined">chevron_right</span></button>
-            </div>
+            <span class="table-footer__info">Menampilkan <?= $totalBooking ?> data</span>
         </div>
     </div>
 
@@ -298,7 +243,16 @@
                             </div>
                         </div>
 
-                        <form id="formAddBooking">
+                        <form id="formAddBooking" action="<?= base_url('/admin/booking/saveWalkIn') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <!-- Hidden inputs for data selected from calendar -->
+                            <input type="hidden" name="id_lapang" id="inputAddLapangId">
+                            <input type="hidden" name="tanggal_main" id="inputAddTanggal">
+                            <input type="hidden" name="jam_mulai" id="inputAddJamMulai">
+                            <input type="hidden" name="jam_selesai" id="inputAddJamSelesai">
+                            <input type="hidden" name="durasi_jam" id="inputAddDurasi" value="1">
+                            <input type="hidden" name="total_bayar" id="inputAddTotal">
+
                             <!-- Informasi Penyewa -->
                             <div class="form-section-title">
                                 <span class="material-symbols-outlined">person</span>
@@ -376,7 +330,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn-modal-save">
+                <button type="submit" form="formAddBooking" class="btn-modal-save">
                     <span class="material-symbols-outlined">save</span>
                     Simpan Pesanan Walk-in
                 </button>
@@ -396,7 +350,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="padding:1.5rem 1.75rem;">
-                <form id="formEditBooking">
+                <form id="formEditBooking" action="<?= base_url('/admin/booking/update') ?>" method="post">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="id_sewa" id="editIdSewa">
                     <div class="form-section-title">
                         <span class="material-symbols-outlined">confirmation_number</span>
                         Informasi Booking
@@ -404,19 +360,18 @@
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span class="material-symbols-outlined">tag</span>
-                                Kode
-                                Booking</label>
-                            <input type="text" class="form-control-custom" value="BK-20260411-001" readonly
+                                Kode Booking</label>
+                            <input type="text" class="form-control-custom" id="editKodeSewa" readonly
                                 style="background:var(--admin-surface-low);cursor:not-allowed;" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span class="material-symbols-outlined">stadium</span>
-                                Nama
-                                Lapang</label>
-                            <select class="form-control-custom" required>
-                                <option value="Lapang Futsal A" selected>Lapang Futsal A</option>
-                                <option value="Lapang Badminton B">Lapang Badminton B</option>
-                                <option value="Lapang Basket C">Lapang Basket C</option>
+                                Nama Lapang</label>
+                            <select class="form-control-custom" name="id_lapang" id="editIdLapang" required>
+                                <?php foreach ($lapangs as $lapang): ?>
+                                    <option value="<?= $lapang['id_lapang'] ?>"><?= esc($lapang['nama_lapangan']) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -428,20 +383,13 @@
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span class="material-symbols-outlined">badge</span>
-                                Nama
-                                Penyewa</label>
-                            <input type="text" class="form-control-custom" value="Ahmad Fauzi" />
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">mail</span>
-                                Email</label>
-                            <input type="email" class="form-control-custom" value="ahmad@email.com" />
+                                Nama Penyewa</label>
+                            <input type="text" name="nama_penyewa" id="editNamaPenyewa" class="form-control-custom" />
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span class="material-symbols-outlined">call</span>
-                                No.
-                                HP</label>
-                            <input type="tel" class="form-control-custom" value="081234567890" />
+                                No. HP</label>
+                            <input type="tel" name="no_hp" id="editNoHp" class="form-control-custom" />
                         </div>
                     </div>
 
@@ -453,24 +401,24 @@
                         <div class="col-12 col-md-4">
                             <label class="form-label-custom"><span class="material-symbols-outlined">event</span>
                                 Tanggal</label>
-                            <input type="date" class="form-control-custom" value="2026-04-11" />
+                            <input type="date" name="tanggal_main" id="editTanggal" class="form-control-custom" />
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label-custom"><span class="material-symbols-outlined">schedule</span>
-                                Jam
-                                Bermain</label>
-                            <input type="time" class="form-control-custom" value="09:00" />
+                                Jam Bermain</label>
+                            <input type="time" name="jam_mulai" id="editJamMulai" class="form-control-custom" />
                         </div>
                         <div class="col-12 col-md-4">
                             <label class="form-label-custom"><span class="material-symbols-outlined">timer</span>
                                 Durasi</label>
-                            <select class="form-control-custom">
+                            <select class="form-control-custom" name="durasi_jam" id="editDurasi">
                                 <option value="1">1 Jam</option>
-                                <option value="2" selected>2 Jam</option>
+                                <option value="2">2 Jam</option>
                                 <option value="3">3 Jam</option>
                                 <option value="4">4 Jam</option>
                                 <option value="5">5 Jam</option>
                             </select>
+                            <input type="hidden" name="jam_selesai" id="editJamSelesai">
                         </div>
                     </div>
 
@@ -479,22 +427,22 @@
                         Pembayaran
                     </div>
                     <div class="row g-3">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span class="material-symbols-outlined">sell</span>
-                                Total
-                                Harga</label>
+                                Total Harga</label>
                             <div class="price-input-wrap">
                                 <span class="prefix">Rp</span>
-                                <input type="number" class="form-control-custom" value="300000" />
+                                <input type="number" name="total_bayar" id="editTotalBayar"
+                                    class="form-control-custom" />
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-6">
                             <label class="form-label-custom"><span
                                     class="material-symbols-outlined">account_balance_wallet</span> Uang
                                 Masuk</label>
                             <div class="price-input-wrap">
                                 <span class="prefix">Rp</span>
-                                <input type="number" class="form-control-custom" value="300000" />
+                                <input type="number" id="editUangMasuk" class="form-control-custom" />
                             </div>
                         </div>
                         <div class="col-12 col-md-4">
@@ -512,7 +460,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn-modal-save">
+                <button type="submit" form="formEditBooking" class="btn-modal-save">
                     <span class="material-symbols-outlined">save</span>
                     Simpan Perubahan
                 </button>
@@ -535,9 +483,10 @@
             <div class="modal-body p-0 text-center" style="background:#f8fafc;">
                 <div class="p-3 border-bottom text-start">
                     <h6 class="mb-1" style="color:var(--admin-primary); font-weight:700;">Kode:
-                        BK-20260411-001</h6>
+                        <span id="verifikasiKode"></span>
+                    </h6>
                     <p class="mb-0 text-muted" style="font-size:0.8rem;">Cek kesesuaian nominal tagihan
-                        (<b>Rp 280.000</b>) sebelum klik Terima.</p>
+                        (<b id="verifikasiNominal"></b>) sebelum klik Terima.</p>
                 </div>
                 <div class="bukti-lightbox" id="buktiContainer" style="padding:1.5rem;">
                     <!-- Dummy Image for Transfer -->
@@ -550,39 +499,44 @@
             </div>
             <div class="modal-footer"
                 style="justify-content: space-between; background:#fff; border-radius:0 0 1rem 1rem;">
-                <div class="d-flex w-100 flex-column text-start">
-                    <div class="collapse w-100 mb-3" id="collapseTolakPesanan">
-                        <div class="card card-body p-3"
-                            style="background:var(--admin-surface-low); border:1px solid #fca5a5;">
-                            <label class="form-label mb-2 text-danger"
-                                style="font-size:0.75rem; font-weight:700;">Alasan Penolakan (Akan dikirim
-                                ke pengguna via Notifikasi/Email):</label>
-                            <textarea class="form-control" rows="2"
-                                placeholder="Contoh: Lampiran bukti transfer tidak terbaca / Nominal transfer kurang valid..."
-                                style="font-size:0.8rem; border-color:#fca5a5; resize:none;"></textarea>
-                            <div class="mt-2 text-end">
-                                <button type="button" class="btn btn-danger px-3 py-1 fw-bold" data-bs-dismiss="modal"
-                                    style="font-size:0.75rem; border-radius:0.4rem;">Kirim & Batalkan
-                                    Pesanan</button>
+                <form action="<?= base_url('/admin/booking/verifikasi') ?>" method="post" class="w-100">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="id_sewa" id="verifikasiIdSewa">
+                    <div class="d-flex w-100 flex-column text-start">
+                        <div class="collapse w-100 mb-3" id="collapseTolakPesanan">
+                            <div class="card card-body p-3"
+                                style="background:var(--admin-surface-low); border:1px solid #fca5a5;">
+                                <label class="form-label mb-2 text-danger"
+                                    style="font-size:0.75rem; font-weight:700;">Alasan Penolakan (Akan dikirim
+                                    ke pengguna via Notifikasi/Email):</label>
+                                <textarea name="alasan_penolakan" class="form-control" rows="2"
+                                    placeholder="Contoh: Lampiran bukti transfer tidak terbaca / Nominal transfer kurang valid..."
+                                    style="font-size:0.8rem; border-color:#fca5a5; resize:none;"></textarea>
+                                <div class="mt-2 text-end">
+                                    <button type="submit" name="action" value="tolak"
+                                        class="btn btn-danger px-3 py-1 fw-bold"
+                                        style="font-size:0.75rem; border-radius:0.4rem;">Kirim & Batalkan
+                                        Pesanan</button>
+                                </div>
                             </div>
                         </div>
+                        <div class="d-flex justify-content-between w-100 align-items-center">
+                            <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-1"
+                                data-bs-toggle="collapse" data-bs-target="#collapseTolakPesanan"
+                                style="font-size:0.85rem; font-weight:600;">
+                                <span class="material-symbols-outlined" style="font-size:1.1rem;">cancel</span>
+                                Tolak
+                                Pesanan
+                            </button>
+                            <button type="submit" name="action" value="terima"
+                                class="btn btn-success d-flex align-items-center gap-1"
+                                style="font-size:0.85rem; font-weight:600; background:#059669; border:none; padding:0.5rem 1rem;">
+                                <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
+                                Terima & Konfirmasi
+                            </button>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-between w-100 align-items-center">
-                        <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-1"
-                            data-bs-toggle="collapse" data-bs-target="#collapseTolakPesanan"
-                            style="font-size:0.85rem; font-weight:600;">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">cancel</span>
-                            Tolak
-                            Pesanan
-                        </button>
-                        <button type="button" class="btn btn-success d-flex align-items-center gap-1"
-                            data-bs-dismiss="modal"
-                            style="font-size:0.85rem; font-weight:600; background:#059669; border:none; padding:0.5rem 1rem;">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
-                            Terima & Konfirmasi
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -604,22 +558,20 @@
         }
 
         const LAPANGS = [
-            { id: 1, name: 'Lapang Futsal A', price: 150000 },
-            { id: 2, name: 'Lapang Badminton B', price: 100000 },
-            { id: 3, name: 'Lapang Basket C', price: 200000 }
+            <?php foreach ($lapangs as $lapang): ?>
+                        { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+            <?php endforeach; ?>
         ];
 
-        // Simulated booked slots (key: "YYYY-M-D-lapangId")
-        const BOOKED = {
-            '2026-4-11-1': ['09:00 - 10:00', '10:00 - 11:00'],
-            '2026-4-11-2': ['08:00 - 09:00', '13:00 - 14:00', '14:00 - 15:00'],
-            '2026-4-12-1': ['09:00 - 10:00', '09:00 - 10:00'],
-        };
+        const API_BOOKED = '<?= base_url("/admin/booking/getBookedSlots") ?>';
+        const API_TARIF = '<?= base_url("/admin/booking/getTarif") ?>';
 
         /* ===== STATE ===== */
         let calYear, calMonth, calSelectedDay;
         let selectedLapangId = null;
-        let selectedTimeSlot = null;
+        let selectedTimeSlot = null;  // now stores just the start hour, e.g. "08:00"
+        let bookedSlotsData = {};     // fetched from API: { lapangId: ["08:00","09:00",...] }
+        let tarifCache = {};          // cached tarif: { lapangId: { tarifs: [...], kategori_hari: "..." } }
 
         /* ===== CALENDAR ===== */
         const calRoot = document.getElementById('addCal');
@@ -636,6 +588,8 @@
             calSelectedDay = null;
             selectedLapangId = null;
             selectedTimeSlot = null;
+            bookedSlotsData = {};
+            tarifCache = {};
             renderCalendar();
             renderLapangPlaceholder();
         }
@@ -663,11 +617,36 @@
             calGrid.innerHTML = html;
 
             calGrid.querySelectorAll('.adm-cal__day:not(.empty)').forEach(btn => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', async () => {
                     calSelectedDay = parseInt(btn.dataset.day);
                     selectedLapangId = null;
                     selectedTimeSlot = null;
                     renderCalendar();
+
+                    // Fetch booked slots from API
+                    const m = String(calMonth + 1).padStart(2, '0');
+                    const d = String(calSelectedDay).padStart(2, '0');
+                    const tanggal = `${calYear}-${m}-${d}`;
+
+                    try {
+                        lapangCards.innerHTML = `<div class="no-selection-placeholder"><span class="material-symbols-outlined">hourglass_empty</span><p>Memuat jadwal...</p></div>`;
+                        const res = await fetch(`${API_BOOKED}?tanggal=${tanggal}`);
+                        bookedSlotsData = await res.json();
+                    } catch (e) {
+                        bookedSlotsData = {};
+                    }
+
+                    // Fetch tarif for each lapang
+                    tarifCache = {};
+                    for (const lap of LAPANGS) {
+                        try {
+                            const res = await fetch(`${API_TARIF}?id_lapang=${lap.id}&tanggal=${tanggal}`);
+                            tarifCache[lap.id] = await res.json();
+                        } catch (e) {
+                            tarifCache[lap.id] = { tarifs: [], kategori_hari: 'Weekday' };
+                        }
+                    }
+
                     renderLapangCards();
                     updateSummary();
                 });
@@ -688,43 +667,78 @@
                 <span class="material-symbols-outlined">touch_app</span>
                 <p>Pilih tanggal di kalender untuk melihat jadwal tersedia</p>
             </div>
-        `;
+            `;
+        }
+
+        /**
+         * Cek apakah sebuah slot awal bisa menampung durasi yang dipilih.
+         * Slot dianggap tidak bisa jika salah satu jam di range-nya sudah terbooking
+         * atau melewati batas waktu operasional (24:00).
+         */
+        function canStartAt(startHour, durasi, bookedHours) {
+            for (let i = 0; i < durasi; i++) {
+                const h = startHour + i;
+                if (h >= 24) return false; // melewati batas operasional
+                const hourStr = String(h).padStart(2, '0') + ':00';
+                if (bookedHours.includes(hourStr)) return false;
+            }
+            return true;
         }
 
         function renderLapangCards() {
             if (!calSelectedDay) { renderLapangPlaceholder(); return; }
+            const durasi = parseInt(document.getElementById('addDurasi').value);
 
             let html = '';
             LAPANGS.forEach(lap => {
                 const isActive = selectedLapangId === lap.id;
+                const bookedHours = bookedSlotsData[lap.id] || [];
+                const tarifInfo = tarifCache[lap.id];
+
+                // Cari harga per jam untuk lapang ini
+                let hargaPerJam = 0;
+                if (tarifInfo && tarifInfo.tarifs && tarifInfo.tarifs.length > 0) {
+                    hargaPerJam = parseInt(tarifInfo.tarifs[0].harga_umum);
+                }
+                const hargaLabel = hargaPerJam > 0 ? `Rp ${hargaPerJam.toLocaleString('id-ID')}/jam` : '';
+
                 html += `
                 <div class="adm-lapang-card ${isActive ? 'active' : ''}" data-lapang-id="${lap.id}">
                     <div class="adm-lapang-card__header">
                         <span class="material-symbols-outlined">stadium</span>
                         <span>${lap.name}</span>
+                        ${hargaLabel ? `<span style="margin-left:auto; font-size:0.72rem; color:#059669; font-weight:700;">${hargaLabel}</span>` : ''}
                     </div>
                     <div class="adm-lapang-card__body">
                         <div class="adm-slot-grid" id="addSlots-${lap.id}"></div>
                     </div>
                 </div>
-            `;
+                `;
             });
             lapangCards.innerHTML = html;
 
             // Render timeslots for each lapang
             LAPANGS.forEach(lap => {
                 const grid = document.getElementById(`addSlots-${lap.id}`);
-                const key = `${calYear}-${calMonth + 1}-${calSelectedDay}-${lap.id}`;
-                const bookedSlots = BOOKED[key] || [];
+                const bookedHours = bookedSlotsData[lap.id] || [];
 
                 let shtml = '';
                 TIME_SLOTS.forEach(slot => {
-                    const isBooked = bookedSlots.includes(slot.label);
-                    const isSel = selectedLapangId === lap.id && selectedTimeSlot === slot.label;
+                    const startH = parseInt(slot.start.split(':')[0]);
+                    const isBooked = bookedHours.includes(slot.start);
+                    const canFit = canStartAt(startH, durasi, bookedHours);
+                    const isDisabled = isBooked || !canFit;
+                    const isSel = selectedLapangId === lap.id && selectedTimeSlot === slot.start;
                     let cls = 'adm-slot';
-                    if (isBooked) cls += ' disabled';
+                    if (isBooked) cls += ' disabled booked';
+                    else if (!canFit) cls += ' disabled';
                     if (isSel) cls += ' selected';
-                    shtml += `<button type="button" class="${cls}" data-slot="${slot.label}" data-lapang="${lap.id}" ${isBooked ? 'disabled' : ''}>${slot.start}</button>`;
+
+                    let title = '';
+                    if (isBooked) title = 'Sudah dipesan';
+                    else if (!canFit) title = `Tidak cukup ${durasi} jam dari sini`;
+
+                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isDisabled ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
                 });
                 grid.innerHTML = shtml;
 
@@ -740,6 +754,29 @@
             });
         }
 
+        /**
+         * Cari harga per jam berdasarkan tarif yang berlaku untuk jam tertentu.
+         * Tarif bisa berbeda per blok jam (misal pagi vs malam).
+         */
+        function getHargaForHour(lapangId, hourStr) {
+            const tarifInfo = tarifCache[lapangId];
+            if (!tarifInfo || !tarifInfo.tarifs || tarifInfo.tarifs.length === 0) return 0;
+
+            const hour = parseInt(hourStr.split(':')[0]);
+
+            // Cari tarif yang jam_mulai <= hour < jam_selesai
+            for (const t of tarifInfo.tarifs) {
+                const tStart = parseInt(t.jam_mulai.substring(0, 2));
+                const tEnd = parseInt(t.jam_selesai.substring(0, 2));
+                if (hour >= tStart && hour < tEnd) {
+                    return parseInt(t.harga_umum);
+                }
+            }
+
+            // Fallback: gunakan tarif pertama
+            return parseInt(tarifInfo.tarifs[0].harga_umum);
+        }
+
         function updateSummary() {
             const summary = document.getElementById('addBookingSummary');
             const sLapang = document.getElementById('summaryLapang');
@@ -750,12 +787,50 @@
                 const lap = LAPANGS.find(l => l.id === selectedLapangId);
                 sLapang.textContent = lap ? lap.name : '-';
                 sTanggal.textContent = `${calSelectedDay} ${MONTHS[calMonth]} ${calYear}`;
-                sJam.textContent = selectedTimeSlot;
+
+                // Form hidden inputs
+                document.getElementById('inputAddLapangId').value = selectedLapangId;
+
+                // Format tanggal YYYY-MM-DD
+                const m = String(calMonth + 1).padStart(2, '0');
+                const d = String(calSelectedDay).padStart(2, '0');
+                document.getElementById('inputAddTanggal').value = `${calYear}-${m}-${d}`;
+
+                // Jam Mulai
+                document.getElementById('inputAddJamMulai').value = selectedTimeSlot;
+
+                // Durasi & Selesai
+                const durasi = parseInt(document.getElementById('addDurasi').value);
+                const startH = parseInt(selectedTimeSlot.split(':')[0]);
+                const endH = startH + durasi;
+                const endHour = String(endH).padStart(2, '0') + ':00';
+                document.getElementById('inputAddJamSelesai').value = endHour;
+
+                sJam.textContent = `${selectedTimeSlot} - ${endHour}`;
+
+                // Hitung total bayar berdasarkan tarif per jam dari DB
+                let total = 0;
+                for (let i = 0; i < durasi; i++) {
+                    const hStr = String(startH + i).padStart(2, '0') + ':00';
+                    total += getHargaForHour(selectedLapangId, hStr);
+                }
+
+                document.getElementById('inputAddTotal').value = total;
+                const totalInput = document.querySelector('#formAddBooking input[readonly][placeholder="Terhitung otomatis"]');
+                if (totalInput) totalInput.value = total;
+
                 summary.style.display = 'flex';
             } else {
                 summary.style.display = 'none';
             }
         }
+
+        document.getElementById('addDurasi').addEventListener('change', function () {
+            document.getElementById('inputAddDurasi').value = this.value;
+            // Re-render cards to update slot availability based on new duration
+            renderLapangCards();
+            updateSummary();
+        });
 
         // Calendar navigation
         calRoot.querySelectorAll('.adm-cal__nav').forEach(btn => {
@@ -859,6 +934,68 @@
             }, 3000);
         }
     });
+
+    /* ===== OPEN EDIT BOOKING MODAL ===== */
+    function openEditBookingModal(idSewa, kodeSewa, idLapang, namaPenyewa, noHp, tanggal, jamMulai, jamSelesai, durasi, total) {
+        document.getElementById('editIdSewa').value = idSewa;
+        document.getElementById('editBookingLabel').innerHTML = '<span class="material-symbols-outlined">edit</span> Edit Booking — <span style="color:var(--admin-primary)">' + kodeSewa + '</span>';
+
+        document.getElementById('editKodeSewa').value = kodeSewa;
+        document.getElementById('editIdLapang').value = idLapang;
+        document.getElementById('editNamaPenyewa').value = namaPenyewa;
+        document.getElementById('editNoHp').value = noHp;
+        document.getElementById('editTanggal').value = tanggal;
+        document.getElementById('editJamMulai').value = jamMulai;
+        document.getElementById('editDurasi').value = durasi;
+        document.getElementById('editTotalBayar').value = total;
+        document.getElementById('editUangMasuk').value = total;
+
+        // Calculate jam_selesai
+        const startH = parseInt(jamMulai.split(':')[0]);
+        const endH = startH + parseInt(durasi);
+        document.getElementById('editJamSelesai').value = String(endH).padStart(2, '0') + ':00';
+
+        new bootstrap.Modal(document.getElementById('editBookingModal')).show();
+    }
+
+    /* ===== OPEN BUKTI BAYAR MODAL ===== */
+    function openBuktiModal(kodeSewa, nominal, urlBukti, idSewa, status) {
+        document.getElementById('verifikasiIdSewa').value = idSewa;
+        document.getElementById('verifikasiKode').textContent = kodeSewa;
+        document.getElementById('verifikasiNominal').textContent = 'Rp ' + nominal.toLocaleString('id-ID');
+
+        const container = document.getElementById('buktiContainer');
+        if (urlBukti && urlBukti.trim() !== '') {
+            container.innerHTML = `
+                <div style="text-align:center;">
+                    <div style="background:var(--admin-surface-low); border-radius:0.75rem; padding:2rem; display:inline-block;">
+                        <span class="material-symbols-outlined" style="font-size:4rem; color:#059669; display:block; margin-bottom:0.75rem;">verified</span>
+                        <p style="font-size:0.9rem; font-weight:700; color:var(--admin-on-surface); margin-bottom:0.25rem;">Bukti Pembayaran Tersedia</p>
+                        <p style="font-size:0.75rem; color:var(--admin-secondary); margin-bottom:1rem;">${urlBukti}</p>
+                        <img src="<?= base_url() ?>/${urlBukti}" style="max-height:400px; border-radius:0.5rem;" onerror="this.src='https://via.placeholder.com/300x500/eff6ff/0057cd?text=Struk+Transfer+Valid'">
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="no-bukti" style="text-align:center; padding: 2rem;">
+                    <span class="material-symbols-outlined" style="font-size:4rem; color:var(--admin-outline);">image_not_supported</span>
+                    <p style="font-size:0.85rem; font-weight:bold;">Belum ada bukti pembayaran</p>
+                    <p style="font-size:0.72rem; color:var(--admin-outline);">Pembayaran cash atau belum upload</p>
+                </div>
+            `;
+        }
+
+        // Disable buttons if not Menunggu Verifikasi
+        const footerBtns = document.querySelectorAll('#buktiBayarModal .modal-footer button');
+        if (status !== 'Menunggu Verifikasi') {
+            footerBtns.forEach(btn => btn.style.display = 'none');
+        } else {
+            footerBtns.forEach(btn => btn.style.display = 'flex');
+        }
+
+        new bootstrap.Modal(document.getElementById('buktiBayarModal')).show();
+    }
 </script>
 
 <?= $this->endSection() ?>
