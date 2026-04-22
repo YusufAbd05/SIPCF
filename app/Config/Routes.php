@@ -20,7 +20,11 @@ $routes->get('/logout', 'AuthController::logout');
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Home::adminDashboard');
     $routes->get('booking', 'Home::adminBooking');
-    $routes->get('lapang', 'Home::adminLapang');
+    // Lapang CRUD
+    $routes->get('lapang', 'LapangController::index');
+    $routes->post('lapang/save', 'LapangController::save');
+    $routes->post('lapang/update', 'LapangController::update');
+    $routes->post('lapang/delete', 'LapangController::delete');
 
     // User CRUD
     $routes->get('users', 'UserController::index');

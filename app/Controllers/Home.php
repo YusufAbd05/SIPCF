@@ -39,9 +39,4 @@ class Home extends BaseController
         return view('admin/booking');
     }
 
-    public function adminLapang(): string
-    {
-        return view('admin/lapang');
-    }
-
 }
