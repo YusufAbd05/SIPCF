@@ -24,9 +24,11 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('booking/saveWalkIn', 'BookingController::saveWalkIn');
     $routes->post('booking/update', 'BookingController::update');
     $routes->post('booking/verifikasi', 'BookingController::verifikasi');
+    $routes->post('booking/savePelunasan', 'BookingController::savePelunasan');
     // Booking API (JSON)
     $routes->get('booking/getBookedSlots', 'BookingController::getBookedSlots');
     $routes->get('booking/getTarif', 'BookingController::getTarif');
+    $routes->get('booking/getKeuangan', 'BookingController::getKeuangan');
 
     // Lapang CRUD
     $routes->get('lapang', 'LapangController::index');
