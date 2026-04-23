@@ -34,12 +34,12 @@ class BookingController extends BaseController
         }
 
         $data = [
-            'bookings'     => $bookings,
-            'lapangs'      => $lapangs,
+            'bookings' => $bookings,
+            'lapangs' => $lapangs,
             'totalBooking' => $totalBooking,
-            'lunas'        => $lunas,
-            'pending'      => $pending,
-            'batal'        => $batal,
+            'lunas' => $lunas,
+            'pending' => $pending,
+            'batal' => $batal,
         ];
 
         return view('admin/ViewBooking', $data);
@@ -90,6 +90,19 @@ class BookingController extends BaseController
         return $this->response->setJSON($bookedMap);
     }
 
+    public function getKeuangan()
+    {
+        $idSewa = $this->request->getGet('id_sewa');
+        if (!$idSewa) {
+            return $this->response->setJSON([]);
+        }
+
+        $pembayaranModel = new PembayaranModel();
+        $pembayaran = $pembayaranModel->where('id_sewa', $idSewa)->findAll();
+
+        return $this->response->setJSON($pembayaran);
+    }
+
     /**
      * API: Ambil tarif untuk lapang + hari tertentu.
      * GET /admin/booking/getTarif?id_lapang=1&tanggal=2026-04-22
@@ -136,6 +149,16 @@ class BookingController extends BaseController
         $bookingModel = new BookingModel();
         $pembayaranModel = new PembayaranModel();
 
+        // Ambil input pembayaran dinamis
+        $totalBayar = (int) $this->request->getPost('total_bayar');
+        $jumlahBayar = (int) $this->request->getPost('jumlah_bayar');
+        $metode = $this->request->getPost('metode') ?? 'Cash';
+        $tipePesanan = $this->request->getPost('tipe_pesanan') ?? 'Walk-in';
+
+        // Tentukan status dan jenis pembayaran berdasarkan uang masuk vs total
+        $jenisPembayaran = ($jumlahBayar < $totalBayar) ? 'DP' : 'Full';
+        $statusPesanan = 'Dikonfirmasi'; // Status awal selalu Dikonfirmasi, pelunasan menjadi Selesai nanti dilakukan secara terpisah jika diperlukan, atau mainnya selesai.
+
         // Generate Kode Booking
         $dateStr = date('Ymd');
         $countToday = $bookingModel->like('kode_sewa', "BK-{$dateStr}-")->countAllResults();
@@ -143,36 +166,36 @@ class BookingController extends BaseController
 
         // Save Booking
         $dataBooking = [
-            'kode_sewa'      => $kodeSewa,
-            'id_user'        => null,
-            'id_lapang'      => $this->request->getPost('id_lapang'),
-            'nama_penyewa'   => $this->request->getPost('nama_penyewa'),
-            'no_hp_penyewa'  => $this->request->getPost('no_hp'),
-            'tipe_pesanan'   => 'Walk-in',
-            'tanggal_main'   => $this->request->getPost('tanggal_main'),
-            'jam_mulai'      => $this->request->getPost('jam_mulai'),
-            'jam_selesai'    => $this->request->getPost('jam_selesai'),
-            'durasi_jam'     => $this->request->getPost('durasi_jam'),
-            'total_bayar'    => $this->request->getPost('total_bayar'),
-            'status_pesanan' => 'Dikonfirmasi',
+            'kode_sewa' => $kodeSewa,
+            'id_user' => null,
+            'id_lapang' => $this->request->getPost('id_lapang'),
+            'nama_penyewa' => $this->request->getPost('nama_penyewa'),
+            'no_hp_penyewa' => $this->request->getPost('no_hp'),
+            'tipe_pesanan' => $tipePesanan,
+            'tanggal_main' => $this->request->getPost('tanggal_main'),
+            'jam_mulai' => $this->request->getPost('jam_mulai'),
+            'jam_selesai' => $this->request->getPost('jam_selesai'),
+            'durasi_jam' => $this->request->getPost('durasi_jam'),
+            'total_bayar' => $totalBayar,
+            'status_pesanan' => $statusPesanan,
         ];
 
         $bookingModel->insert($dataBooking);
         $idSewa = $bookingModel->getInsertID();
 
-        // Save Pembayaran (Lunas, Cash)
+        // Save Pembayaran (Dinamis: Lunas / DP)
         $dataPembayaran = [
-            'id_sewa'           => $idSewa,
-            'jenis_pembayaran'  => 'Full',
-            'jumlah_bayar'      => $this->request->getPost('total_bayar'),
-            'metode'            => 'Cash',
-            'url_bukti_bayar'   => null,
+            'id_sewa' => $idSewa,
+            'jenis_pembayaran' => $jenisPembayaran,
+            'jumlah_bayar' => $jumlahBayar,
+            'metode' => $metode,
+            'url_bukti_bayar' => null,
             'status_pembayaran' => 'Sukses',
-            'waktu_pembayaran'  => date('Y-m-d H:i:s'),
+            'waktu_pembayaran' => date('Y-m-d H:i:s'),
         ];
         $pembayaranModel->insert($dataPembayaran);
 
-        return redirect()->to('/admin/booking')->with('success', 'Pesanan Walk-in berhasil ditambahkan dan otomatis Lunas!');
+        return redirect()->to('/admin/booking')->with('success', "Pesanan $tipePesanan berhasil ditambahkan dengan status pembayaran $jenisPembayaran!");
     }
 
     public function update()
@@ -181,14 +204,14 @@ class BookingController extends BaseController
         $id = $this->request->getPost('id_sewa');
 
         $data = [
-            'id_lapang'    => $this->request->getPost('id_lapang'),
+            'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_penyewa' => $this->request->getPost('nama_penyewa'),
-            'no_hp_penyewa'=> $this->request->getPost('no_hp'),
+            'no_hp_penyewa' => $this->request->getPost('no_hp'),
             'tanggal_main' => $this->request->getPost('tanggal_main'),
-            'jam_mulai'    => $this->request->getPost('jam_mulai'),
-            'jam_selesai'  => $this->request->getPost('jam_selesai'),
-            'durasi_jam'   => $this->request->getPost('durasi_jam'),
-            'total_bayar'  => $this->request->getPost('total_bayar'),
+            'jam_mulai' => $this->request->getPost('jam_mulai'),
+            'jam_selesai' => $this->request->getPost('jam_selesai'),
+            'durasi_jam' => $this->request->getPost('durasi_jam'),
+            'total_bayar' => $this->request->getPost('total_bayar'),
         ];
 
         $bookingModel->update($id, $data);
@@ -200,10 +223,10 @@ class BookingController extends BaseController
     {
         $bookingModel = new BookingModel();
         $pembayaranModel = new PembayaranModel();
-        
+
         $idSewa = $this->request->getPost('id_sewa');
         $action = $this->request->getPost('action'); // 'terima' or 'tolak'
-        
+
         if ($action === 'terima') {
             $bookingModel->update($idSewa, ['status_pesanan' => 'Dikonfirmasi', 'alasan_penolakan' => null]);
             // Update pembayaran status
@@ -222,7 +245,33 @@ class BookingController extends BaseController
             }
             return redirect()->to('/admin/booking')->with('success', 'Pesanan telah ditolak dan dibatalkan.');
         }
-        
+
         return redirect()->to('/admin/booking')->with('error', 'Aksi tidak valid.');
+    }
+
+    public function savePelunasan()
+    {
+        $bookingModel = new BookingModel();
+        $pembayaranModel = new PembayaranModel();
+
+        $idSewa = $this->request->getPost('id_sewa');
+        $jumlahBayar = (int) $this->request->getPost('jumlah_bayar');
+        $metode = $this->request->getPost('metode') ?? 'Cash';
+
+        // Update status_pesanan di t_sewa_lapangan menjadi 'Selesai'
+        $bookingModel->update($idSewa, ['status_pesanan' => 'Selesai']);
+
+        // Insert riwayat pembayaran baru untuk pelunasan
+        $dataPembayaran = [
+            'id_sewa' => $idSewa,
+            'jenis_pembayaran' => 'Pelunasan',
+            'jumlah_bayar' => $jumlahBayar,
+            'metode' => $metode,
+            'status_pembayaran' => 'Sukses',
+            'waktu_pembayaran' => date('Y-m-d H:i:s'),
+        ];
+        $pembayaranModel->insert($dataPembayaran);
+
+        return redirect()->to('/admin/booking')->with('success', 'Pelunasan transaksi berhasil disimpan dan status menjadi Selesai!');
     }
 }

@@ -17,7 +17,7 @@ class TarifController extends BaseController
         $lapangs = $lapangModel->findAll();
 
         $data = [
-            'tarifs'  => $tarifs,
+            'tarifs' => $tarifs,
             'lapangs' => $lapangs,
         ];
 
@@ -29,18 +29,18 @@ class TarifController extends BaseController
         $tarifModel = new TarifModel();
 
         $data = [
-            'id_lapang'    => $this->request->getPost('id_lapang'),
-            'nama_tarif'   => $this->request->getPost('nama_tarif'),
-            'hari'         => $this->request->getPost('hari'),
-            'jam_mulai'    => $this->request->getPost('jam_mulai'),
-            'jam_selesai'  => $this->request->getPost('jam_selesai'),
-            'harga_umum'   => $this->request->getPost('harga_umum'),
+            'id_lapang' => $this->request->getPost('id_lapang'),
+            'nama_tarif' => $this->request->getPost('nama_tarif'),
+            'hari' => $this->request->getPost('hari'),
+            'jam_mulai' => $this->request->getPost('jam_mulai'),
+            'jam_selesai' => $this->request->getPost('jam_selesai'),
+            'harga_umum' => $this->request->getPost('harga_umum'),
             'harga_member' => $this->request->getPost('harga_member'),
         ];
 
         $tarifModel->insert($data);
 
-        return redirect()->to('/admin/tarif')->with('success', 'Tarif baru berhasil ditambahkan!');
+        return redirect()->to('/admin/tarif')->with('success', 'Data tarif berhasil disimpan!');
     }
 
     public function update()
@@ -49,18 +49,18 @@ class TarifController extends BaseController
         $id = $this->request->getPost('id_tarif');
 
         $data = [
-            'id_lapang'    => $this->request->getPost('id_lapang'),
-            'nama_tarif'   => $this->request->getPost('nama_tarif'),
-            'hari'         => $this->request->getPost('hari'),
-            'jam_mulai'    => $this->request->getPost('jam_mulai'),
-            'jam_selesai'  => $this->request->getPost('jam_selesai'),
-            'harga_umum'   => $this->request->getPost('harga_umum'),
+            'id_lapang' => $this->request->getPost('id_lapang'),
+            'nama_tarif' => $this->request->getPost('nama_tarif'),
+            'hari' => $this->request->getPost('hari'),
+            'jam_mulai' => $this->request->getPost('jam_mulai'),
+            'jam_selesai' => $this->request->getPost('jam_selesai'),
+            'harga_umum' => $this->request->getPost('harga_umum'),
             'harga_member' => $this->request->getPost('harga_member'),
         ];
 
         $tarifModel->update($id, $data);
 
-        return redirect()->to('/admin/tarif')->with('success', 'Tarif berhasil diperbarui!');
+        return redirect()->to('/admin/tarif')->with('success', 'Data tarif berhasil diubah!');
     }
 
     public function delete()
@@ -70,6 +70,6 @@ class TarifController extends BaseController
 
         $tarifModel->delete($id);
 
-        return redirect()->to('/admin/tarif')->with('success', 'Tarif berhasil dihapus!');
+        return redirect()->to('/admin/tarif')->with('success', 'Data tarif berhasil dihapus!');
     }
 }

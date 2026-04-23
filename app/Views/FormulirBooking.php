@@ -68,7 +68,7 @@
                                 <span class="material-symbols-outlined">timer</span>
                             </div>
                             <div>
-                                <span class="bf-summary-label">Durasi</span>
+                                <span class="bf-summary-label" id="summaryDurasiLabel">Durasi Bermain</span>
                                 <span class="bf-summary-value" id="summaryDurasi">-</span>
                             </div>
                         </div>
@@ -108,6 +108,41 @@
                             <input type="hidden" name="lapang" id="formLapang">
                             <input type="hidden" name="tanggal" id="formTanggal">
                             <input type="hidden" name="jam" id="formJam">
+
+                            <!-- Tipe Sewa -->
+                            <div class="bf-field">
+                                <label class="bf-field-label">
+                                    <span class="material-symbols-outlined bf-field-label-icon">loyalty</span>
+                                    Tipe Sewa
+                                </label>
+                                <div class="d-flex flex-wrap gap-4 mt-2"
+                                    style="background: var(--surface-container); padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid var(--outline-variant);">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tipe_sewa" id="sewaReguler"
+                                            value="1x_main" checked>
+                                        <label class="form-check-label" for="sewaReguler"
+                                            style="font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+                                            Sewa Per Jam
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tipe_sewa" id="sewaHarian"
+                                            value="harian">
+                                        <label class="form-check-label" for="sewaHarian"
+                                            style="font-size: 0.85rem; font-weight: 500; cursor: pointer;">
+                                            Sewa Harian
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="tipe_sewa"
+                                            id="sewaMembership" value="membership_4x">
+                                        <label class="form-check-label" for="sewaMembership"
+                                            style="font-size: 0.85rem; font-weight: 500; cursor: pointer; color: var(--primary);">
+                                            Paket Membership
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Nama Lengkap -->
                             <div class="bf-field">
@@ -207,14 +242,15 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="bf-field" id="fieldPilihJam">
-                                <label for="formPilihJam" class="bf-field-label">
-                                    <span class="material-symbols-outlined bf-field-label-icon">schedule</span>
-                                    Durasi Bermain
+                            <div class="bf-field" id="fieldDurasiWrap">
+                                <label for="formDurasi" class="bf-field-label">
+                                    <span class="material-symbols-outlined bf-field-label-icon">timer</span>
+                                    <span id="labelDurasiText">Durasi Bermain</span>
                                 </label>
                                 <div class="bf-input-wrap">
                                     <span class="material-symbols-outlined bf-input-icon">schedule</span>
-                                    <input type="text" id="formDurasi" name="durasi" class="bf-input">
+                                    <input type="number" id="formDurasi" name="durasi" class="bf-input" min="1"
+                                        value="1">
                                 </div>
                             </div>
 
@@ -774,14 +810,84 @@
             selJam.addEventListener('change', () => {
                 sumJam.textContent = selJam.value || '-';
                 fJam.value = selJam.value;
-                if (selJam.value) {
-                    sumDurasi.textContent = '1 Jam';
-                    sumHarga.textContent = 'Rp 75.000';
+                updateSummaryData();
+            });
+        }
+
+        // Tipe Sewa Radio Button Logic
+        const radioReguler = document.getElementById('sewaReguler');
+        const radioHarian = document.getElementById('sewaHarian');
+        const radioMembership = document.getElementById('sewaMembership');
+        const formDurasi = document.getElementById('formDurasi');
+        const labelDurasiText = document.getElementById('labelDurasiText');
+        const summaryDurasiLabel = document.getElementById('summaryDurasiLabel');
+
+        radioReguler.addEventListener('change', updateSummaryData);
+        radioHarian.addEventListener('change', updateSummaryData);
+        radioMembership.addEventListener('change', updateSummaryData);
+        formDurasi.addEventListener('input', updateSummaryData);
+
+        function updateSummaryData() {
+            // Simulasi harga dasar, di sistem riil harusnya ambil dari DB (getTarif)
+            const hargaDasar = 75000;
+            const isMembership = radioMembership.checked;
+            const isHarian = radioHarian.checked;
+
+            // Ambil input durasi (default 1 jika kosong/invalid)
+            let durasiVal = parseInt(formDurasi.value) || 1;
+
+            // Cek apakah jam sudah terisi
+            const isJamFilled = fJam.value || (selJam && selJam.value);
+
+            if (isHarian) {
+                // Update Label Durasi
+                labelDurasiText.textContent = 'Durasi Hari';
+                summaryDurasiLabel.textContent = 'Durasi Hari';
+
+                // Misalkan tarif harian dihitung 12 jam x harga dasar (contoh saja)
+                const hargaHarian = hargaDasar * 12;
+                sumDurasi.textContent = durasiVal + ' Hari';
+                sumHarga.textContent = 'Rp ' + (hargaHarian * durasiVal).toLocaleString('id-ID');
+
+                // Set text jam dan hidden value ke seharian
+                sumJam.textContent = '08:00 - 20:00 (Full)';
+                fJam.value = '08:00 - 20:00';
+
+                // Disable pilihan jam jika ada dropdown
+                if (selJam) {
+                    selJam.disabled = true;
+                    selJam.value = '';
+                }
+            } else {
+                // Update Label Durasi
+                labelDurasiText.textContent = 'Durasi Bermain';
+                summaryDurasiLabel.textContent = 'Durasi Bermain';
+
+                // Jika bukan harian, kembalikan field jam jika sebelumnya ter-disable
+                if (selJam && selJam.disabled) {
+                    selJam.disabled = false;
+                    sumJam.textContent = selJam.value || '-';
+                    fJam.value = selJam.value;
+                }
+
+                if (isJamFilled || (selJam && selJam.value)) {
+                    if (isMembership) {
+                        sumDurasi.textContent = '4x Main (' + durasiVal + ' Jam/Hari)';
+                        sumHarga.textContent = 'Rp ' + (hargaDasar * 4 * durasiVal).toLocaleString('id-ID');
+                    } else {
+                        sumDurasi.textContent = durasiVal + ' Jam';
+                        sumHarga.textContent = 'Rp ' + (hargaDasar * durasiVal).toLocaleString('id-ID');
+                    }
                 } else {
                     sumDurasi.textContent = '-';
                     sumHarga.textContent = 'Rp -';
                 }
-            });
+            }
+        }
+
+        // Initial call if preselected
+        if (hasPreselected) {
+            updateSummaryData();
         }
     })();
 

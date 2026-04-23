@@ -62,9 +62,9 @@
     <div class="table-card animate-in" style="animation-delay:.12s;">
         <div class="px-3 pt-2 pb-2 border-bottom d-flex gap-2"
             style="background:var(--admin-surface-low); overflow-x:auto;">
-            <button class="tab-pill active" onclick="filterStatus('all', this)">Semua Antrean</button>
-            <button class="tab-pill" onclick="filterStatus('Menunggu Pembayaran', this)">Menunggu Pembayaran</button>
+            <button class="tab-pill active" onclick="filterStatus('all', this)">Semua </button>
             <button class="tab-pill" onclick="filterStatus('Menunggu Verifikasi', this)">Butuh Verifikasi</button>
+            <button class="tab-pill" onclick="filterStatus('Selesai', this)">Selesai</button>
             <button class="tab-pill" onclick="filterStatus('Ditolak', this)">Ditolak</button>
         </div>
         <div class="table-toolbar">
@@ -119,7 +119,7 @@
                                 <td>
                                     <div class="fw-bold"><?= esc($booking['nama_penyewa']) ?></div>
                                     <div class="td-secondary">
-                                        <?= $booking['user_role'] ?? 'Guest' ?>          <?= !$isOnline ? ' (Walk-in)' : '' ?>
+                                        <?= $booking['user_role'] ?? 'Guest' ?>         <?= !$isOnline ? ' (Walk-in)' : '' ?>
                                     </div>
                                 </td>
                                 <td>
@@ -133,7 +133,8 @@
                                         <span class="material-symbols-outlined align-bottom"
                                             style="font-size:0.85rem;">calendar_month</span>
                                         <?= date('d M Y', strtotime($booking['tanggal_main'])) ?>,
-                                        <?= substr($booking['jam_mulai'], 0, 5) ?>
+                                        <?= substr($booking['jam_mulai'], 0, 5) ?> -
+                                        <?= substr($booking['jam_selesai'], 0, 5) ?>
                                     </div>
                                 </td>
                                 <td><span class="badge <?= $statusBadgeClass ?>"><?= esc($booking['status_pesanan']) ?></span>
@@ -149,16 +150,35 @@
                                 </td>
                                 <td style="text-align:center;">
                                     <div class="d-flex gap-1 justify-content-center">
-                                        <button class="action-btn bukti" title="Cek Detail"
-                                            onclick="openBuktiModal('<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, '<?= esc($booking['url_bukti_bayar'] ?? '') ?>', <?= $booking['id_sewa'] ?>, '<?= esc($booking['status_pesanan']) ?>')">
-                                            <span
-                                                class="material-symbols-outlined"><?= $booking['status_pesanan'] === 'Menunggu Verifikasi' ? 'search_check' : 'search' ?></span>
-                                            Cek
-                                        </button>
-                                        <button class="action-btn edit" title="Edit Booking"
-                                            onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>)">
-                                            <span class="material-symbols-outlined">edit</span>
-                                        </button>
+                                        <?php if ($booking['status_pesanan'] === 'Selesai'): ?>
+                                            <button class="action-btn"
+                                                style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd;"
+                                                title="Detail Keuangan"
+                                                onclick="openKeuanganModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>)">
+                                                <span class="material-symbols-outlined">receipt_long</span> Rincian
+                                            </button>
+                                        <?php else: ?>
+                                            <?php if ($booking['status_pesanan'] === 'Dikonfirmasi'): ?>
+                                                <button class="action-btn"
+                                                    style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;"
+                                                    title="Pelunasan Tagihan"
+                                                    onclick="openPelunasanModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, <?= $booking['jumlah_bayar'] ?? ($booking['total_bayar'] / 2) ?>)">
+                                                    <span class="material-symbols-outlined">price_check</span> Selesai
+                                                </button>
+                                            <?php endif; ?>
+                                            <?php if (strtolower($booking['metode_pembayaran']) !== 'cash'): ?>
+                                                <button class="action-btn bukti" title="Cek Detail"
+                                                    onclick="openBuktiModal('<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, '<?= esc($booking['url_bukti_bayar'] ?? '') ?>', <?= $booking['id_sewa'] ?>, '<?= esc($booking['status_pesanan']) ?>')">
+                                                    <span
+                                                        class="material-symbols-outlined"><?= $booking['status_pesanan'] === 'Menunggu Verifikasi' ? 'search_check' : 'search' ?></span>
+                                                    Cek
+                                                </button>
+                                            <?php endif; ?>
+                                            <button class="action-btn edit" title="Edit Booking"
+                                                onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>)">
+                                                <span class="material-symbols-outlined">edit</span>
+                                            </button>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -186,7 +206,7 @@
             <div class="modal-header">
                 <h5 class="modal-title" id="addBookingLabel">
                     <span class="material-symbols-outlined">add_circle</span>
-                    Tambah Pesanan Walk-in
+                    Tambah Booking Lapangan
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -253,10 +273,10 @@
                             <input type="hidden" name="durasi_jam" id="inputAddDurasi" value="1">
                             <input type="hidden" name="total_bayar" id="inputAddTotal">
 
-                            <!-- Informasi Penyewa -->
+                            <!-- Informasi Penyewa & Pesanan -->
                             <div class="form-section-title">
                                 <span class="material-symbols-outlined">person</span>
-                                Informasi Penyewa
+                                Informasi Penyewa & Pesanan
                             </div>
                             <div class="row g-3 mb-4">
                                 <div class="col-12 col-md-6">
@@ -273,14 +293,23 @@
                                     <input type="email" name="email" class="form-control-custom"
                                         placeholder="email@contoh.com" required />
                                 </div>
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label-custom">
                                         <span class="material-symbols-outlined">call</span> No. HP
                                     </label>
                                     <input type="tel" name="no_hp" class="form-control-custom"
                                         placeholder="08xxxxxxxxxx" required />
                                 </div>
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">confirmation_number</span> Tipe Pesanan
+                                    </label>
+                                    <select class="form-control-custom" name="tipe_pesanan" required>
+                                        <option value="Walk-in" selected>Walk-in (Langsung)</option>
+                                        <option value="Online">Online Booking</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-4">
                                     <label class="form-label-custom">
                                         <span class="material-symbols-outlined">timer</span> Durasi Bermain
                                     </label>
@@ -294,34 +323,43 @@
                                 </div>
                             </div>
 
-                            <!-- Pembayaran Langsung -->
+                            <!-- Pembayaran Dinamis -->
                             <div class="form-section-title">
                                 <span class="material-symbols-outlined">payments</span>
-                                Pembayaran Walk-in
+                                Detail Pembayaran
                             </div>
                             <div class="row g-3 mb-4">
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label-custom">
-                                        <span class="material-symbols-outlined">sell</span> Total Harga
-                                        Tagihan
+                                        <span class="material-symbols-outlined">sell</span> Total Harga Tagihan
                                     </label>
                                     <div class="price-input-wrap">
                                         <span class="prefix">Rp</span>
-                                        <input type="number" class="form-control-custom"
+                                        <input type="number" class="form-control-custom" id="addTotalDisplay"
                                             placeholder="Terhitung otomatis" readonly
                                             style="background:var(--admin-surface-low);" />
                                     </div>
                                 </div>
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label-custom">
-                                        <span class="material-symbols-outlined">check_circle</span> Status
-                                        Transaksi
+                                        <span class="material-symbols-outlined">account_balance_wallet</span> Uang Masuk
+                                        / DP
                                     </label>
-                                    <input type="text" class="form-control-custom" value="Dikonfirmasi (Lunas)" readonly
-                                        style="background:#ecfdf5; color:#059669; border-color:#a7f3d0; font-weight:600;" />
-                                    <small class="text-muted mt-1" style="font-size:0.65rem; display:block;">Otomatis
-                                        tersimpan sebagai
-                                        pembayaran Cash secara offline.</small>
+                                    <div class="price-input-wrap">
+                                        <span class="prefix">Rp</span>
+                                        <input type="number" name="jumlah_bayar" id="addUangMasuk"
+                                            class="form-control-custom" placeholder="Nominal dibayar" required />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">credit_card</span> Metode
+                                    </label>
+                                    <select name="metode" class="form-control-custom" required>
+                                        <option value="Cash" selected>Cash</option>
+                                        <option value="Transfer Bank">Transfer Bank</option>
+                                        <option value="QRIS">QRIS</option>
+                                    </select>
                                 </div>
                             </div>
                         </form>
@@ -338,9 +376,9 @@
         </div>
     </div>
 </div>
-<!-- ===== MODAL: EDIT BOOKING ===== -->
+<!-- ===== MODAL: EDIT BOOKING (Two-Panel) ===== -->
 <div class="modal fade" id="editBookingModal" tabindex="-1" aria-labelledby="editBookingLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editBookingLabel">
@@ -349,114 +387,182 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" style="padding:1.5rem 1.75rem;">
-                <form id="formEditBooking" action="<?= base_url('/admin/booking/update') ?>" method="post">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="id_sewa" id="editIdSewa">
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">confirmation_number</span>
-                        Informasi Booking
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">tag</span>
-                                Kode Booking</label>
-                            <input type="text" class="form-control-custom" id="editKodeSewa" readonly
-                                style="background:var(--admin-surface-low);cursor:not-allowed;" />
+            <div class="modal-body">
+                <div class="add-booking-layout">
+                    <!-- ===== LEFT PANEL: Calendar + Lapang Schedule ===== -->
+                    <div class="add-booking-left">
+                        <div class="form-section-title" style="margin-top:0;">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            Pilih Tanggal
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">stadium</span>
-                                Nama Lapang</label>
-                            <select class="form-control-custom" name="id_lapang" id="editIdLapang" required>
-                                <?php foreach ($lapangs as $lapang): ?>
-                                    <option value="<?= $lapang['id_lapang'] ?>"><?= esc($lapang['nama_lapangan']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">person</span>
-                        Informasi Penyewa
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">badge</span>
-                                Nama Penyewa</label>
-                            <input type="text" name="nama_penyewa" id="editNamaPenyewa" class="form-control-custom" />
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">call</span>
-                                No. HP</label>
-                            <input type="tel" name="no_hp" id="editNoHp" class="form-control-custom" />
-                        </div>
-                    </div>
-
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">calendar_month</span>
-                        Jadwal & Durasi
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-4">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">event</span>
-                                Tanggal</label>
-                            <input type="date" name="tanggal_main" id="editTanggal" class="form-control-custom" />
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">schedule</span>
-                                Jam Bermain</label>
-                            <input type="time" name="jam_mulai" id="editJamMulai" class="form-control-custom" />
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">timer</span>
-                                Durasi</label>
-                            <select class="form-control-custom" name="durasi_jam" id="editDurasi">
-                                <option value="1">1 Jam</option>
-                                <option value="2">2 Jam</option>
-                                <option value="3">3 Jam</option>
-                                <option value="4">4 Jam</option>
-                                <option value="5">5 Jam</option>
-                            </select>
-                            <input type="hidden" name="jam_selesai" id="editJamSelesai">
-                        </div>
-                    </div>
-
-                    <div class="form-section-title">
-                        <span class="material-symbols-outlined">payments</span>
-                        Pembayaran
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">sell</span>
-                                Total Harga</label>
-                            <div class="price-input-wrap">
-                                <span class="prefix">Rp</span>
-                                <input type="number" name="total_bayar" id="editTotalBayar"
-                                    class="form-control-custom" />
+                        <!-- Calendar -->
+                        <div class="adm-cal" id="editCal">
+                            <div class="adm-cal__header">
+                                <button type="button" class="adm-cal__nav" data-dir="prev">
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                </button>
+                                <span class="adm-cal__title"></span>
+                                <button type="button" class="adm-cal__nav" data-dir="next">
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </button>
+                            </div>
+                            <div class="adm-cal__grid"></div>
+                            <div class="adm-cal__selected-info" style="display:none;">
+                                <span class="material-symbols-outlined">event_available</span>
+                                <span class="adm-cal__selected-text"></span>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label-custom"><span
-                                    class="material-symbols-outlined">account_balance_wallet</span> Uang
-                                Masuk</label>
-                            <div class="price-input-wrap">
-                                <span class="prefix">Rp</span>
-                                <input type="number" id="editUangMasuk" class="form-control-custom" />
+
+                        <!-- Lapang Cards with Timeslots -->
+                        <div class="form-section-title">
+                            <span class="material-symbols-outlined">stadium</span>
+                            Pilih Lapang & Jam
+                        </div>
+                        <div id="editLapangCards">
+                            <div class="no-selection-placeholder">
+                                <span class="material-symbols-outlined">touch_app</span>
+                                <p>Pilih tanggal di kalender untuk melihat jadwal tersedia</p>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">credit_card</span>
-                                Metode Bayar</label>
-                            <select class="form-control-custom">
-                                <option value="transfer" selected>Transfer Bank</option>
-                                <option value="cash">Cash</option>
-                                <option value="ewallet">E-Wallet</option>
-                                <option value="qris">QRIS</option>
-                            </select>
-                        </div>
                     </div>
-                </form>
+
+                    <!-- ===== RIGHT PANEL: Form Inputs ===== -->
+                    <div class="add-booking-right">
+                        <form id="formEditBooking" action="<?= base_url('/admin/booking/update') ?>" method="post">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="id_sewa" id="editIdSewa">
+                            <!-- Hidden inputs for data selected from calendar -->
+                            <input type="hidden" name="id_lapang" id="editInputLapangId">
+                            <input type="hidden" name="tanggal_main" id="editInputTanggal">
+                            <input type="hidden" name="jam_mulai" id="editInputJamMulai">
+                            <input type="hidden" name="jam_selesai" id="editInputJamSelesai">
+                            <input type="hidden" name="durasi_jam" id="editInputDurasi" value="1">
+                            <input type="hidden" name="total_bayar" id="editInputTotal">
+
+                            <!-- Jadwal Saat Ini (Readonly) -->
+                            <div class="form-section-title" style="margin-top:0;">
+                                <span class="material-symbols-outlined">history</span>
+                                Jadwal Saat Ini
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">stadium</span> Lapang
+                                    </label>
+                                    <input type="text" class="form-control-custom" id="editCurrentLapang" readonly
+                                        style="background:var(--admin-surface-low);cursor:not-allowed;" />
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">event</span> Tanggal
+                                    </label>
+                                    <input type="text" class="form-control-custom" id="editCurrentTanggal" readonly
+                                        style="background:var(--admin-surface-low);cursor:not-allowed;" />
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">schedule</span> Jam
+                                    </label>
+                                    <input type="text" class="form-control-custom" id="editCurrentJam" readonly
+                                        style="background:var(--admin-surface-low);cursor:not-allowed;" />
+                                </div>
+                            </div>
+
+                            <!-- Jadwal Baru (dari Kalender) -->
+                            <div class="booking-summary-chip" id="editBookingSummary"
+                                style="display:none; margin-bottom:1rem;">
+                                <span class="material-symbols-outlined">swap_horiz</span>
+                                <div class="booking-summary-chip__text">
+                                    <span id="editSummaryLapang">-</span> — <span id="editSummaryTanggal">-</span> —
+                                    <span id="editSummaryJam">-</span>
+                                    <small>Jadwal baru yang dipilih</small>
+                                </div>
+                            </div>
+
+                            <!-- Informasi Penyewa & Pesanan -->
+                            <div class="form-section-title">
+                                <span class="material-symbols-outlined">person</span>
+                                Informasi Penyewa
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">tag</span> Kode Booking
+                                    </label>
+                                    <input type="text" class="form-control-custom" id="editKodeSewa" readonly
+                                        style="background:var(--admin-surface-low);cursor:not-allowed;" />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">badge</span> Nama Penyewa
+                                    </label>
+                                    <input type="text" name="nama_penyewa" id="editNamaPenyewa"
+                                        class="form-control-custom" placeholder="Masukkan nama penyewa" required />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">call</span> No. HP
+                                    </label>
+                                    <input type="tel" name="no_hp" id="editNoHp" class="form-control-custom"
+                                        placeholder="08xxxxxxxxxx" required />
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">timer</span> Durasi Bermain
+                                    </label>
+                                    <select class="form-control-custom" id="editDurasi" required>
+                                        <option value="1" selected>1 Jam</option>
+                                        <option value="2">2 Jam</option>
+                                        <option value="3">3 Jam</option>
+                                        <option value="4">4 Jam</option>
+                                        <option value="5">5 Jam</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Pembayaran -->
+                            <div class="form-section-title">
+                                <span class="material-symbols-outlined">payments</span>
+                                Detail Pembayaran
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">sell</span> Total Harga Tagihan
+                                    </label>
+                                    <div class="price-input-wrap">
+                                        <span class="prefix">Rp</span>
+                                        <input type="number" class="form-control-custom" id="editTotalDisplay"
+                                            placeholder="Terhitung otomatis" readonly
+                                            style="background:var(--admin-surface-low);" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">account_balance_wallet</span> Uang Masuk
+                                        / DP
+                                    </label>
+                                    <div class="price-input-wrap">
+                                        <span class="prefix">Rp</span>
+                                        <input type="number" id="editUangMasuk" class="form-control-custom"
+                                            placeholder="Nominal dibayar" />
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label-custom">
+                                        <span class="material-symbols-outlined">credit_card</span> Metode
+                                    </label>
+                                    <select class="form-control-custom">
+                                        <option value="Cash" selected>Cash</option>
+                                        <option value="Transfer Bank">Transfer Bank</option>
+                                        <option value="QRIS">QRIS</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
@@ -542,6 +648,121 @@
     </div>
 </div>
 
+<!-- ===== MODAL: PELUNASAN ===== -->
+<div class="modal fade" id="pelunasanModal" tabindex="-1" aria-labelledby="pelunasanLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                <h5 class="modal-title" id="pelunasanLabel">
+                    <span class="material-symbols-outlined" style="color:#059669;">price_check</span>
+                    Pelunasan Transaksi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <h6
+                        style="color:var(--admin-secondary); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                        Kode Booking</h6>
+                    <h4 id="pelunasanKodeSewa" style="color:var(--admin-primary); font-weight:800; margin:0;">-</h4>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:var(--admin-secondary);">Total Tagihan</span>
+                    <span id="pelunasanTotalTagihan" style="font-weight:600;">Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span style="color:var(--admin-secondary);">Telah Dibayar (DP)</span>
+                    <span id="pelunasanDP" style="font-weight:600; color:#059669;">- Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4">
+                    <span style="font-weight:700; font-size:1.1rem;">Sisa Tagihan</span>
+                    <span id="pelunasanSisa" style="font-weight:800; font-size:1.1rem; color:#dc2626;">Rp 0</span>
+                </div>
+
+                <form id="formPelunasan" action="<?= base_url('/admin/booking/savePelunasan') ?>" method="post">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="id_sewa" id="pelunasanIdSewa">
+                    <div class="mb-3">
+                        <label class="form-label-custom">Nominal Pelunasan</label>
+                        <div class="price-input-wrap">
+                            <span class="prefix">Rp</span>
+                            <input type="number" name="jumlah_bayar" id="pelunasanNominal" class="form-control-custom"
+                                required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-custom">Metode Pembayaran</label>
+                        <select name="metode" class="form-control-custom" required>
+                            <option value="Cash">Cash</option>
+                            <option value="Transfer Bank">Transfer Bank</option>
+                            <option value="QRIS">QRIS</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
+                <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" form="formPelunasan" class="btn-modal-save" style="background:#059669;">
+                    <span class="material-symbols-outlined">done_all</span>
+                    Selesaikan Transaksi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: KEUANGAN ===== -->
+<div class="modal fade" id="keuanganModal" tabindex="-1" aria-labelledby="keuanganLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+                <h5 class="modal-title" id="keuanganLabel">
+                    <span class="material-symbols-outlined" style="color:#0284c7;">receipt_long</span>
+                    Rincian Keuangan Transaksi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <h6
+                        style="color:var(--admin-secondary); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.25rem;">
+                        Kode Booking</h6>
+                    <h4 id="keuanganKodeSewa" style="color:var(--admin-primary); font-weight:800; margin:0;">-</h4>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:var(--admin-secondary);">Total Harga Sewa</span>
+                    <span id="keuanganTotalHarga" style="font-weight:600;">Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:var(--admin-secondary);">Pembayaran Awal (DP / Lunas)</span>
+                    <span id="keuanganDP" style="font-weight:600; color:#059669;">Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                    <span style="color:var(--admin-secondary);">Pelunasan Akhir</span>
+                    <span id="keuanganPelunasan" style="font-weight:600; color:#059669;">Rp 0</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="font-weight:700; font-size:1.1rem;">Total Dibayar</span>
+                    <span id="keuanganTotalDibayar" style="font-weight:800; font-size:1.1rem; color:#059669;">Rp
+                        0</span>
+                </div>
+
+                <!-- Loading Spinner for AJAX -->
+                <div id="keuanganLoading" class="text-center mt-3" style="display:none;">
+                    <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
+                <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal"
+                    style="width:100%;">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     (function () {
@@ -559,7 +780,7 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                        { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                                                { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
 
@@ -724,21 +945,16 @@
 
                 let shtml = '';
                 TIME_SLOTS.forEach(slot => {
-                    const startH = parseInt(slot.start.split(':')[0]);
                     const isBooked = bookedHours.includes(slot.start);
-                    const canFit = canStartAt(startH, durasi, bookedHours);
-                    const isDisabled = isBooked || !canFit;
                     const isSel = selectedLapangId === lap.id && selectedTimeSlot === slot.start;
                     let cls = 'adm-slot';
                     if (isBooked) cls += ' disabled booked';
-                    else if (!canFit) cls += ' disabled';
                     if (isSel) cls += ' selected';
 
                     let title = '';
                     if (isBooked) title = 'Sudah dipesan';
-                    else if (!canFit) title = `Tidak cukup ${durasi} jam dari sini`;
 
-                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isDisabled ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
+                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isBooked ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
                 });
                 grid.innerHTML = shtml;
 
@@ -816,8 +1032,13 @@
                 }
 
                 document.getElementById('inputAddTotal').value = total;
-                const totalInput = document.querySelector('#formAddBooking input[readonly][placeholder="Terhitung otomatis"]');
-                if (totalInput) totalInput.value = total;
+                const totalDisplay = document.getElementById('addTotalDisplay');
+                if (totalDisplay) totalDisplay.value = total;
+
+                const uangMasukInput = document.getElementById('addUangMasuk');
+                if (uangMasukInput && (!uangMasukInput.dataset.modified || uangMasukInput.value === '')) {
+                    uangMasukInput.value = total;
+                }
 
                 summary.style.display = 'flex';
             } else {
@@ -831,6 +1052,14 @@
             renderLapangCards();
             updateSummary();
         });
+
+        // Track manual input on Uang Masuk to prevent auto-overwrite
+        const uangMasukInput = document.getElementById('addUangMasuk');
+        if (uangMasukInput) {
+            uangMasukInput.addEventListener('input', function () {
+                this.dataset.modified = 'true';
+            });
+        }
 
         // Calendar navigation
         calRoot.querySelectorAll('.adm-cal__nav').forEach(btn => {
@@ -935,27 +1164,345 @@
         }
     });
 
+    /* ===== EDIT BOOKING CALENDAR (mirrors Add logic) ===== */
+    (function () {
+        const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+        const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+        const TIME_SLOTS = [];
+        for (let h = 8; h < 24; h++) {
+            const start = String(h).padStart(2, '0') + ':00';
+            const end = String(h + 1).padStart(2, '0') + ':00';
+            TIME_SLOTS.push({ start, end, label: `${start} - ${end}` });
+        }
+
+        const LAPANGS = [
+            <?php foreach ($lapangs as $lapang): ?>
+                                    { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+            <?php endforeach; ?>
+        ];
+
+        const API_BOOKED = '<?= base_url("/admin/booking/getBookedSlots") ?>';
+        const API_TARIF = '<?= base_url("/admin/booking/getTarif") ?>';
+
+        let ecYear, ecMonth, ecSelectedDay;
+        let ecSelectedLapangId = null;
+        let ecSelectedTimeSlot = null;
+        let ecBookedSlotsData = {};
+        let ecTarifCache = {};
+        let ecExcludeIdSewa = null; // to exclude current booking's own slots from "booked"
+
+        const ecRoot = document.getElementById('editCal');
+        const ecTitle = ecRoot.querySelector('.adm-cal__title');
+        const ecGrid = ecRoot.querySelector('.adm-cal__grid');
+        const ecInfo = ecRoot.querySelector('.adm-cal__selected-info');
+        const ecInfoText = ecRoot.querySelector('.adm-cal__selected-text');
+        const ecLapangCards = document.getElementById('editLapangCards');
+
+        function ecInitCalendar(year, month, day) {
+            ecYear = year;
+            ecMonth = month;
+            ecSelectedDay = day;
+            ecBookedSlotsData = {};
+            ecTarifCache = {};
+            ecRenderCalendar();
+            if (day) {
+                // Auto-load slots for the pre-selected day
+                ecLoadSlots();
+            } else {
+                ecRenderPlaceholder();
+            }
+        }
+
+        function ecRenderCalendar() {
+            ecTitle.textContent = `${MONTHS[ecMonth]} ${ecYear}`;
+            const firstDow = new Date(ecYear, ecMonth, 1).getDay();
+            const totalDays = new Date(ecYear, ecMonth + 1, 0).getDate();
+            const today = new Date();
+
+            let html = DAYS.map(d => `<span class="adm-cal__dow">${d}</span>`).join('');
+            for (let i = 0; i < firstDow; i++) html += '<span class="adm-cal__day empty"></span>';
+
+            for (let d = 1; d <= totalDays; d++) {
+                const isToday = d === today.getDate() && ecMonth === today.getMonth() && ecYear === today.getFullYear();
+                const isSel = d === ecSelectedDay;
+                const dow = new Date(ecYear, ecMonth, d).getDay();
+                let cls = 'adm-cal__day';
+                if (isToday) cls += ' today';
+                if (isSel) cls += ' selected';
+                if (dow === 0) cls += ' empty';
+                html += `<button type="button" class="${cls}" data-day="${d}" ${dow === 0 ? 'disabled' : ''}>${d}</button>`;
+            }
+
+            ecGrid.innerHTML = html;
+
+            ecGrid.querySelectorAll('.adm-cal__day:not(.empty)').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    ecSelectedDay = parseInt(btn.dataset.day);
+                    ecSelectedLapangId = null;
+                    ecSelectedTimeSlot = null;
+                    ecRenderCalendar();
+                    await ecLoadSlots();
+                    ecUpdateSummary();
+                });
+            });
+
+            if (ecSelectedDay) {
+                const d = new Date(ecYear, ecMonth, ecSelectedDay);
+                ecInfoText.textContent = `${DAY_NAMES[d.getDay()]}, ${ecSelectedDay} ${MONTHS[ecMonth]} ${ecYear}`;
+                ecInfo.style.display = 'flex';
+            } else {
+                ecInfo.style.display = 'none';
+            }
+        }
+
+        async function ecLoadSlots() {
+            const m = String(ecMonth + 1).padStart(2, '0');
+            const d = String(ecSelectedDay).padStart(2, '0');
+            const tanggal = `${ecYear}-${m}-${d}`;
+
+            try {
+                ecLapangCards.innerHTML = `<div class="no-selection-placeholder"><span class="material-symbols-outlined">hourglass_empty</span><p>Memuat jadwal...</p></div>`;
+                const res = await fetch(`${API_BOOKED}?tanggal=${tanggal}`);
+                ecBookedSlotsData = await res.json();
+            } catch (e) {
+                ecBookedSlotsData = {};
+            }
+
+            ecTarifCache = {};
+            for (const lap of LAPANGS) {
+                try {
+                    const res = await fetch(`${API_TARIF}?id_lapang=${lap.id}&tanggal=${tanggal}`);
+                    ecTarifCache[lap.id] = await res.json();
+                } catch (e) {
+                    ecTarifCache[lap.id] = { tarifs: [], kategori_hari: 'Weekday' };
+                }
+            }
+
+            ecRenderLapangCards();
+            ecUpdateSummary();
+        }
+
+        function ecRenderPlaceholder() {
+            ecLapangCards.innerHTML = `
+            <div class="no-selection-placeholder">
+                <span class="material-symbols-outlined">touch_app</span>
+                <p>Pilih tanggal di kalender untuk melihat jadwal tersedia</p>
+            </div>`;
+        }
+
+        function ecCanStartAt(startHour, durasi, bookedHours) {
+            for (let i = 0; i < durasi; i++) {
+                const h = startHour + i;
+                if (h >= 24) return false;
+                const hourStr = String(h).padStart(2, '0') + ':00';
+                if (bookedHours.includes(hourStr)) return false;
+            }
+            return true;
+        }
+
+        function ecRenderLapangCards() {
+            if (!ecSelectedDay) { ecRenderPlaceholder(); return; }
+            const durasi = parseInt(document.getElementById('editDurasi').value);
+
+            let html = '';
+            LAPANGS.forEach(lap => {
+                const isActive = ecSelectedLapangId === lap.id;
+                const bookedHours = ecBookedSlotsData[lap.id] || [];
+                const tarifInfo = ecTarifCache[lap.id];
+
+                let hargaPerJam = 0;
+                if (tarifInfo && tarifInfo.tarifs && tarifInfo.tarifs.length > 0) {
+                    hargaPerJam = parseInt(tarifInfo.tarifs[0].harga_umum);
+                }
+                const hargaLabel = hargaPerJam > 0 ? `Rp ${hargaPerJam.toLocaleString('id-ID')}/jam` : '';
+
+                html += `
+                <div class="adm-lapang-card ${isActive ? 'active' : ''}" data-lapang-id="${lap.id}">
+                    <div class="adm-lapang-card__header">
+                        <span class="material-symbols-outlined">stadium</span>
+                        <span>${lap.name}</span>
+                        ${hargaLabel ? `<span style="margin-left:auto; font-size:0.72rem; color:#059669; font-weight:700;">${hargaLabel}</span>` : ''}
+                    </div>
+                    <div class="adm-lapang-card__body">
+                        <div class="adm-slot-grid" id="editSlots-${lap.id}"></div>
+                    </div>
+                </div>`;
+            });
+            ecLapangCards.innerHTML = html;
+
+            LAPANGS.forEach(lap => {
+                const grid = document.getElementById(`editSlots-${lap.id}`);
+                const bookedHours = ecBookedSlotsData[lap.id] || [];
+
+                let shtml = '';
+                TIME_SLOTS.forEach(slot => {
+                    const isBooked = bookedHours.includes(slot.start);
+                    const isSel = ecSelectedLapangId === lap.id && ecSelectedTimeSlot === slot.start;
+                    let cls = 'adm-slot';
+                    if (isBooked) cls += ' disabled booked';
+                    if (isSel) cls += ' selected';
+
+                    let title = '';
+                    if (isBooked) title = 'Sudah dipesan';
+
+                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isBooked ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
+                });
+                grid.innerHTML = shtml;
+
+                grid.querySelectorAll('.adm-slot:not(.disabled)').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        ecSelectedLapangId = parseInt(btn.dataset.lapang);
+                        ecSelectedTimeSlot = btn.dataset.slot;
+                        ecRenderLapangCards();
+                        ecUpdateSummary();
+                    });
+                });
+            });
+        }
+
+        function ecGetHargaForHour(lapangId, hourStr) {
+            const tarifInfo = ecTarifCache[lapangId];
+            if (!tarifInfo || !tarifInfo.tarifs || tarifInfo.tarifs.length === 0) return 0;
+            const hour = parseInt(hourStr.split(':')[0]);
+            for (const t of tarifInfo.tarifs) {
+                const tStart = parseInt(t.jam_mulai.substring(0, 2));
+                const tEnd = parseInt(t.jam_selesai.substring(0, 2));
+                if (hour >= tStart && hour < tEnd) return parseInt(t.harga_umum);
+            }
+            return parseInt(tarifInfo.tarifs[0].harga_umum);
+        }
+
+        function ecUpdateSummary() {
+            const summary = document.getElementById('editBookingSummary');
+            const sLapang = document.getElementById('editSummaryLapang');
+            const sTanggal = document.getElementById('editSummaryTanggal');
+            const sJam = document.getElementById('editSummaryJam');
+
+            if (ecSelectedLapangId && ecSelectedTimeSlot && ecSelectedDay) {
+                const lap = LAPANGS.find(l => l.id === ecSelectedLapangId);
+                sLapang.textContent = lap ? lap.name : '-';
+                sTanggal.textContent = `${ecSelectedDay} ${MONTHS[ecMonth]} ${ecYear}`;
+
+                document.getElementById('editInputLapangId').value = ecSelectedLapangId;
+                const m = String(ecMonth + 1).padStart(2, '0');
+                const d = String(ecSelectedDay).padStart(2, '0');
+                document.getElementById('editInputTanggal').value = `${ecYear}-${m}-${d}`;
+                document.getElementById('editInputJamMulai').value = ecSelectedTimeSlot;
+
+                const durasi = parseInt(document.getElementById('editDurasi').value);
+                const startH = parseInt(ecSelectedTimeSlot.split(':')[0]);
+                const endH = startH + durasi;
+                const endHour = String(endH).padStart(2, '0') + ':00';
+                document.getElementById('editInputJamSelesai').value = endHour;
+
+                sJam.textContent = `${ecSelectedTimeSlot} - ${endHour}`;
+
+                let total = 0;
+                for (let i = 0; i < durasi; i++) {
+                    const hStr = String(startH + i).padStart(2, '0') + ':00';
+                    total += ecGetHargaForHour(ecSelectedLapangId, hStr);
+                }
+                document.getElementById('editInputTotal').value = total;
+                document.getElementById('editTotalDisplay').value = total;
+                document.getElementById('editUangMasuk').value = total;
+
+                summary.style.display = 'flex';
+            } else {
+                summary.style.display = 'none';
+            }
+        }
+
+        document.getElementById('editDurasi').addEventListener('change', function () {
+            document.getElementById('editInputDurasi').value = this.value;
+            ecRenderLapangCards();
+            ecUpdateSummary();
+        });
+
+        ecRoot.querySelectorAll('.adm-cal__nav').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.dir === 'prev') {
+                    ecMonth--;
+                    if (ecMonth < 0) { ecMonth = 11; ecYear--; }
+                } else {
+                    ecMonth++;
+                    if (ecMonth > 11) { ecMonth = 0; ecYear++; }
+                }
+                ecSelectedDay = null;
+                ecSelectedLapangId = null;
+                ecSelectedTimeSlot = null;
+                ecRenderCalendar();
+                ecRenderPlaceholder();
+                ecUpdateSummary();
+            });
+        });
+
+        // Expose the init function globally so openEditBookingModal can call it
+        window._editCalInit = ecInitCalendar;
+        window._editCalSetSelection = function (lapangId, timeSlot) {
+            ecSelectedLapangId = lapangId;
+            ecSelectedTimeSlot = timeSlot;
+            ecRenderLapangCards();
+            ecUpdateSummary();
+        };
+    })();
+
     /* ===== OPEN EDIT BOOKING MODAL ===== */
     function openEditBookingModal(idSewa, kodeSewa, idLapang, namaPenyewa, noHp, tanggal, jamMulai, jamSelesai, durasi, total) {
         document.getElementById('editIdSewa').value = idSewa;
         document.getElementById('editBookingLabel').innerHTML = '<span class="material-symbols-outlined">edit</span> Edit Booking — <span style="color:var(--admin-primary)">' + kodeSewa + '</span>';
 
         document.getElementById('editKodeSewa').value = kodeSewa;
-        document.getElementById('editIdLapang').value = idLapang;
         document.getElementById('editNamaPenyewa').value = namaPenyewa;
         document.getElementById('editNoHp').value = noHp;
-        document.getElementById('editTanggal').value = tanggal;
-        document.getElementById('editJamMulai').value = jamMulai;
         document.getElementById('editDurasi').value = durasi;
-        document.getElementById('editTotalBayar').value = total;
+        document.getElementById('editInputDurasi').value = durasi;
+        document.getElementById('editTotalDisplay').value = total;
+        document.getElementById('editInputTotal').value = total;
         document.getElementById('editUangMasuk').value = total;
 
-        // Calculate jam_selesai
-        const startH = parseInt(jamMulai.split(':')[0]);
-        const endH = startH + parseInt(durasi);
-        document.getElementById('editJamSelesai').value = String(endH).padStart(2, '0') + ':00';
+        // Set hidden fields
+        document.getElementById('editInputLapangId').value = idLapang;
+        document.getElementById('editInputTanggal').value = tanggal;
+        document.getElementById('editInputJamMulai').value = jamMulai;
+        document.getElementById('editInputJamSelesai').value = jamSelesai;
 
-        new bootstrap.Modal(document.getElementById('editBookingModal')).show();
+        // Populate "Jadwal Saat Ini" readonly fields
+        const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const lapangList = [
+            <?php foreach ($lapangs as $lapang): ?>
+                                    { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+            <?php endforeach; ?>
+        ];
+        const lapObj = lapangList.find(l => l.id === idLapang);
+        document.getElementById('editCurrentLapang').value = lapObj ? lapObj.name : 'Lapang #' + idLapang;
+
+        const dp = tanggal.split('-');
+        document.getElementById('editCurrentTanggal').value = parseInt(dp[2]) + ' ' + MONTHS_ID[parseInt(dp[1]) - 1] + ' ' + dp[0];
+        document.getElementById('editCurrentJam').value = jamMulai + ' - ' + jamSelesai + ' (' + durasi + ' jam)';
+
+        // Hide the "jadwal baru" summary initially
+        document.getElementById('editBookingSummary').style.display = 'none';
+
+        // Parse date to init calendar at the correct month/day
+        const year = parseInt(dp[0]);
+        const month = parseInt(dp[1]) - 1;
+        const day = parseInt(dp[2]);
+
+        // Show modal first, then init calendar (needs DOM visible)
+        const modal = new bootstrap.Modal(document.getElementById('editBookingModal'));
+        modal.show();
+
+        // Init calendar after modal is visible
+        document.getElementById('editBookingModal').addEventListener('shown.bs.modal', function handler() {
+            window._editCalInit(year, month, day);
+            // After slots load, pre-select the lapang & time
+            setTimeout(() => {
+                window._editCalSetSelection(idLapang, jamMulai);
+            }, 800);
+            document.getElementById('editBookingModal').removeEventListener('shown.bs.modal', handler);
+        });
     }
 
     /* ===== OPEN BUKTI BAYAR MODAL ===== */
@@ -996,6 +1543,63 @@
 
         new bootstrap.Modal(document.getElementById('buktiBayarModal')).show();
     }
-</script>
 
-<?= $this->endSection() ?>
+    /* ===== OPEN PELUNASAN MODAL ===== */
+    function openPelunasanModal(idSewa, kodeSewa, totalTagihan, dpDibayar) {
+        document.getElementById('pelunasanIdSewa').value = idSewa;
+        document.getElementById('pelunasanKodeSewa').textContent = kodeSewa;
+
+        const sisaTagihan = totalTagihan - dpDibayar;
+
+        document.getElementById('pelunasanTotalTagihan').textContent = 'Rp ' + totalTagihan.toLocaleString('id-ID');
+        document.getElementById('pelunasanDP').textContent = '- Rp ' + dpDibayar.toLocaleString('id-ID');
+        document.getElementById('pelunasanSisa').textContent = 'Rp ' + sisaTagihan.toLocaleString('id-ID');
+
+        document.getElementById('pelunasanNominal').value = sisaTagihan;
+
+        new bootstrap.Modal(document.getElementById('pelunasanModal')).show();
+    }
+
+    /* ===== OPEN KEUANGAN MODAL ===== */
+    function openKeuanganModal(idSewa, kodeSewa, totalTagihan) {
+        document.getElementById('keuanganKodeSewa').textContent = kodeSewa;
+        document.getElementById('keuanganTotalHarga').textContent = 'Rp ' + totalTagihan.toLocaleString('id-ID');
+
+        // Reset Text
+        document.getElementById('keuanganDP').textContent = 'Rp 0';
+        document.getElementById('keuanganPelunasan').textContent = 'Rp 0';
+        document.getElementById('keuanganTotalDibayar').textContent = 'Rp 0';
+
+        // Show loading spinner
+        document.getElementById('keuanganLoading').style.display = 'block';
+
+        // Fetch financial details
+        fetch(`<?= base_url('/admin/booking/getKeuangan') ?>?id_sewa=${idSewa}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('keuanganLoading').style.display = 'none';
+
+                let dp = 0;
+                let pelunasan = 0;
+
+                data.forEach(bayar => {
+                    const jumlah = parseInt(bayar.jumlah_bayar);
+                    if (bayar.jenis_pembayaran === 'DP' || bayar.jenis_pembayaran === 'Full') {
+                        dp += jumlah;
+                    } else if (bayar.jenis_pembayaran === 'Pelunasan') {
+                        pelunasan += jumlah;
+                    }
+                });
+
+                document.getElementById('keuanganDP').textContent = 'Rp ' + dp.toLocaleString('id-ID');
+                document.getElementById('keuanganPelunasan').textContent = 'Rp ' + pelunasan.toLocaleString('id-ID');
+                document.getElementById('keuanganTotalDibayar').textContent = 'Rp ' + (dp + pelunasan).toLocaleString('id-ID');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('keuanganLoading').style.display = 'none';
+            });
+
+        new bootstrap.Modal(document.getElementById('keuanganModal')).show();
+    }
+</script><?= $this->endSection() ?>

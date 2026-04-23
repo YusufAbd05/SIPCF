@@ -126,8 +126,10 @@
                     <?php else: ?>
                         <tr>
                             <td colspan="5" style="text-align:center; padding:3rem 1rem;">
-                                <span class="material-symbols-outlined" style="font-size:2.5rem; color:var(--admin-outline); display:block; margin-bottom:0.5rem;">person_off</span>
-                                <p style="color:var(--admin-secondary); font-size:0.85rem; margin:0;">Belum ada data user</p>
+                                <span class="material-symbols-outlined"
+                                    style="font-size:2.5rem; color:var(--admin-outline); display:block; margin-bottom:0.5rem;">person_off</span>
+                                <p style="color:var(--admin-secondary); font-size:0.85rem; margin:0;">Belum ada data user
+                                </p>
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -167,26 +169,30 @@
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">badge</span> Nama
                             </label>
-                            <input type="text" name="nama" class="form-control-custom" placeholder="Masukkan nama lengkap" required />
+                            <input type="text" name="nama" class="form-control-custom"
+                                placeholder="Masukkan nama lengkap" required />
                         </div>
                         <div class="col-12">
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">mail</span> Email
                             </label>
-                            <input type="email" name="email" class="form-control-custom" placeholder="email@contoh.com" required />
+                            <input type="email" name="email" class="form-control-custom" placeholder="email@contoh.com"
+                                required />
                         </div>
                         <div class="col-12">
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">call</span> No. HP
                             </label>
-                            <input type="tel" name="no_hp" class="form-control-custom" placeholder="08xxxxxxxxxx" required />
+                            <input type="tel" name="no_hp" class="form-control-custom" placeholder="08xxxxxxxxxx"
+                                required />
                         </div>
                         <div class="col-12">
                             <label class="form-label-custom">
                                 <span class="material-symbols-outlined">lock</span> Password
                             </label>
                             <div class="password-wrap">
-                                <input type="password" name="password" class="form-control-custom" placeholder="Minimal 8 karakter" required />
+                                <input type="password" name="password" class="form-control-custom"
+                                    placeholder="Minimal 8 karakter" required />
                                 <button type="button" class="password-toggle" onclick="togglePassword(this)">
                                     <span class="material-symbols-outlined">visibility_off</span>
                                 </button>
@@ -207,7 +213,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn-modal-save">
-                        <span class="material-symbols-outlined">save</span> Simpan User
+                        <span class="material-symbols-outlined">save</span> Simpan
                     </button>
                 </div>
             </form>
@@ -279,7 +285,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn-modal-save">
-                        <span class="material-symbols-outlined">save</span> Simpan Perubahan
+                        <span class="material-symbols-outlined">save</span> Update
                     </button>
                 </div>
             </form>
@@ -302,8 +308,10 @@
                 <?= csrf_field() ?>
                 <input type="hidden" name="id_user" id="deleteIdUser" />
                 <div class="modal-body" style="text-align:center; padding:1.5rem;">
-                    <div style="width:3.5rem;height:3.5rem;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#dc2626;">person_remove</span>
+                    <div
+                        style="width:3.5rem;height:3.5rem;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                        <span class="material-symbols-outlined"
+                            style="font-size:1.75rem;color:#dc2626;">person_remove</span>
                     </div>
                     <p style="font-size:0.88rem;font-weight:600;color:var(--admin-on-surface);margin-bottom:0.35rem;">
                         Yakin ingin menghapus?
@@ -315,9 +323,10 @@
                     </p>
                 </div>
                 <div class="modal-footer" style="justify-content:center;border-top-color:#fecaca;">
-                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn-modal-save" style="background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 12px -2px rgba(220,38,38,0.3);">
-                        <span class="material-symbols-outlined">delete</span> Ya, Hapus
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Tidak</button>
+                    <button type="submit" class="btn-modal-save"
+                        style="background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 12px -2px rgba(220,38,38,0.3);">
+                        <span class="material-symbols-outlined">delete</span> Ya
                     </button>
                 </div>
             </form>

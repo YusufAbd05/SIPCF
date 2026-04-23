@@ -65,7 +65,7 @@ class UserController extends BaseController
 
         $userModel->update($id, $data);
 
-        return redirect()->to('/admin/users')->with('success', 'Data user berhasil diupdate!');
+        return redirect()->to('/admin/users')->with('success', 'Data user berhasil diubah!');
     }
 
     public function delete()

@@ -20,7 +20,7 @@
         </div>
         <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addLapangModal">
             <span class="material-symbols-outlined">add_circle</span>
-            Tambah Lapang
+            Tambah
         </button>
     </div>
 
@@ -224,7 +224,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn-modal-save">
-                        <span class="material-symbols-outlined">save</span> Simpan Lapang
+                        <span class="material-symbols-outlined">save</span> Simpan
                     </button>
                 </div>
             </form>
@@ -305,7 +305,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn-modal-save">
-                        <span class="material-symbols-outlined">save</span> Simpan Perubahan
+                        <span class="material-symbols-outlined">save</span> Update
                     </button>
                 </div>
             </form>
@@ -342,10 +342,10 @@
                     </p>
                 </div>
                 <div class="modal-footer" style="justify-content:center;border-top-color:#fecaca;">
-                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Tidak</button>
                     <button type="submit" class="btn-modal-save"
                         style="background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 12px -2px rgba(220,38,38,0.3);">
-                        <span class="material-symbols-outlined">delete</span> Ya, Hapus
+                        <span class="material-symbols-outlined">delete</span> Ya
                     </button>
                 </div>
             </form>

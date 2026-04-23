@@ -27,7 +27,7 @@
         <a href="<?= base_url('/admin/users') ?>"
             class="sidebar-link <?= uri_string() === 'admin/users' ? 'active' : '' ?>">
             <span class="material-symbols-outlined">group</span>
-            <span>Users</span>
+            <span>Kelola User</span>
         </a>
         <a href="#" class="sidebar-link">
             <span class="material-symbols-outlined">analytics</span>

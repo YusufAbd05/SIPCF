@@ -20,7 +20,7 @@
         </div>
         <button class="btn-add" onclick="openAddModal()">
             <span class="material-symbols-outlined">add_circle</span>
-            Tambah Tarif
+            Tambah
         </button>
     </div>
 
@@ -167,7 +167,6 @@
                             <select name="hari" id="formHari" class="form-control-custom" required>
                                 <option value="Weekday">Senin - Jumat (Weekday)</option>
                                 <option value="Weekend">Sabtu - Minggu (Weekend)</option>
-                                <option value="Libur Nasional">Libur Nasional</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -211,7 +210,7 @@
                 <div class="modal-footer" style="background:#fff;">
                     <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn-modal-save">
-                        <span class="material-symbols-outlined">save</span> Simpan Aturan
+                        <span class="material-symbols-outlined">save</span> Simpan
                     </button>
                 </div>
             </form>
@@ -236,25 +235,22 @@
                 <div class="modal-body" style="text-align:center; padding:1.5rem;">
                     <div
                         style="width:3.5rem;height:3.5rem;border-radius:50%;background:#fef2f2;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                        <span class="material-symbols-outlined"
-                            style="font-size:1.75rem;color:#dc2626;">payments</span>
+                        <span class="material-symbols-outlined" style="font-size:1.75rem;color:#dc2626;">payments</span>
                     </div>
-                    <p
-                        style="font-size:0.88rem;font-weight:600;color:var(--admin-on-surface);margin-bottom:0.35rem;">
+                    <p style="font-size:0.88rem;font-weight:600;color:var(--admin-on-surface);margin-bottom:0.35rem;">
                         Yakin ingin menghapus tarif ini?
                     </p>
-                    <p id="deleteTarifName"
-                        style="font-size:0.78rem;color:var(--admin-secondary);margin-bottom:0;">
+                    <p id="deleteTarifName" style="font-size:0.78rem;color:var(--admin-secondary);margin-bottom:0;">
                     </p>
                     <p style="font-size:0.72rem;color:var(--admin-outline);margin-top:0.5rem;margin-bottom:0;">
                         Data yang dihapus tidak dapat dikembalikan.
                     </p>
                 </div>
                 <div class="modal-footer" style="justify-content:center;border-top-color:#fecaca;">
-                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Tidak</button>
                     <button type="submit" class="btn-modal-save"
                         style="background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 12px -2px rgba(220,38,38,0.3);">
-                        <span class="material-symbols-outlined">delete</span> Ya, Hapus
+                        <span class="material-symbols-outlined">delete</span> Ya
                     </button>
                 </div>
             </form>
