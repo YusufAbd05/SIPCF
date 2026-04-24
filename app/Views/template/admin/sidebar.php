@@ -29,7 +29,8 @@
             <span class="material-symbols-outlined">group</span>
             <span>Kelola User</span>
         </a>
-        <a href="#" class="sidebar-link">
+        <a href="<?= base_url('/admin/laporan') ?>"
+            class="sidebar-link <?= uri_string() === 'admin/laporan' ? 'active' : '' ?>">
             <span class="material-symbols-outlined">analytics</span>
             <span>Kelola Laporan</span>
         </a>

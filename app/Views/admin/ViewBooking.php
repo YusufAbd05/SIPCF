@@ -263,7 +263,7 @@
                             </div>
                         </div>
 
-                        <form id="formAddBooking" action="<?= base_url('/admin/booking/saveWalkIn') ?>" method="post">
+                        <form id="formAddBooking" action="<?= base_url('/admin/booking/save') ?>" method="post">
                             <?= csrf_field() ?>
                             <!-- Hidden inputs for data selected from calendar -->
                             <input type="hidden" name="id_lapang" id="inputAddLapangId">
@@ -780,7 +780,7 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                                                { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                                                        { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
 
@@ -1179,7 +1179,7 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                    { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
 
@@ -1472,7 +1472,7 @@
         const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         const lapangList = [
             <?php foreach ($lapangs as $lapang): ?>
-                                    { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
         const lapObj = lapangList.find(l => l.id === idLapang);

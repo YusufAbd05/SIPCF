@@ -21,7 +21,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'Home::adminDashboard');
     // Booking CRUD
     $routes->get('booking', 'BookingController::index');
-    $routes->post('booking/saveWalkIn', 'BookingController::saveWalkIn');
+    $routes->post('booking/save', 'BookingController::save');
     $routes->post('booking/update', 'BookingController::update');
     $routes->post('booking/verifikasi', 'BookingController::verifikasi');
     $routes->post('booking/savePelunasan', 'BookingController::savePelunasan');
@@ -47,4 +47,8 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('users/save', 'UserController::save');
     $routes->post('users/update', 'UserController::update');
     $routes->post('users/delete', 'UserController::delete');
+
+    // Laporan
+    $routes->get('laporan', 'LaporanController::index');
+    $routes->get('laporan/exportData', 'LaporanController::exportData');
 });

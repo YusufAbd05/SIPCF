@@ -2333,3 +2333,320 @@ select.form-control-custom {
         display: none;
     }
 }
+
+/* ================================================================
+   LAPORAN KEUANGAN - PAGE STYLES
+   ================================================================ */
+
+/* Filter Card */
+.laporan-filter-card {
+    background: var(--admin-surface-lowest);
+    border: 1px solid rgba(194, 198, 216, 0.08);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.laporan-input {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    border: 1.5px solid var(--admin-outline-variant);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease;
+    color: var(--admin-on-surface);
+}
+
+.laporan-input:focus {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(0, 87, 205, 0.08);
+    outline: none;
+}
+
+.btn-filter-apply {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.58rem 1.25rem;
+    background: linear-gradient(135deg, #0057cd 0%, #0d6efd 100%);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px -2px rgba(0, 87, 205, 0.3);
+}
+
+.btn-filter-apply:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px -4px rgba(0, 87, 205, 0.4);
+}
+
+.btn-filter-apply:active {
+    transform: scale(0.97);
+}
+
+.btn-filter-apply .material-symbols-outlined {
+    font-size: 1.1rem;
+}
+
+/* Export Buttons */
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid;
+    background: transparent;
+}
+
+.btn-export .material-symbols-outlined {
+    font-size: 1rem;
+}
+
+.btn-export--excel {
+    color: #059669;
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+}
+
+.btn-export--excel:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(5, 150, 105, 0.12);
+}
+
+.btn-export--pdf {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.btn-export--pdf:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(220, 38, 38, 0.12);
+}
+
+.btn-export.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.btn-export.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 4px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Stat Chip Elevated Variant */
+.stat-chip--elevated {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+}
+
+.stat-chip--elevated:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.stat-chip__unit {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--admin-secondary);
+}
+
+.stat-chip__icon.indigo {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+}
+
+.chart-container-donut {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+.chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.chart-legend__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.chart-legend__text {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--admin-secondary);
+}
+
+/* Metode Legend */
+.metode-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.metode-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.metode-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.metode-legend__label {
+    flex: 1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--admin-on-surface);
+}
+
+.metode-legend__value {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--admin-secondary);
+}
+
+/* Badge Pill Styles */
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.22rem 0.65rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.badge-pill.selesai {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.badge-pill.dikonfirmasi {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.badge-pill.pending {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.badge-pill.ditolak {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* Badge Tipe */
+.badge-tipe {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.badge-tipe.online {
+    background: #eef2ff;
+    color: #4f46e5;
+}
+
+.badge-tipe.walkin {
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+/* Badge Count */
+.badge-count {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    background: var(--admin-primary-fixed);
+    color: var(--admin-primary);
+}
+
+/* Table Footer Period */
+.table-footer__period {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* ===== LAPORAN RESPONSIVE ===== */
+@media (max-width: 767.98px) {
+    .laporan-filter-card {
+        padding: 1rem;
+    }
+
+    .chart-container {
+        height: 220px;
+    }
+
+    .chart-container-donut {
+        height: 160px;
+    }
+
+    .stats-row .stat-chip {
+        min-width: 100%;
+    }
+
+    .btn-export {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.75rem;
+    }
+
+    .booking-table {
+        min-width: 1100px;
+    }
+}

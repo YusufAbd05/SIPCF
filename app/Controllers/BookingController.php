@@ -144,7 +144,7 @@ class BookingController extends BaseController
         ]);
     }
 
-    public function saveWalkIn()
+    public function save()
     {
         $bookingModel = new BookingModel();
         $pembayaranModel = new PembayaranModel();
