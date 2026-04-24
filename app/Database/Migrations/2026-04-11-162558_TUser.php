@@ -33,8 +33,8 @@ class TUser extends Migration
             ],
             'role' => [
                 'type' => 'ENUM',
-                'constraint' => ['Admin', 'Membership'],
-                'default' => 'Membership',
+                'constraint' => ['Admin', 'Manajer'],
+                'default' => 'Admin',
             ],
         ]);
 

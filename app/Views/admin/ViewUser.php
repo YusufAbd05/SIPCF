@@ -24,31 +24,6 @@
         </button>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-row animate-in" style="animation-delay:.06s;">
-        <div class="stat-chip">
-            <div class="stat-chip__icon blue"><span class="material-symbols-outlined">group</span></div>
-            <div>
-                <p class="stat-chip__label">Total User</p>
-                <p class="stat-chip__value"><?= $totalUser ?></p>
-            </div>
-        </div>
-        <div class="stat-chip">
-            <div class="stat-chip__icon green"><span class="material-symbols-outlined">admin_panel_settings</span></div>
-            <div>
-                <p class="stat-chip__label">Admin</p>
-                <p class="stat-chip__value"><?= $totalAdmin ?></p>
-            </div>
-        </div>
-        <div class="stat-chip">
-            <div class="stat-chip__icon purple"><span class="material-symbols-outlined">card_membership</span></div>
-            <div>
-                <p class="stat-chip__label">Membership</p>
-                <p class="stat-chip__value"><?= $totalMembership ?></p>
-            </div>
-        </div>
-    </div>
-
     <!-- Table Card -->
     <div class="table-card animate-in" style="animation-delay:.12s;">
         <div class="table-toolbar">

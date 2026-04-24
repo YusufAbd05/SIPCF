@@ -34,9 +34,9 @@
             <span class="material-symbols-outlined">analytics</span>
             <span>Kelola Laporan</span>
         </a>
-        <a href="#" class="sidebar-link">
+        <!-- <a href="#" class="sidebar-link">
             <span class="material-symbols-outlined">settings</span>
             <span>Pengaturan</span>
-        </a>
+        </a> -->
     </nav>
 </aside>

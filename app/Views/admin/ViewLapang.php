@@ -24,32 +24,6 @@
         </button>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-row animate-in" style="animation-delay:.06s;">
-        <div class="stat-chip">
-            <div class="stat-chip__icon blue"><span class="material-symbols-outlined">stadium</span></div>
-            <div>
-                <p class="stat-chip__label">Total Lapang</p>
-                <p class="stat-chip__value"><?= $totalLapang ?></p>
-            </div>
-        </div>
-        <div class="stat-chip">
-            <div class="stat-chip__icon green"><span class="material-symbols-outlined">check_circle</span>
-            </div>
-            <div>
-                <p class="stat-chip__label">Dapat Digunakan</p>
-                <p class="stat-chip__value"><?= $totalTersedia ?></p>
-            </div>
-        </div>
-        <div class="stat-chip">
-            <div class="stat-chip__icon amber"><span class="material-symbols-outlined">build</span></div>
-            <div>
-                <p class="stat-chip__label">Perbaikan</p>
-                <p class="stat-chip__value"><?= $totalPerbaikan ?></p>
-            </div>
-        </div>
-    </div>
-
     <!-- Table Card -->
     <div class="table-card animate-in" style="animation-delay:.12s;">
         <div class="table-toolbar">

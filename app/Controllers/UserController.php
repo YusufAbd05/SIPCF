@@ -13,16 +13,8 @@ class UserController extends BaseController
         $userModel = new UserModel();
         $users = $userModel->findAll();
 
-        // Hitung statistik
-        $totalUser = count($users);
-        $totalAdmin = count(array_filter($users, fn($u) => $u['role'] === 'Admin'));
-        $totalMembership = count(array_filter($users, fn($u) => $u['role'] === 'Membership'));
-
         $data = [
             'users' => $users,
-            'totalUser' => $totalUser,
-            'totalAdmin' => $totalAdmin,
-            'totalMembership' => $totalMembership,
         ];
 
         return view('admin/ViewUser', $data);

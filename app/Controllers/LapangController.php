@@ -12,16 +12,8 @@ class LapangController extends BaseController
         $lapangModel = new LapangModel();
         $lapangs = $lapangModel->findAll();
 
-        // Hitung statistik
-        $totalLapang = count($lapangs);
-        $totalTersedia = count(array_filter($lapangs, fn($l) => $l['status_lapang'] === 'Tersedia'));
-        $totalPerbaikan = count(array_filter($lapangs, fn($l) => $l['status_lapang'] === 'Perbaikan'));
-
         $data = [
             'lapangs' => $lapangs,
-            'totalLapang' => $totalLapang,
-            'totalTersedia' => $totalTersedia,
-            'totalPerbaikan' => $totalPerbaikan,
         ];
 
         return view('admin/ViewLapang', $data);

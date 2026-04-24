@@ -19,12 +19,6 @@ class TSewaLapangan extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => 50,
             ],
-            'id_user' => [
-                'type' => 'INT',
-                'constraint' => 11,
-                'unsigned' => true,
-                'null' => true,
-            ],
             'id_lapang' => [
                 'type' => 'INT',
                 'constraint' => 11,
@@ -77,7 +71,6 @@ class TSewaLapangan extends Migration
         ]);
 
         $this->forge->addKey('id_sewa', true);
-        $this->forge->addForeignKey('id_user', 't_user', 'id_user', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('id_lapang', 't_lapang', 'id_lapang', 'CASCADE', 'CASCADE');
         $this->forge->createTable('t_sewa_lapangan');
     }

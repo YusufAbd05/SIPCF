@@ -15,23 +15,23 @@ class LaporanController extends BaseController
      */
     public function index()
     {
-        $bookingModel    = new BookingModel();
+        $bookingModel = new BookingModel();
         $pembayaranModel = new PembayaranModel();
-        $lapangModel     = new LapangModel();
+        $lapangModel = new LapangModel();
 
         // Default filter: bulan ini
-        $tglMulai   = $this->request->getGet('tgl_mulai') ?? date('Y-m-01');
+        $tglMulai = $this->request->getGet('tgl_mulai') ?? date('Y-m-01');
         $tglSelesai = $this->request->getGet('tgl_selesai') ?? date('Y-m-t');
-        $idLapang   = $this->request->getGet('id_lapang') ?? 'all';
+        $idLapang = $this->request->getGet('id_lapang') ?? 'all';
 
         // Ambil data dari model
-        $lapangs  = $lapangModel->findAll();
+        $lapangs = $lapangModel->findAll();
         $bookings = $bookingModel->getLaporanBookings($tglMulai, $tglSelesai, $idLapang);
 
         // ---- Hitung summary stats ----
         $totalPesanan = count($bookings);
-        $totalOmset   = 0;
-        $lapangCount  = [];
+        $totalOmset = 0;
+        $lapangCount = [];
 
         foreach ($bookings as $b) {
             $totalOmset += (int) ($b['jumlah_bayar'] ?? 0);
@@ -56,15 +56,15 @@ class LaporanController extends BaseController
         $metodeDistribusi = $pembayaranModel->getDistribusiMetode($tglMulai, $tglSelesai, $idLapang);
 
         $data = [
-            'bookings'         => $bookings,
-            'lapangs'          => $lapangs,
-            'tglMulai'         => $tglMulai,
-            'tglSelesai'       => $tglSelesai,
-            'idLapang'         => $idLapang,
-            'totalPesanan'     => $totalPesanan,
-            'totalOmset'       => $totalOmset,
-            'lapangTerlaris'   => $lapangTerlaris,
-            'chartData'        => $chartData,
+            'bookings' => $bookings,
+            'lapangs' => $lapangs,
+            'tglMulai' => $tglMulai,
+            'tglSelesai' => $tglSelesai,
+            'idLapang' => $idLapang,
+            'totalPesanan' => $totalPesanan,
+            'totalOmset' => $totalOmset,
+            'lapangTerlaris' => $lapangTerlaris,
+            'chartData' => $chartData,
             'metodeDistribusi' => $metodeDistribusi,
         ];
 
@@ -79,16 +79,16 @@ class LaporanController extends BaseController
     {
         $bookingModel = new BookingModel();
 
-        $tglMulai   = $this->request->getGet('tgl_mulai') ?? date('Y-m-01');
+        $tglMulai = $this->request->getGet('tgl_mulai') ?? date('Y-m-01');
         $tglSelesai = $this->request->getGet('tgl_selesai') ?? date('Y-m-t');
-        $idLapang   = $this->request->getGet('id_lapang') ?? 'all';
+        $idLapang = $this->request->getGet('id_lapang') ?? 'all';
 
         $bookings = $bookingModel->getLaporanBookings($tglMulai, $tglSelesai, $idLapang);
 
         return $this->response->setJSON([
             'periode' => "$tglMulai s/d $tglSelesai",
-            'total'   => count($bookings),
-            'data'    => $bookings,
+            'total' => count($bookings),
+            'data' => $bookings,
         ]);
     }
 

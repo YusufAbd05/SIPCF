@@ -167,7 +167,6 @@ class BookingController extends BaseController
         // Save Booking
         $dataBooking = [
             'kode_sewa' => $kodeSewa,
-            'id_user' => null,
             'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_penyewa' => $this->request->getPost('nama_penyewa'),
             'no_hp_penyewa' => $this->request->getPost('no_hp'),
