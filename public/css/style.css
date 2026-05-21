@@ -2013,6 +2013,7 @@ select.form-control-custom {
         opacity: 0;
         transform: translateX(100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -2459,7 +2460,9 @@ select.form-control-custom {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Stat Chip Elevated Variant */

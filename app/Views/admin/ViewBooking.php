@@ -62,10 +62,9 @@
     <div class="table-card animate-in" style="animation-delay:.12s;">
         <div class="px-3 pt-2 pb-2 border-bottom d-flex gap-2"
             style="background:var(--admin-surface-low); overflow-x:auto;">
-            <button class="tab-pill active" onclick="filterStatus('all', this)">Semua </button>
-            <button class="tab-pill" onclick="filterStatus('Menunggu Verifikasi', this)">Butuh Verifikasi</button>
-            <button class="tab-pill" onclick="filterStatus('Selesai', this)">Selesai</button>
-            <button class="tab-pill" onclick="filterStatus('Ditolak', this)">Ditolak</button>
+            <button class="tab-pill active" onclick="filterStatus('all', this)">Semua</button>
+            <button class="tab-pill" onclick="filterStatus('butuh_dikonfirmasi', this)">Butuh Dikonfirmasi</button>
+            <button class="tab-pill" onclick="filterStatus('Dikonfirmasi', this)">Dikonfirmasi</button>
         </div>
         <div class="table-toolbar">
             <div class="table-search">
@@ -118,9 +117,19 @@
                                 <td><span class="td-name"><?= esc($booking['nama_lapangan']) ?></span></td>
                                 <td>
                                     <div class="fw-bold"><?= esc($booking['nama_penyewa']) ?></div>
-                                    <div class="td-secondary">
-                                        <?= $booking['user_role'] ?? 'Guest' ?>         <?= !$isOnline ? ' (Walk-in)' : '' ?>
-                                    </div>
+                                    <?php
+                                        $tipeSewa = $booking['tipe_sewa'] ?? 'Per Jam';
+                                        $sewaBadge = match ($tipeSewa) {
+                                            'Membership' => ['text-bg-info', 'card_membership'],
+                                            'Harian'     => ['text-bg-warning', 'today'],
+                                            default      => ['text-bg-light', 'schedule'],
+                                        };
+                                    ?>
+                                    <span class="badge <?= $sewaBadge[0] ?>"
+                                        style="font-size:0.6rem; display:inline-flex; align-items:center; gap:0.2rem; margin-top:0.25rem;">
+                                        <span class="material-symbols-outlined" style="font-size:0.75rem;"><?= $sewaBadge[1] ?></span>
+                                        <?= esc($tipeSewa) ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="mb-1">
@@ -149,37 +158,39 @@
                                     <?php endif; ?>
                                 </td>
                                 <td style="text-align:center;">
-                                    <div class="d-flex gap-1 justify-content-center">
-                                        <?php if ($booking['status_pesanan'] === 'Selesai'): ?>
+                                    <?php if (in_array($booking['status_pesanan'], ['Selesai', 'Ditolak', 'Dibatalkan'])): ?>
+                                        <span class="text-muted" style="font-size:0.8rem;">—</span>
+                                    <?php else: ?>
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        <?php if (in_array($booking['tipe_sewa'] ?? '', ['Membership', 'Harian'])): ?>
                                             <button class="action-btn"
                                                 style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd;"
-                                                title="Detail Keuangan"
-                                                onclick="openKeuanganModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>)">
-                                                <span class="material-symbols-outlined">receipt_long</span> Rincian
-                                            </button>
-                                        <?php else: ?>
-                                            <?php if ($booking['status_pesanan'] === 'Dikonfirmasi'): ?>
-                                                <button class="action-btn"
-                                                    style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;"
-                                                    title="Pelunasan Tagihan"
-                                                    onclick="openPelunasanModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, <?= $booking['jumlah_bayar'] ?? ($booking['total_bayar'] / 2) ?>)">
-                                                    <span class="material-symbols-outlined">price_check</span> Selesai
-                                                </button>
-                                            <?php endif; ?>
-                                            <?php if (strtolower($booking['metode_pembayaran']) !== 'cash'): ?>
-                                                <button class="action-btn bukti" title="Cek Detail"
-                                                    onclick="openBuktiModal('<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, '<?= esc($booking['url_bukti_bayar'] ?? '') ?>', <?= $booking['id_sewa'] ?>, '<?= esc($booking['status_pesanan']) ?>')">
-                                                    <span
-                                                        class="material-symbols-outlined"><?= $booking['status_pesanan'] === 'Menunggu Verifikasi' ? 'search_check' : 'search' ?></span>
-                                                    Cek
-                                                </button>
-                                            <?php endif; ?>
-                                            <button class="action-btn edit" title="Edit Booking"
-                                                onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>)">
-                                                <span class="material-symbols-outlined">edit</span>
+                                                title="Detail Jadwal <?= esc($booking['tipe_sewa']) ?>"
+                                                onclick="openMembershipDetailModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['tipe_sewa']) ?>')">
+                                                <span class="material-symbols-outlined">event_repeat</span> Jadwal
                                             </button>
                                         <?php endif; ?>
+                                        <?php if ($booking['status_pesanan'] === 'Dikonfirmasi'): ?>
+                                            <button class="action-btn"
+                                                style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;"
+                                                title="Pelunasan Tagihan"
+                                                onclick="openPelunasanModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, <?= $booking['jumlah_bayar'] ?? ($booking['total_bayar'] / 2) ?>)">
+                                                <span class="material-symbols-outlined">price_check</span> Selesai
+                                            </button>
+                                        <?php endif; ?>
+                                        <?php if (strtolower($booking['metode_pembayaran'] ?? 'cash') !== 'cash' && $booking['status_pesanan'] !== 'Dikonfirmasi'): ?>
+                                            <button class="action-btn bukti" title="Cek Detail"
+                                                onclick="openBuktiModal('<?= esc($booking['kode_sewa']) ?>', <?= $booking['total_bayar'] ?>, '<?= esc($booking['url_bukti_bayar'] ?? '') ?>', <?= $booking['id_sewa'] ?>, '<?= esc($booking['status_pesanan']) ?>', '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['nama_lapangan']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['jumlah_bayar'] ?? 0 ?>)">
+                                                <span class="material-symbols-outlined"><?= $booking['status_pesanan'] === 'Menunggu Verifikasi' ? 'search_check' : 'search' ?></span>
+                                                Cek
+                                            </button>
+                                        <?php endif; ?>
+                                        <button class="action-btn edit" title="Edit Booking"
+                                            onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>)">
+                                            <span class="material-symbols-outlined">edit</span>
+                                        </button>
                                     </div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -577,34 +588,118 @@
 
 <!-- ===== MODAL: VERIFIKASI BUKTI BAYAR ===== -->
 <div class="modal fade" id="buktiBayarModal" tabindex="-1" aria-labelledby="buktiBayarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="buktiBayarLabel">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius:1rem; overflow:hidden;">
+            <div class="modal-header"
+                style="background:linear-gradient(135deg, #0057cd 0%, #0284c7 100%); border:none; padding:1rem 1.25rem;">
+                <h5 class="modal-title" id="buktiBayarLabel"
+                    style="color:#fff; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
                     <span class="material-symbols-outlined">receipt_long</span>
                     Verifikasi Pembayaran
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0 text-center" style="background:#f8fafc;">
-                <div class="p-3 border-bottom text-start">
-                    <h6 class="mb-1" style="color:var(--admin-primary); font-weight:700;">Kode:
-                        <span id="verifikasiKode"></span>
-                    </h6>
-                    <p class="mb-0 text-muted" style="font-size:0.8rem;">Cek kesesuaian nominal tagihan
-                        (<b id="verifikasiNominal"></b>) sebelum klik Terima.</p>
+            <div class="modal-body p-0" style="background:#f8fafc;">
+                <!-- Identitas Booking -->
+                <div style="padding:1.25rem; background:#fff; border-bottom:1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined"
+                            style="color:var(--admin-primary); font-size:1.2rem;">confirmation_number</span>
+                        <h6 style="margin:0; font-weight:700; color:var(--admin-primary); font-size:0.9rem;">Identitas
+                            Booking</h6>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <div style="background:#f0f7ff; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Kode
+                                    Booking</small>
+                                <div id="verifikasiKode"
+                                    style="font-weight:800; color:var(--admin-primary); font-size:1rem; letter-spacing:0.02em;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div style="background:#f0fdf4; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Nama
+                                    Penyewa</small>
+                                <div id="verifikasiNamaPenyewa"
+                                    style="font-weight:700; color:#15803d; font-size:0.95rem;"></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div style="background:#faf5ff; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Lapangan</small>
+                                <div id="verifikasiLapang" style="font-weight:700; color:#7c3aed; font-size:0.9rem;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div style="background:#fffbeb; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Tanggal
+                                    Main</small>
+                                <div id="verifikasiTanggal" style="font-weight:700; color:#b45309; font-size:0.9rem;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div style="background:#fef2f2; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">Jam
+                                    Main</small>
+                                <div id="verifikasiJam" style="font-weight:700; color:#dc2626; font-size:0.9rem;"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bukti-lightbox" id="buktiContainer" style="padding:1.5rem;">
-                    <!-- Dummy Image for Transfer -->
-                    <div
-                        style="background:#fff; padding:0.5rem; border-radius:0.75rem; border:1px solid #e2e8f0; display:inline-block; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
-                        <img src="https://via.placeholder.com/300x500/eff6ff/0057cd?text=Struk+Transfer+Valid"
-                            alt="Bukti Transfer" style="border-radius:0.5rem; max-height:400px; display:block;">
+
+                <!-- Ringkasan Pembayaran -->
+                <div style="padding:1.25rem; background:#fff; border-bottom:1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined" style="color:#059669; font-size:1.2rem;">payments</span>
+                        <h6 style="margin:0; font-weight:700; color:var(--admin-on-surface); font-size:0.9rem;">
+                            Ringkasan Pembayaran</h6>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:0.75rem; border:1px solid #e2e8f0; overflow:hidden;">
+                        <div class="d-flex justify-content-between align-items-center"
+                            style="padding:0.65rem 1rem; border-bottom:1px solid #e2e8f0;">
+                            <span style="color:var(--admin-secondary); font-size:0.85rem;">Total Harga</span>
+                            <span id="verifikasiNominal"
+                                style="font-weight:700; font-size:0.95rem; color:var(--admin-on-surface);"></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center"
+                            style="padding:0.65rem 1rem; border-bottom:1px solid #e2e8f0;">
+                            <span style="color:var(--admin-secondary); font-size:0.85rem;">Sudah Dibayar (Uang
+                                Masuk)</span>
+                            <span id="verifikasiDibayar"
+                                style="font-weight:700; font-size:0.95rem; color:#059669;"></span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center"
+                            style="padding:0.75rem 1rem; background:#fff7ed;">
+                            <span style="font-weight:700; font-size:0.9rem; color:#9a3412;">Sisa Pembayaran</span>
+                            <span id="verifikasiSisa" style="font-weight:800; font-size:1.05rem; color:#dc2626;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bukti Pembayaran -->
+                <div style="padding:1.25rem;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined" style="color:#0284c7; font-size:1.2rem;">image</span>
+                        <h6 style="margin:0; font-weight:700; color:var(--admin-on-surface); font-size:0.9rem;">Bukti
+                            Pembayaran</h6>
+                    </div>
+                    <div class="bukti-lightbox" id="buktiContainer">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
             </div>
             <div class="modal-footer"
-                style="justify-content: space-between; background:#fff; border-radius:0 0 1rem 1rem;">
+                style="justify-content: space-between; background:#fff; border-radius:0 0 1rem 1rem; border-top:1px solid #e2e8f0;">
                 <form action="<?= base_url('/admin/booking/verifikasi') ?>" method="post" class="w-100">
                     <?= csrf_field() ?>
                     <input type="hidden" name="id_sewa" id="verifikasiIdSewa">
@@ -712,7 +807,7 @@
     </div>
 </div>
 
-<!-- ===== MODAL: KEUANGAN ===== -->
+<!-- ===== MODAL: KEUANGAN =====
 <div class="modal fade" id="keuanganModal" tabindex="-1" aria-labelledby="keuanganLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -750,13 +845,74 @@
                 </div>
 
                 <!-- Loading Spinner for AJAX -->
-                <div id="keuanganLoading" class="text-center mt-3" style="display:none;">
-                    <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
-                        <span class="visually-hidden">Loading...</span>
+<!-- <div id="keuanganLoading" class="text-center mt-3" style="display:none;">
+    <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+</div>
+<!-- <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
+    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal" style="width:100%;">Tutup</button>
+</div> -->
+</div>
+</div>
+</div> --> -->
+
+<!-- ===== MODAL: DETAIL JADWAL MEMBERSHIP ===== -->
+<div class="modal fade" id="membershipDetailModal" tabindex="-1" aria-labelledby="membershipDetailLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:1rem; overflow:hidden;">
+            <div class="modal-header"
+                style="background:linear-gradient(135deg, #0891b2 0%, #06b6d4 100%); border:none; padding:1rem 1.25rem;">
+                <h5 class="modal-title" id="membershipDetailLabel"
+                    style="color:#fff; font-weight:700; display:flex; align-items:center; gap:0.5rem;">
+                    <span class="material-symbols-outlined">event_repeat</span>
+                    <span id="mbDetailTitle">Detail Jadwal</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="background:#f8fafc;">
+                <!-- Booking Info -->
+                <div style="padding:1.25rem; background:#fff; border-bottom:1px solid #e2e8f0;">
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <div style="background:#f0f7ff; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase;">Kode
+                                    Booking</small>
+                                <div id="mbDetailKode"
+                                    style="font-weight:800; color:var(--admin-primary); font-size:1rem;"></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div style="background:#f0fdf4; border-radius:0.5rem; padding:0.6rem 0.75rem;">
+                                <small
+                                    style="color:var(--admin-secondary); font-size:0.7rem; font-weight:600; text-transform:uppercase;">Penyewa</small>
+                                <div id="mbDetailNama" style="font-weight:700; color:#15803d; font-size:0.95rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sessions List -->
+                <div style="padding:1.25rem;">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="material-symbols-outlined"
+                            style="color:#0891b2; font-size:1.2rem;">calendar_month</span>
+                        <h6 id="mbDetailSubtitle" style="margin:0; font-weight:700; color:var(--admin-on-surface); font-size:0.9rem;">Detail Jadwal</h6>
+                    </div>
+                    <div id="mbDetailSessions">
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status" style="width:1.5rem; height:1.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
+            <div class="modal-footer" style="background:#fff; border-top:1px solid #e2e8f0;">
                 <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal"
                     style="width:100%;">Tutup</button>
             </div>
@@ -780,7 +936,7 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                                                        { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                                                                                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
 
@@ -1086,38 +1242,6 @@
             initCalendar();
         });
 
-        /* ===== UPLOAD BUKTI BAYAR (placeholder — will be wired when backend ready) ===== */
-
-        /* ===== BUKTI BAYAR LIGHTBOX ===== */
-        const buktiBayarModal = document.getElementById('buktiBayarModal');
-        if (buktiBayarModal) {
-            buktiBayarModal.addEventListener('show.bs.modal', function (event) {
-                const trigger = event.relatedTarget;
-                const buktiFile = trigger ? trigger.getAttribute('data-bukti') : '';
-                const container = document.getElementById('buktiContainer');
-
-                if (buktiFile && buktiFile.trim() !== '') {
-                    container.innerHTML = `
-                    <div style="text-align:center;">
-                        <div style="background:var(--admin-surface-low); border-radius:0.75rem; padding:2rem; display:inline-block;">
-                            <span class="material-symbols-outlined" style="font-size:4rem; color:#059669; display:block; margin-bottom:0.75rem;">verified</span>
-                            <p style="font-size:0.9rem; font-weight:700; color:var(--admin-on-surface); margin-bottom:0.25rem;">Bukti Pembayaran Tersedia</p>
-                            <p style="font-size:0.75rem; color:var(--admin-secondary); margin-bottom:0;">${buktiFile}</p>
-                        </div>
-                    </div>
-                `;
-                } else {
-                    container.innerHTML = `
-                    <div class="no-bukti">
-                        <span class="material-symbols-outlined">image_not_supported</span>
-                        <p style="font-size:0.85rem;">Belum ada bukti pembayaran</p>
-                        <p style="font-size:0.72rem; color:var(--admin-outline);">Pembayaran cash atau belum upload</p>
-                    </div>
-                `;
-                }
-            });
-        }
-
         /* ===== RESET ADD MODAL ON CLOSE ===== */
         addModal.addEventListener('hidden.bs.modal', function () {
             const form = document.getElementById('formAddBooking');
@@ -1129,9 +1253,12 @@
     /* ===== TAB FILTER BY STATUS ===== */
     function filterStatus(status, btn) {
         const rows = document.querySelectorAll('#bookingTableBody tr');
+        const butuhKonfirmasiStatuses = ['Menunggu', 'Menunggu Pembayaran', 'Menunggu Verifikasi'];
         rows.forEach(row => {
             if (status === 'all') {
                 row.style.display = '';
+            } else if (status === 'butuh_dikonfirmasi') {
+                row.style.display = butuhKonfirmasiStatuses.includes(row.dataset.status) ? '' : 'none';
             } else {
                 row.style.display = row.dataset.status === status ? '' : 'none';
             }
@@ -1179,7 +1306,7 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                                                                                { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
 
@@ -1472,7 +1599,7 @@
         const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         const lapangList = [
             <?php foreach ($lapangs as $lapang): ?>
-                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+                                                                                                { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
             <?php endforeach; ?>
         ];
         const lapObj = lapangList.find(l => l.id === idLapang);
@@ -1506,29 +1633,58 @@
     }
 
     /* ===== OPEN BUKTI BAYAR MODAL ===== */
-    function openBuktiModal(kodeSewa, nominal, urlBukti, idSewa, status) {
+    function openBuktiModal(kodeSewa, nominal, urlBukti, idSewa, status, namaPenyewa, namaLapang, tanggalMain, jamMulai, jamSelesai, jumlahBayar) {
         document.getElementById('verifikasiIdSewa').value = idSewa;
         document.getElementById('verifikasiKode').textContent = kodeSewa;
-        document.getElementById('verifikasiNominal').textContent = 'Rp ' + nominal.toLocaleString('id-ID');
 
+        // Identitas Booking
+        document.getElementById('verifikasiNamaPenyewa').textContent = namaPenyewa || '-';
+        document.getElementById('verifikasiLapang').textContent = namaLapang || '-';
+
+        // Format tanggal
+        const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        if (tanggalMain) {
+            const dp = tanggalMain.split('-');
+            document.getElementById('verifikasiTanggal').textContent = parseInt(dp[2]) + ' ' + BULAN[parseInt(dp[1]) - 1] + ' ' + dp[0];
+        } else {
+            document.getElementById('verifikasiTanggal').textContent = '-';
+        }
+        document.getElementById('verifikasiJam').textContent = (jamMulai || '-') + ' — ' + (jamSelesai || '-');
+
+        // Ringkasan Pembayaran
+        const totalHarga = nominal || 0;
+        const sudahBayar = jumlahBayar || 0;
+        const sisaBayar = totalHarga - sudahBayar;
+
+        document.getElementById('verifikasiNominal').textContent = 'Rp ' + totalHarga.toLocaleString('id-ID');
+        document.getElementById('verifikasiDibayar').textContent = 'Rp ' + sudahBayar.toLocaleString('id-ID');
+        document.getElementById('verifikasiSisa').textContent = sisaBayar > 0 ? 'Rp ' + sisaBayar.toLocaleString('id-ID') : 'Lunas';
+
+        // Style sisa pembayaran
+        const sisaEl = document.getElementById('verifikasiSisa');
+        if (sisaBayar <= 0) {
+            sisaEl.style.color = '#059669';
+        } else {
+            sisaEl.style.color = '#dc2626';
+        }
+
+        // Bukti Pembayaran
         const container = document.getElementById('buktiContainer');
         if (urlBukti && urlBukti.trim() !== '') {
             container.innerHTML = `
                 <div style="text-align:center;">
-                    <div style="background:var(--admin-surface-low); border-radius:0.75rem; padding:2rem; display:inline-block;">
-                        <span class="material-symbols-outlined" style="font-size:4rem; color:#059669; display:block; margin-bottom:0.75rem;">verified</span>
-                        <p style="font-size:0.9rem; font-weight:700; color:var(--admin-on-surface); margin-bottom:0.25rem;">Bukti Pembayaran Tersedia</p>
-                        <p style="font-size:0.75rem; color:var(--admin-secondary); margin-bottom:1rem;">${urlBukti}</p>
-                        <img src="<?= base_url() ?>/${urlBukti}" style="max-height:400px; border-radius:0.5rem;" onerror="this.src='https://via.placeholder.com/300x500/eff6ff/0057cd?text=Struk+Transfer+Valid'">
+                    <div style="background:#fff; padding:0.5rem; border-radius:0.75rem; border:1px solid #e2e8f0; display:inline-block; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <img src="<?= base_url() ?>/${urlBukti}" style="max-height:380px; border-radius:0.5rem; display:block;" onerror="this.src='https://via.placeholder.com/300x500/eff6ff/0057cd?text=Struk+Transfer+Valid'">
                     </div>
+                    <p style="font-size:0.7rem; color:var(--admin-secondary); margin-top:0.5rem;">${urlBukti}</p>
                 </div>
             `;
         } else {
             container.innerHTML = `
-                <div class="no-bukti" style="text-align:center; padding: 2rem;">
-                    <span class="material-symbols-outlined" style="font-size:4rem; color:var(--admin-outline);">image_not_supported</span>
-                    <p style="font-size:0.85rem; font-weight:bold;">Belum ada bukti pembayaran</p>
-                    <p style="font-size:0.72rem; color:var(--admin-outline);">Pembayaran cash atau belum upload</p>
+                <div style="text-align:center; padding:1.5rem; background:#fff; border-radius:0.75rem; border:1px dashed #cbd5e1;">
+                    <span class="material-symbols-outlined" style="font-size:3rem; color:var(--admin-outline); display:block; margin-bottom:0.5rem;">image_not_supported</span>
+                    <p style="font-size:0.85rem; font-weight:bold; margin-bottom:0.25rem;">Belum ada bukti pembayaran</p>
+                    <p style="font-size:0.72rem; color:var(--admin-outline); margin:0;">Pembayaran cash atau belum upload</p>
                 </div>
             `;
         }
@@ -1601,5 +1757,80 @@
             });
 
         new bootstrap.Modal(document.getElementById('keuanganModal')).show();
+    }
+
+    /* ===== JADWAL DETAIL MODAL (Membership & Harian) ===== */
+    function openMembershipDetailModal(idSewa, kodeSewa, namaPenyewa, tipeSewa) {
+        document.getElementById('mbDetailKode').textContent = kodeSewa;
+        document.getElementById('mbDetailNama').textContent = namaPenyewa;
+
+        // Dynamic titles based on tipe sewa
+        const isMembership = tipeSewa === 'Membership';
+        document.getElementById('mbDetailTitle').textContent = isMembership ? 'Jadwal Membership' : 'Jadwal Harian';
+
+        const container = document.getElementById('mbDetailSessions');
+        container.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary" role="status" style="width:1.5rem;height:1.5rem;"><span class="visually-hidden">Loading...</span></div></div>';
+
+        new bootstrap.Modal(document.getElementById('membershipDetailModal')).show();
+
+        fetch(`<?= base_url('/api/getJadwalMembership') ?>?id_sewa=${idSewa}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.jadwals || data.jadwals.length === 0) {
+                    container.innerHTML = '<div class="text-center py-3 text-muted">Tidak ada data jadwal.</div>';
+                    return;
+                }
+
+                // Set subtitle
+                const count = data.jadwals.length;
+                document.getElementById('mbDetailSubtitle').textContent = isMembership
+                    ? `Jadwal ${count} Sesi Mingguan`
+                    : `Jadwal ${count} Hari Berturut`;
+
+                const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+                let html = '';
+                data.jadwals.forEach(j => {
+                    const dt = new Date(j.tanggal_main);
+                    const dayName = DAY_NAMES[dt.getDay()];
+                    const dateStr = dt.getDate() + ' ' + MONTH_NAMES[dt.getMonth()] + ' ' + dt.getFullYear();
+                    const jamMulai = j.jam_mulai.substring(0, 5);
+                    const jamSelesai = j.jam_selesai.substring(0, 5);
+
+                    const statusColors = {
+                        'Terjadwal': { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8', icon: 'event_available' },
+                        'Selesai': { bg: '#f0fdf4', border: '#a7f3d0', color: '#059669', icon: 'check_circle' },
+                        'Dibatalkan': { bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: 'cancel' },
+                    };
+                    const sc = statusColors[j.status_sesi] || statusColors['Terjadwal'];
+
+                    const label = isMembership ? `Sesi ${j.sesi_ke}` : `Hari ${j.sesi_ke}`;
+
+                    html += `
+                    <div style="background:${sc.bg}; border:1px solid ${sc.border}; border-radius:0.75rem; padding:0.85rem 1rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.75rem;">
+                        <div style="min-width:2.2rem; height:2.2rem; border-radius:0.5rem; background:${sc.border}; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-weight:800; font-size:0.85rem; color:${sc.color};">${j.sesi_ke}</span>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:0.85rem; color:var(--admin-on-surface);">${dayName}, ${dateStr}</div>
+                            <div style="font-size:0.78rem; color:var(--admin-secondary); display:flex; align-items:center; gap:0.3rem; margin-top:0.15rem;">
+                                <span class="material-symbols-outlined" style="font-size:0.85rem;">schedule</span>
+                                ${jamMulai} - ${jamSelesai}
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:0.25rem; font-size:0.72rem; font-weight:600; color:${sc.color};">
+                            <span class="material-symbols-outlined" style="font-size:0.85rem;">${sc.icon}</span>
+                            ${j.status_sesi}
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Error fetching jadwal:', err);
+                container.innerHTML = '<div class="text-center py-3 text-danger">Gagal memuat data jadwal.</div>';
+            });
     }
 </script><?= $this->endSection() ?>

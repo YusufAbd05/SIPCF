@@ -58,27 +58,20 @@ class BookingController extends BaseController
             return $this->response->setJSON([]);
         }
 
-        $bookingModel = new BookingModel();
-
-        // Ambil semua booking aktif (bukan Ditolak/Dibatalkan) untuk tanggal tersebut
-        $bookings = $bookingModel
-            ->where('tanggal_main', $tanggal)
-            ->whereNotIn('status_pesanan', ['Ditolak', 'Dibatalkan'])
-            ->findAll();
+        // All schedule data is now in t_jadwal
+        $jadwalModel = new \App\Models\JadwalModel();
+        $allSlots = $jadwalModel->getBookedSlotsForDate($tanggal);
 
         $bookedMap = [];
-
-        foreach ($bookings as $b) {
-            $lapangId = $b['id_lapang'];
-            $jamMulai = (int) substr($b['jam_mulai'], 0, 2);
-            $jamSelesai = (int) substr($b['jam_selesai'], 0, 2);
+        foreach ($allSlots as $s) {
+            $lapangId = $s['id_lapang'];
+            $jamMulai = (int) substr($s['jam_mulai'], 0, 2);
+            $jamSelesai = (int) substr($s['jam_selesai'], 0, 2);
 
             if (!isset($bookedMap[$lapangId])) {
                 $bookedMap[$lapangId] = [];
             }
 
-            // Expand range jam_mulai → jam_selesai menjadi per-jam
-            // Contoh: 08:00 - 11:00 (3 jam) → ["08:00", "09:00", "10:00"]
             for ($h = $jamMulai; $h < $jamSelesai; $h++) {
                 $slot = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
                 if (!in_array($slot, $bookedMap[$lapangId])) {
@@ -164,16 +157,13 @@ class BookingController extends BaseController
         $countToday = $bookingModel->like('kode_sewa', "BK-{$dateStr}-")->countAllResults();
         $kodeSewa = "BK-{$dateStr}-" . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
 
-        // Save Booking
+        // Save Booking (no schedule columns — those go to t_jadwal)
         $dataBooking = [
             'kode_sewa' => $kodeSewa,
             'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_penyewa' => $this->request->getPost('nama_penyewa'),
             'no_hp_penyewa' => $this->request->getPost('no_hp'),
             'tipe_pesanan' => $tipePesanan,
-            'tanggal_main' => $this->request->getPost('tanggal_main'),
-            'jam_mulai' => $this->request->getPost('jam_mulai'),
-            'jam_selesai' => $this->request->getPost('jam_selesai'),
             'durasi_jam' => $this->request->getPost('durasi_jam'),
             'total_bayar' => $totalBayar,
             'status_pesanan' => $statusPesanan,
@@ -181,6 +171,17 @@ class BookingController extends BaseController
 
         $bookingModel->insert($dataBooking);
         $idSewa = $bookingModel->getInsertID();
+
+        // Save Jadwal (1 record for walk-in)
+        $jadwalModel = new \App\Models\JadwalModel();
+        $jadwalModel->insert([
+            'id_sewa'      => $idSewa,
+            'sesi_ke'      => 1,
+            'tanggal_main' => $this->request->getPost('tanggal_main'),
+            'jam_mulai'    => $this->request->getPost('jam_mulai'),
+            'jam_selesai'  => $this->request->getPost('jam_selesai'),
+            'status_sesi'  => 'Terjadwal',
+        ]);
 
         // Save Pembayaran (Dinamis: Lunas / DP)
         $dataPembayaran = [
@@ -202,18 +203,27 @@ class BookingController extends BaseController
         $bookingModel = new BookingModel();
         $id = $this->request->getPost('id_sewa');
 
+        // Update booking data (no schedule columns)
         $data = [
             'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_penyewa' => $this->request->getPost('nama_penyewa'),
             'no_hp_penyewa' => $this->request->getPost('no_hp'),
-            'tanggal_main' => $this->request->getPost('tanggal_main'),
-            'jam_mulai' => $this->request->getPost('jam_mulai'),
-            'jam_selesai' => $this->request->getPost('jam_selesai'),
             'durasi_jam' => $this->request->getPost('durasi_jam'),
             'total_bayar' => $this->request->getPost('total_bayar'),
         ];
 
         $bookingModel->update($id, $data);
+
+        // Update jadwal sesi_ke=1
+        $jadwalModel = new \App\Models\JadwalModel();
+        $jadwal = $jadwalModel->where('id_sewa', $id)->where('sesi_ke', 1)->first();
+        if ($jadwal) {
+            $jadwalModel->update($jadwal['id_jadwal'], [
+                'tanggal_main' => $this->request->getPost('tanggal_main'),
+                'jam_mulai'    => $this->request->getPost('jam_mulai'),
+                'jam_selesai'  => $this->request->getPost('jam_selesai'),
+            ]);
+        }
 
         return redirect()->to('/admin/booking')->with('success', 'Data pesanan berhasil diperbarui!');
     }

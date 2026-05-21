@@ -6,6 +6,39 @@
 <section class="schedule-section">
     <div class="container">
 
+        <?php if (session()->getFlashdata('booking_success')): ?>
+        <!-- ===== SUCCESS STATE ===== -->
+        <div class="text-center py-5" style="max-width:560px; margin:0 auto;">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;box-shadow:0 8px 24px -6px rgba(5,150,105,0.35);">
+                <span class="material-symbols-outlined" style="font-size:2.5rem;color:#fff;">check_circle</span>
+            </div>
+            <h2 style="font-family:'Public Sans',sans-serif;font-weight:800;font-size:1.6rem;color:var(--on-surface);margin-bottom:0.5rem;">Booking Berhasil!</h2>
+            <p style="font-size:0.9rem;color:var(--on-surface-variant);margin-bottom:1.5rem;">Pesanan Anda telah dikirim dan sedang menunggu konfirmasi admin.</p>
+            <div style="background:var(--surface-container);border:1px solid var(--outline-variant);border-radius:1rem;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+                <span style="font-size:0.75rem;font-weight:600;color:var(--on-surface-variant);text-transform:uppercase;letter-spacing:0.06em;">Kode Booking Anda</span>
+                <div style="font-family:'Courier New',monospace;font-size:1.8rem;font-weight:800;color:var(--primary);letter-spacing:0.03em;margin-top:0.25rem;">
+                    <?= session()->getFlashdata('kode_sewa') ?>
+                </div>
+                <p style="font-size:0.72rem;color:var(--outline);margin-top:0.5rem;margin-bottom:0;">Simpan kode ini untuk mengecek status booking Anda</p>
+            </div>
+            <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+                <a href="<?= base_url('/') ?>" class="bf-submit-btn" style="text-decoration:none;font-size:0.85rem;padding:0.65rem 1.5rem;">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">home</span>
+                    Kembali ke Jadwal
+                </a>
+            </div>
+        </div>
+        <?php else: ?>
+        <!-- ===== FORM STATE ===== -->
+
+        <!-- Error Alert -->
+        <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger d-flex align-items-center gap-2" role="alert" style="border-radius:0.85rem;font-size:0.85rem;font-weight:600;max-width:900px;margin:0 auto 1rem;">
+            <span class="material-symbols-outlined" style="font-size:1.2rem;">error</span>
+            <?= session()->getFlashdata('error') ?>
+        </div>
+        <?php endif; ?>
+
         <!-- Back Button -->
         <a href="<?= base_url('/') ?>" class="booking-back-btn">
             <span class="material-symbols-outlined" style="font-size:1.1rem;">arrow_back</span>
@@ -73,6 +106,33 @@
                             </div>
                         </div>
 
+                        <!-- Membership Dates (hidden by default) -->
+                        <div class="bf-summary-item" id="summaryMembershipDates" style="display:none;">
+                            <div class="bf-summary-icon" style="background:#ecfdf5; align-self:flex-start;">
+                                <span class="material-symbols-outlined" style="color:#059669;">event_repeat</span>
+                            </div>
+                            <div>
+                                <span class="bf-summary-label">Jadwal 4 Sesi</span>
+                                <div id="membershipDatesList" style="margin-top:0.3rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Membership Discount Info (hidden by default) -->
+                        <div id="summaryDiskonWrap" style="display:none; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:0.6rem; padding:0.6rem 0.85rem; margin-top:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.35rem; font-size:0.75rem; font-weight:700; color:#059669; margin-bottom:0.25rem;">
+                                <span class="material-symbols-outlined" style="font-size:0.95rem;">loyalty</span>
+                                Diskon Membership 10%
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#64748b;">
+                                <span>Harga Normal</span>
+                                <span style="text-decoration:line-through;" id="summaryHargaNormal">Rp -</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#059669; font-weight:600;">
+                                <span>Anda Hemat</span>
+                                <span id="summaryHargaHemat">- Rp 0</span>
+                            </div>
+                        </div>
+
                         <!-- Divider -->
                         <hr style="border-color:var(--outline-variant); margin:0.75rem 0;">
 
@@ -80,6 +140,41 @@
                         <div class="bf-summary-price">
                             <span>Total Estimasi</span>
                             <span class="bf-summary-price-value" id="summaryHarga">Rp -</span>
+                        </div>
+
+                        <!-- Pilihan Pembayaran (Per Jam & Harian only) -->
+                        <div id="summaryPaymentType" style="display:none; margin-top:0.6rem;">
+                            <hr style="border-color:var(--outline-variant); margin:0 0 0.6rem 0;">
+                            <label style="font-size:0.78rem; font-weight:600; color:var(--on-surface); display:flex; align-items:center; gap:0.3rem; margin-bottom:0.4rem;">
+                                <span class="material-symbols-outlined" style="font-size:1rem;">payments</span>
+                                Metode Pembayaran
+                            </label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <label style="flex:1; display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.65rem; border-radius:0.5rem; border:2px solid var(--outline-variant); cursor:pointer; font-size:0.78rem; font-weight:500; transition:all .2s;" id="labelBayarFull">
+                                    <input type="radio" name="bayar_type" value="Full" checked style="accent-color:var(--primary);" onchange="updatePaymentType()">
+                                    <div>
+                                        <div style="font-weight:600;">Bayar Full</div>
+                                        <div style="font-size:0.7rem; color:var(--on-surface-variant);">100% lunas</div>
+                                    </div>
+                                </label>
+                                <label style="flex:1; display:flex; align-items:center; gap:0.4rem; padding:0.5rem 0.65rem; border-radius:0.5rem; border:2px solid var(--outline-variant); cursor:pointer; font-size:0.78rem; font-weight:500; transition:all .2s;" id="labelBayarDP">
+                                    <input type="radio" name="bayar_type" value="DP" style="accent-color:var(--primary);" onchange="updatePaymentType()">
+                                    <div>
+                                        <div style="font-weight:600;">Bayar DP</div>
+                                        <div style="font-size:0.7rem; color:var(--on-surface-variant);">50% dari total</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="summaryDPInfo" style="display:none; background:#fff7ed; border:1px solid #fed7aa; border-radius:0.5rem; padding:0.5rem 0.65rem; margin-top:0.5rem;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#9a3412;">
+                                    <span>Yang harus dibayar (DP 50%)</span>
+                                    <span style="font-weight:700;" id="summaryDPAmount">Rp -</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#c2410c; margin-top:0.15rem;">
+                                    <span>Sisa pelunasan di tempat</span>
+                                    <span id="summarySisaAmount">Rp -</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -103,11 +198,15 @@
                         <span>Data Pemesan</span>
                     </div>
                     <div class="bf-form-body">
-                        <form id="bookingForm" action="#" method="post">
+                        <form id="bookingForm" action="<?= base_url('/booking') ?>" method="post" enctype="multipart/form-data">
                             <!-- Hidden fields for booking data -->
-                            <input type="hidden" name="lapang" id="formLapang">
-                            <input type="hidden" name="tanggal" id="formTanggal">
-                            <input type="hidden" name="jam" id="formJam">
+                            <input type="hidden" name="id_lapang" id="formIdLapang">
+                            <input type="hidden" name="tanggal_main" id="formTanggal">
+                            <input type="hidden" name="jam_mulai" id="formJam">
+                            <input type="hidden" name="total_bayar" id="formTotalBayar">
+                            <input type="hidden" name="tipe_sewa" id="formTipeSewa" value="Per Jam">
+                            <input type="hidden" name="jumlah_hari" id="formJumlahHari" value="1">
+                            <input type="hidden" name="jenis_pembayaran" id="formJenisPembayaran" value="Full">
 
                             <!-- Tipe Sewa -->
                             <div class="bf-field">
@@ -119,7 +218,7 @@
                                     style="background: var(--surface-container); padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid var(--outline-variant);">
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="tipe_sewa" id="sewaReguler"
-                                            value="1x_main" checked>
+                                            value="Per Jam" checked>
                                         <label class="form-check-label" for="sewaReguler"
                                             style="font-size: 0.85rem; font-weight: 500; cursor: pointer;">
                                             Sewa Per Jam
@@ -127,7 +226,7 @@
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="tipe_sewa" id="sewaHarian"
-                                            value="harian">
+                                            value="Harian">
                                         <label class="form-check-label" for="sewaHarian"
                                             style="font-size: 0.85rem; font-weight: 500; cursor: pointer;">
                                             Sewa Harian
@@ -135,7 +234,7 @@
                                     </div>
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="tipe_sewa"
-                                            id="sewaMembership" value="membership_4x">
+                                            id="sewaMembership" value="Membership">
                                         <label class="form-check-label" for="sewaMembership"
                                             style="font-size: 0.85rem; font-weight: 500; cursor: pointer; color: var(--primary);">
                                             Paket Membership
@@ -193,9 +292,7 @@
                                     <span class="material-symbols-outlined bf-input-icon">location_on</span>
                                     <select id="formPilihLapang" name="pilih_lapang" class="bf-input bf-select">
                                         <option value="">-- Pilih Lapangan --</option>
-                                        <option value="Lapang 1">Lapang 1</option>
-                                        <option value="Lapang 2">Lapang 2</option>
-                                        <option value="Lapang 3">Lapang 3</option>
+                                        <!-- Populated by JS from API -->
                                     </select>
                                 </div>
                             </div>
@@ -287,6 +384,7 @@
 
     </div>
 </section>
+        <?php endif; ?>
 
 <!-- ===== MODAL: PETUNJUK PEMBAYARAN ===== -->
 <div class="modal fade" id="petunjukBayarModal" tabindex="-1" aria-labelledby="petunjukBayarLabel" aria-hidden="true">
@@ -366,7 +464,7 @@
                         Upload Bukti Pembayaran
                     </div>
                     <div class="pbm-upload-zone" id="pbmUploadZone">
-                        <input type="file" id="pbmFileInput" accept="image/*" style="display:none;">
+                        <input type="file" id="pbmFileInput" name="bukti_bayar" accept="image/*" style="display:none;" form="bookingForm">
                         <span class="material-symbols-outlined pbm-upload-icon">cloud_upload</span>
                         <p class="pbm-upload-text">Klik untuk pilih file</p>
                         <p class="pbm-upload-hint">JPG, PNG — Maks 2MB</p>
@@ -735,6 +833,7 @@
         const lapang = params.get('lapang');
         const tanggal = params.get('tanggal');
         const jam = params.get('jam');
+        const sewaParam = params.get('sewa'); // 'per-jam' | 'per-hari' | 'membership'
 
         // Summary elements
         const sumLapang = document.getElementById('summaryLapang');
@@ -755,13 +854,18 @@
         const selLapang = document.getElementById('formPilihLapang');
         const selTanggal = document.getElementById('formPilihTanggal');
         const selJam = document.getElementById('formPilihJam');
+        const fIdLapang = document.getElementById('formIdLapang');
+        const fTotalBayar = document.getElementById('formTotalBayar');
+
+        // Lapangs data from API
+        let lapangsApiData = [];
 
         let hasPreselected = false;
 
         // If params are provided (from index.php), pre-fill and hide manual selectors
         if (lapang) {
             sumLapang.textContent = lapang;
-            fLapang.value = lapang;
+            // We'll set fIdLapang when lapangs data loads
             fieldLapang.style.display = 'none';
             hasPreselected = true;
         }
@@ -777,18 +881,22 @@
 
         if (jam) {
             sumJam.textContent = jam;
-            fJam.value = jam;
+            // Store jam in HH:00 format for backend
+            const jamParts = jam.split('.');
+            const jamFormatted = jamParts[0].padStart(2, '0') + ':00';
+            fJam.value = jamFormatted;
             fieldJam.style.display = 'none';
             sumDurasi.textContent = '1 Jam';
-            sumHarga.textContent = 'Rp 75.000';
             hasPreselected = true;
         }
 
         // If manual selection, update summary on change
         if (!lapang && selLapang) {
             selLapang.addEventListener('change', () => {
-                sumLapang.textContent = selLapang.value || '-';
-                fLapang.value = selLapang.value;
+                const selectedOpt = selLapang.options[selLapang.selectedIndex];
+                sumLapang.textContent = selectedOpt.textContent || '-';
+                fIdLapang.value = selLapang.value;
+                updateSummaryData();
             });
         }
 
@@ -814,6 +922,50 @@
             });
         }
 
+        // ─── Fetch lapangs from API to populate dropdown ───
+        async function loadLapangs() {
+            try {
+                const res = await fetch('<?= base_url("/api/getLapangs") ?>');
+                lapangsApiData = await res.json();
+
+                if (selLapang) {
+                    selLapang.innerHTML = '<option value="">-- Pilih Lapangan --</option>';
+                    lapangsApiData.forEach(l => {
+                        const opt = document.createElement('option');
+                        opt.value = l.id_lapang;
+                        opt.textContent = l.nama_lapangan;
+                        selLapang.appendChild(opt);
+                    });
+                }
+
+                // If preselected via URL, find id_lapang by name
+                if (lapang) {
+                    const found = lapangsApiData.find(l => l.nama_lapangan === lapang);
+                    if (found) {
+                        fIdLapang.value = found.id_lapang;
+                        fetchTarif(found.id_lapang);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load lapangs:', err);
+            }
+        }
+
+        // ─── Fetch tarif from API ───
+        let currentTarifs = [];
+        async function fetchTarif(idLapang) {
+            const tgl = fTanggal.value || (selTanggal ? selTanggal.value : '');
+            if (!idLapang || !tgl) return;
+            try {
+                const res = await fetch(`<?= base_url('/api/getTarif') ?>?id_lapang=${idLapang}&tanggal=${tgl}`);
+                const data = await res.json();
+                currentTarifs = data.tarifs || [];
+                updateSummaryData();
+            } catch (err) {
+                console.error('Failed to fetch tarif:', err);
+            }
+        }
+
         // Tipe Sewa Radio Button Logic
         const radioReguler = document.getElementById('sewaReguler');
         const radioHarian = document.getElementById('sewaHarian');
@@ -827,67 +979,212 @@
         radioMembership.addEventListener('change', updateSummaryData);
         formDurasi.addEventListener('input', updateSummaryData);
 
+        function getHargaDasar() {
+            // Get jam from hidden field
+            const jamVal = fJam.value || '';
+            const jamHour = parseInt(jamVal) || 0;
+
+            if (currentTarifs.length > 0) {
+                // Find matching tarif by hour range
+                for (const t of currentTarifs) {
+                    const tStart = parseInt(t.jam_mulai) || 0;
+                    const tEnd   = parseInt(t.jam_selesai) || 24;
+                    if (jamHour >= tStart && jamHour < tEnd) {
+                        return parseInt(t.harga_umum) || 0;
+                    }
+                }
+                // Fallback: use first tarif
+                return parseInt(currentTarifs[0].harga_umum) || 0;
+            }
+            return 0;
+        }
+
         function updateSummaryData() {
-            // Simulasi harga dasar, di sistem riil harusnya ambil dari DB (getTarif)
-            const hargaDasar = 75000;
+            const hargaDasar = getHargaDasar();
             const isMembership = radioMembership.checked;
             const isHarian = radioHarian.checked;
+            const fTipeSewa = document.getElementById('formTipeSewa');
 
             // Ambil input durasi (default 1 jika kosong/invalid)
             let durasiVal = parseInt(formDurasi.value) || 1;
 
             // Cek apakah jam sudah terisi
             const isJamFilled = fJam.value || (selJam && selJam.value);
+            let totalHarga = 0;
+
+            // Sync hidden tipe_sewa field
+            if (isHarian) {
+                fTipeSewa.value = 'Harian';
+            } else if (isMembership) {
+                fTipeSewa.value = 'Membership';
+            } else {
+                fTipeSewa.value = 'Per Jam';
+            }
 
             if (isHarian) {
-                // Update Label Durasi
                 labelDurasiText.textContent = 'Durasi Hari';
                 summaryDurasiLabel.textContent = 'Durasi Hari';
 
-                // Misalkan tarif harian dihitung 12 jam x harga dasar (contoh saja)
-                const hargaHarian = hargaDasar * 12;
-                sumDurasi.textContent = durasiVal + ' Hari';
-                sumHarga.textContent = 'Rp ' + (hargaHarian * durasiVal).toLocaleString('id-ID');
+                // Compute operating hours from lapang data
+                let opHours = 12; // default full day hours
+                const tgl = fTanggal.value || (selTanggal ? selTanggal.value : '');
+                const currentIdLapang = fIdLapang.value || (selLapang ? selLapang.value : '');
+                if (tgl && currentIdLapang && lapangsApiData.length > 0) {
+                    const lapangInfo = lapangsApiData.find(l => String(l.id_lapang) === String(currentIdLapang));
+                    if (lapangInfo) {
+                        const dt = new Date(tgl);
+                        const dow = dt.getDay();
+                        const isWeekend = (dow === 0 || dow === 6);
+                        const jamBuka = parseInt(isWeekend ? lapangInfo.jam_buka_weekend : lapangInfo.jam_buka_weekday) || 0;
+                        let jamTutup = parseInt(isWeekend ? lapangInfo.jam_tutup_weekend : lapangInfo.jam_tutup_weekday) || 0;
+                        if (jamTutup <= jamBuka) jamTutup = 24;
+                        opHours = jamTutup - jamBuka;
 
-                // Set text jam dan hidden value ke seharian
-                sumJam.textContent = '08:00 - 20:00 (Full)';
-                fJam.value = '08:00 - 20:00';
+                        // Set jam_mulai to actual opening hour
+                        fJam.value = String(jamBuka).padStart(2, '0') + ':00';
+                        sumJam.textContent = String(jamBuka).padStart(2, '0') + '.00 - ' + String(jamTutup).padStart(2, '0') + '.00 (Full Day)';
+                    }
+                } else {
+                    sumJam.textContent = '08:00 - 20:00 (Full)';
+                    fJam.value = '08:00';
+                }
 
-                // Disable pilihan jam jika ada dropdown
+                const hargaHarian = hargaDasar * opHours;
+                totalHarga = hargaHarian * durasiVal;
+                sumDurasi.textContent = durasiVal + ' Hari (' + opHours + ' jam/hari)';
+                sumHarga.textContent = hargaDasar > 0 ? 'Rp ' + totalHarga.toLocaleString('id-ID') : 'Rp -';
+
+                // Set durasi in HOURS for backend (total operating hours * days)
+                formDurasi.setAttribute('data-original', durasiVal);
+                formDurasi.setAttribute('data-ophours', opHours);
+
                 if (selJam) {
                     selJam.disabled = true;
                     selJam.value = '';
                 }
+
+                // Hide membership UI when in harian mode
+                const diskonWrapH = document.getElementById('summaryDiskonWrap');
+                const memberDatesWrapH = document.getElementById('summaryMembershipDates');
+                if (diskonWrapH) diskonWrapH.style.display = 'none';
+                if (memberDatesWrapH) memberDatesWrapH.style.display = 'none';
             } else {
-                // Update Label Durasi
                 labelDurasiText.textContent = 'Durasi Bermain';
                 summaryDurasiLabel.textContent = 'Durasi Bermain';
 
-                // Jika bukan harian, kembalikan field jam jika sebelumnya ter-disable
                 if (selJam && selJam.disabled) {
                     selJam.disabled = false;
                     sumJam.textContent = selJam.value || '-';
                     fJam.value = selJam.value;
                 }
 
+                // Clear harian data attributes
+                formDurasi.removeAttribute('data-original');
+                formDurasi.removeAttribute('data-ophours');
+
                 if (isJamFilled || (selJam && selJam.value)) {
                     if (isMembership) {
-                        sumDurasi.textContent = '4x Main (' + durasiVal + ' Jam/Hari)';
-                        sumHarga.textContent = 'Rp ' + (hargaDasar * 4 * durasiVal).toLocaleString('id-ID');
+                        const hargaNormal = hargaDasar * 4 * durasiVal;
+                        const diskon = Math.round(hargaNormal * 0.1);
+                        totalHarga = hargaNormal - diskon;
+                        sumDurasi.textContent = '4x Main (' + durasiVal + ' Jam/sesi) — Diskon 10%';
+
+                        // Show discount breakdown
+                        const diskonWrap = document.getElementById('summaryDiskonWrap');
+                        const hargaNormalEl = document.getElementById('summaryHargaNormal');
+                        const hargaHematEl = document.getElementById('summaryHargaHemat');
+                        if (diskonWrap && hargaDasar > 0) {
+                            diskonWrap.style.display = 'block';
+                            hargaNormalEl.textContent = 'Rp ' + hargaNormal.toLocaleString('id-ID');
+                            hargaHematEl.textContent = '- Rp ' + diskon.toLocaleString('id-ID');
+                        }
+
+                        // Generate & show 4 weekly dates
+                        const tgl = fTanggal.value || (selTanggal ? selTanggal.value : '');
+                        const memberDatesWrap = document.getElementById('summaryMembershipDates');
+                        const memberDatesList = document.getElementById('membershipDatesList');
+                        if (tgl && memberDatesWrap) {
+                            const baseDt = new Date(tgl);
+                            let datesHtml = '';
+                            for (let i = 0; i < 4; i++) {
+                                const d = new Date(baseDt);
+                                d.setDate(d.getDate() + (i * 7));
+                                const label = DAY_NAMES[d.getDay()] + ', ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+                                datesHtml += '<div style="display:flex;align-items:center;gap:0.35rem;font-size:0.78rem;color:var(--on-surface);padding:0.15rem 0;">' +
+                                    '<span class="material-symbols-outlined" style="font-size:0.85rem;color:#059669;">event_available</span>' +
+                                    '<span>Sesi ' + (i+1) + ': <strong>' + label + '</strong></span></div>';
+                            }
+                            memberDatesList.innerHTML = datesHtml;
+                            memberDatesWrap.style.display = 'flex';
+                        }
                     } else {
+                        totalHarga = hargaDasar * durasiVal;
                         sumDurasi.textContent = durasiVal + ' Jam';
-                        sumHarga.textContent = 'Rp ' + (hargaDasar * durasiVal).toLocaleString('id-ID');
+
+                        // Hide membership UI
+                        const diskonWrap = document.getElementById('summaryDiskonWrap');
+                        const memberDatesWrap = document.getElementById('summaryMembershipDates');
+                        if (diskonWrap) diskonWrap.style.display = 'none';
+                        if (memberDatesWrap) memberDatesWrap.style.display = 'none';
                     }
+                    sumHarga.textContent = hargaDasar > 0 ? 'Rp ' + totalHarga.toLocaleString('id-ID') : 'Rp -';
                 } else {
                     sumDurasi.textContent = '-';
                     sumHarga.textContent = 'Rp -';
+                    // Hide membership UI
+                    const diskonWrap = document.getElementById('summaryDiskonWrap');
+                    const memberDatesWrap = document.getElementById('summaryMembershipDates');
+                    if (diskonWrap) diskonWrap.style.display = 'none';
+                    if (memberDatesWrap) memberDatesWrap.style.display = 'none';
                 }
             }
+
+            // Update hidden total_bayar field
+            fTotalBayar.value = totalHarga;
+
+            // Show/hide payment type selector (only for Per Jam & Harian)
+            const payTypeWrap = document.getElementById('summaryPaymentType');
+            if (payTypeWrap) {
+                payTypeWrap.style.display = (isMembership || totalHarga <= 0) ? 'none' : 'block';
+                // Reset to Full when switching to membership
+                if (isMembership) {
+                    const fullRadio = document.querySelector('input[name="bayar_type"][value="Full"]');
+                    if (fullRadio) fullRadio.checked = true;
+                    document.getElementById('formJenisPembayaran').value = 'Full';
+                }
+            }
+            updatePaymentType();
+        }
+
+        // Pre-select tipe sewa from URL param
+        if (sewaParam === 'per-hari') {
+            radioHarian.checked = true;
+            hasPreselected = true;
+        } else if (sewaParam === 'membership') {
+            radioMembership.checked = true;
+            hasPreselected = true;
+        } else if (sewaParam === 'per-jam') {
+            radioReguler.checked = true;
         }
 
         // Initial call if preselected
         if (hasPreselected) {
             updateSummaryData();
+        }
+
+        // Load lapangs on init
+        loadLapangs();
+
+        // Fetch tarif when lapang or tanggal changes
+        if (selLapang) {
+            selLapang.addEventListener('change', () => {
+                fetchTarif(selLapang.value);
+            });
+        }
+        if (selTanggal) {
+            selTanggal.addEventListener('change', () => {
+                fetchTarif(fIdLapang.value || (selLapang ? selLapang.value : ''));
+            });
         }
     })();
 
@@ -912,6 +1209,19 @@
             const jam = document.getElementById('summaryJam');
 
             pbmTotal.textContent = harga && harga.textContent !== 'Rp -' ? harga.textContent : 'Rp 75.000';
+
+            // If DP mode, show DP amount instead of total
+            const dpRadio = document.querySelector('input[name="bayar_type"]:checked');
+            if (dpRadio && dpRadio.value === 'DP') {
+                const dpAmount = document.getElementById('summaryDPAmount');
+                if (dpAmount) {
+                    pbmTotal.textContent = dpAmount.textContent;
+                    pbmTotal.style.color = '#c2410c';
+                }
+            } else {
+                pbmTotal.style.color = '';
+            }
+
             const lText = lapang ? lapang.textContent : '-';
             const tText = tgl ? tgl.textContent : '-';
             const jText = jam ? jam.textContent : '-';
@@ -961,9 +1271,57 @@
         // Submit form from inside modal
         kirimBtn.addEventListener('click', function () {
             const form = document.getElementById('bookingForm');
-            if (form) form.submit();
+            if (form) {
+                // If harian mode, convert durasi (days) to total hours before submit
+                const durasiInput = document.getElementById('formDurasi');
+                const tipeSewa = document.getElementById('formTipeSewa');
+                if (tipeSewa && tipeSewa.value === 'Harian' && durasiInput) {
+                    const opHours = parseInt(durasiInput.getAttribute('data-ophours')) || 12;
+                    const days = parseInt(durasiInput.value) || 1;
+                    // Store original day count before converting
+                    document.getElementById('formJumlahHari').value = days;
+                    durasiInput.value = opHours * days;
+                }
+                form.submit();
+            }
         });
     })();
+
+    /* ===== GLOBAL: Update Payment Type (Full / DP) ===== */
+    function updatePaymentType() {
+        const dpRadio = document.querySelector('input[name="bayar_type"]:checked');
+        const hiddenField = document.getElementById('formJenisPembayaran');
+        const dpInfoBox = document.getElementById('summaryDPInfo');
+        const dpAmountEl = document.getElementById('summaryDPAmount');
+        const sisaAmountEl = document.getElementById('summarySisaAmount');
+        const totalBayar = parseInt(document.getElementById('formTotalBayar').value) || 0;
+        const labelFull = document.getElementById('labelBayarFull');
+        const labelDP = document.getElementById('labelBayarDP');
+
+        if (!dpRadio || !hiddenField) return;
+
+        const isDP = dpRadio.value === 'DP';
+        hiddenField.value = isDP ? 'DP' : 'Full';
+
+        // Highlight active label
+        if (labelFull && labelDP) {
+            labelFull.style.borderColor = !isDP ? 'var(--primary)' : 'var(--outline-variant)';
+            labelFull.style.background = !isDP ? 'color-mix(in srgb, var(--primary) 8%, transparent)' : '';
+            labelDP.style.borderColor = isDP ? '#ea580c' : 'var(--outline-variant)';
+            labelDP.style.background = isDP ? '#fff7ed' : '';
+        }
+
+        if (dpInfoBox) {
+            dpInfoBox.style.display = isDP ? 'block' : 'none';
+        }
+
+        if (isDP && totalBayar > 0) {
+            const dpAmount = Math.ceil(totalBayar / 2);
+            const sisa = totalBayar - dpAmount;
+            if (dpAmountEl) dpAmountEl.textContent = 'Rp ' + dpAmount.toLocaleString('id-ID');
+            if (sisaAmountEl) sisaAmountEl.textContent = 'Rp ' + sisa.toLocaleString('id-ID');
+        }
+    }
 </script>
 
 <?= $this->endSection() ?>

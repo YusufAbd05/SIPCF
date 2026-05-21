@@ -11,6 +11,19 @@ $routes->get('/membership', 'Home::membership');
 $routes->get('/daftar-membership', 'Home::daftarMembership');
 $routes->get('/ubah-jadwal', 'Home::ubahJadwal');
 
+// Public API (no auth required)
+$routes->get('/api/getLapangs', 'Home::getLapangs');
+$routes->get('/api/getBookedSlots', 'Home::getBookedSlots');
+$routes->get('/api/getMonthBookings', 'Home::getMonthBookings');
+$routes->get('/api/getTarif', 'Home::getTarif');
+$routes->get('/api/getJadwalMembership', 'Home::getJadwalMembership');
+$routes->get('/api/getPembayaran', 'Home::getPembayaran');
+$routes->post('/booking', 'Home::saveBooking');
+
+// UC-3: Ubah Jadwal (Public API)
+$routes->get('/api/lookupBooking', 'Home::lookupBooking');
+$routes->post('/api/ubahJadwal', 'Home::processUbahJadwal');
+
 // Auth
 $routes->get('/login', 'AuthController::loginPage');
 $routes->post('/login', 'AuthController::login');

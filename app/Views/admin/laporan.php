@@ -27,15 +27,15 @@
                     <label class="form-label-custom">
                         <span class="material-symbols-outlined">calendar_month</span> Tgl. Mulai
                     </label>
-                    <input type="date" class="form-control laporan-input" name="tgl_mulai"
-                        id="filterTglMulai" value="<?= esc($tglMulai) ?>" />
+                    <input type="date" class="form-control laporan-input" name="tgl_mulai" id="filterTglMulai"
+                        value="<?= esc($tglMulai) ?>" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label-custom">
                         <span class="material-symbols-outlined">event</span> Tgl. Selesai
                     </label>
-                    <input type="date" class="form-control laporan-input" name="tgl_selesai"
-                        id="filterTglSelesai" value="<?= esc($tglSelesai) ?>" />
+                    <input type="date" class="form-control laporan-input" name="tgl_selesai" id="filterTglSelesai"
+                        value="<?= esc($tglSelesai) ?>" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label-custom">
@@ -68,7 +68,8 @@
             </div>
             <div>
                 <p class="stat-chip__label">Total Pesanan Selesai</p>
-                <p class="stat-chip__value"><?= number_format($totalPesanan) ?> <span class="stat-chip__unit">Sesi</span></p>
+                <p class="stat-chip__value"><?= number_format($totalPesanan) ?> <span
+                        class="stat-chip__unit">Sesi</span></p>
             </div>
         </div>
         <div class="stat-chip stat-chip--elevated">
@@ -95,7 +96,9 @@
             </div>
             <div>
                 <p class="stat-chip__label">Rata-rata / Sesi</p>
-                <p class="stat-chip__value">Rp <?= $totalPesanan > 0 ? number_format(round($totalOmset / $totalPesanan), 0, ',', '.') : '0' ?></p>
+                <p class="stat-chip__value">Rp
+                    <?= $totalPesanan > 0 ? number_format(round($totalOmset / $totalPesanan), 0, ',', '.') : '0' ?>
+                </p>
             </div>
         </div>
     </div>
@@ -139,7 +142,8 @@
         <div class="table-toolbar">
             <div class="d-flex align-items-center gap-2">
                 <h5 style="font-size:0.9rem; font-weight:700; margin:0; color:var(--admin-on-surface);">
-                    <span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle; margin-right:4px; color:var(--admin-primary);">receipt_long</span>
+                    <span class="material-symbols-outlined"
+                        style="font-size:1.1rem; vertical-align:middle; margin-right:4px; color:var(--admin-primary);">receipt_long</span>
                     Detail Transaksi
                 </h5>
                 <span class="badge-count"><?= number_format($totalPesanan) ?> data</span>
@@ -149,88 +153,137 @@
                 <input type="text" placeholder="Cari nama penyewa, kode..." id="searchInput" oninput="filterTable()" />
             </div>
         </div>
-        <table class="booking-table" id="laporanTable">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Kode Sewa</th>
-                    <th>Tanggal</th>
-                    <th>Nama Penyewa</th>
-                    <th>Lapangan</th>
-                    <th>Jam Main</th>
-                    <th>Durasi</th>
-                    <th>Total Bayar</th>
-                    <th>Dibayar</th>
-                    <th>Metode</th>
-                    <th>Tipe</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($bookings)): ?>
+        <div class="table-responsive">
+            <table class="booking-table" id="laporanTable">
+                <thead>
                     <tr>
-                        <td colspan="12" class="text-center py-5">
-                            <span class="material-symbols-outlined d-block mx-auto mb-2" style="font-size:3rem; color:var(--admin-outline-variant);">inbox</span>
-                            <p style="color:var(--admin-secondary); font-weight:500;">Tidak ada data untuk periode yang dipilih</p>
-                        </td>
+                        <th>No</th>
+                        <th>Kode Sewa</th>
+                        <th>Tanggal</th>
+                        <th>Nama Penyewa</th>
+                        <th>Tipe Sewa</th>
+                        <th style="text-align:center;">Aksi</th>
                     </tr>
-                <?php else: ?>
-                    <?php $no = 1; foreach ($bookings as $b): ?>
+                </thead>
+                <tbody>
+                    <?php if (empty($bookings)): ?>
                         <tr>
-                            <td class="td-secondary"><?= $no++ ?></td>
-                            <td class="td-code"><?= esc($b['kode_sewa'] ?? '-') ?></td>
-                            <td class="fw-bold"><?= date('d M Y', strtotime($b['tanggal_main'])) ?></td>
-                            <td class="td-name"><?= esc($b['nama_penyewa'] ?? '-') ?></td>
-                            <td><?= esc($b['nama_lapangan'] ?? '-') ?></td>
-                            <td>
-                                <span class="badge text-bg-light border" style="font-size:0.7rem;">
-                                    <?= substr($b['jam_mulai'], 0, 5) ?> - <?= substr($b['jam_selesai'], 0, 5) ?>
-                                </span>
-                            </td>
-                            <td class="td-secondary"><?= esc($b['durasi_jam'] ?? '-') ?> Jam</td>
-                            <td class="td-currency">Rp <?= number_format($b['total_bayar'] ?? 0, 0, ',', '.') ?></td>
-                            <td class="td-currency <?= ($b['jumlah_bayar'] ?? 0) >= ($b['total_bayar'] ?? 0) ? 'green' : '' ?>">
-                                Rp <?= number_format($b['jumlah_bayar'] ?? 0, 0, ',', '.') ?>
-                            </td>
-                            <td>
-                                <?php
-                                    $metode = $b['metode_pembayaran'] ?? 'Cash';
-                                    $metodeClass = 'cash';
-                                    if (stripos($metode, 'Transfer') !== false) $metodeClass = 'transfer';
-                                    elseif (stripos($metode, 'E-Wallet') !== false || stripos($metode, 'Ewallet') !== false) $metodeClass = 'ewallet';
-                                    elseif (stripos($metode, 'QRIS') !== false) $metodeClass = 'qris';
-                                ?>
-                                <span class="badge-method <?= $metodeClass ?>"><?= esc($metode) ?></span>
-                            </td>
-                            <td>
-                                <?php
-                                    $tipe = $b['tipe_pesanan'] ?? 'Walk-in';
-                                    $tipeClass = $tipe === 'Online' ? 'online' : 'walkin';
-                                ?>
-                                <span class="badge-tipe <?= $tipeClass ?>"><?= esc($tipe) ?></span>
-                            </td>
-                            <td>
-                                <?php
-                                    $status = $b['status_pesanan'] ?? '-';
-                                    $statusClass = 'dikonfirmasi';
-                                    if ($status === 'Selesai') $statusClass = 'selesai';
-                                ?>
-                                <span class="badge-pill <?= $statusClass ?>"><?= esc($status) ?></span>
+                            <td colspan="6" class="text-center py-5">
+                                <span class="material-symbols-outlined d-block mx-auto mb-2"
+                                    style="font-size:3rem; color:var(--admin-outline-variant);">inbox</span>
+                                <p style="color:var(--admin-secondary); font-weight:500;">Tidak ada data untuk periode yang
+                                    dipilih</p>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php $no = 1;
+                        foreach ($bookings as $b): ?>
+                            <?php
+                            $tipeSewa = $b['tipe_sewa'] ?? 'Per Jam';
+                            $sewaBadge = match ($tipeSewa) {
+                                'Membership' => ['text-bg-info', 'card_membership'],
+                                'Harian' => ['text-bg-warning', 'today'],
+                                default => ['text-bg-light border', 'schedule'],
+                            };
+                            ?>
+                            <tr>
+                                <td class="td-secondary"><?= $no++ ?></td>
+                                <td class="td-code"><?= esc($b['kode_sewa'] ?? '-') ?></td>
+                                <td class="fw-bold">
+                                    <?= isset($b['tanggal_main']) ? date('d M Y', strtotime($b['tanggal_main'])) : '-' ?>
+                                </td>
+                                <td class="td-name"><?= esc($b['nama_penyewa'] ?? '-') ?></td>
+                                <td>
+                                    <span class="badge <?= $sewaBadge[0] ?>"
+                                        style="font-size:0.65rem; display:inline-flex; align-items:center; gap:0.2rem;">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size:0.75rem;"><?= $sewaBadge[1] ?></span>
+                                        <?= esc($tipeSewa) ?>
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <div class="d-flex gap-1 justify-content-center flex-wrap">
+                                        <button class="btn btn-sm btn-outline-primary"
+                                            style="font-size:0.65rem; padding:2px 8px;"
+                                            onclick="openJadwalModal(<?= $b['id_sewa'] ?>, '<?= esc($b['kode_sewa']) ?>')">
+                                            <span class="material-symbols-outlined"
+                                                style="font-size:0.8rem; vertical-align:middle;">calendar_month</span> Jadwal
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success"
+                                            style="font-size:0.65rem; padding:2px 8px;"
+                                            onclick="openKeuanganModal(<?= $b['id_sewa'] ?>, '<?= esc($b['kode_sewa']) ?>')">
+                                            <span class="material-symbols-outlined"
+                                                style="font-size:0.8rem; vertical-align:middle;">payments</span> Keuangan
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
         <div class="table-footer border-top">
             <span class="table-footer__info">
-                Menampilkan <strong id="displayCount"><?= count($bookings) ?></strong> dari <strong><?= count($bookings) ?></strong> data
+                Menampilkan <strong id="displayCount"><?= count($bookings) ?></strong> dari
+                <strong><?= count($bookings) ?></strong> data
             </span>
             <div class="table-footer__period">
-                <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:var(--admin-primary);">date_range</span>
+                <span class="material-symbols-outlined"
+                    style="font-size:0.9rem; vertical-align:middle; color:var(--admin-primary);">date_range</span>
                 <span style="font-size:0.72rem; color:var(--admin-secondary); font-weight:600;">
                     Periode: <?= date('d M Y', strtotime($tglMulai)) ?> — <?= date('d M Y', strtotime($tglSelesai)) ?>
                 </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Modal: Jadwal ══════ -->
+    <div class="modal fade" id="modalJadwal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border:0; border-radius:16px; overflow:hidden;">
+                <div class="modal-header"
+                    style="background:linear-gradient(135deg,#0057cd,#2563eb); color:#fff; border:0; padding:1rem 1.5rem;">
+                    <div>
+                        <h5 class="modal-title" style="font-weight:700; font-size:0.95rem;">
+                            <span class="material-symbols-outlined"
+                                style="font-size:1.1rem; vertical-align:middle; margin-right:4px;">calendar_month</span>
+                            Detail Jadwal
+                        </h5>
+                        <small id="jadwalSubtitle" style="opacity:0.85; font-size:0.72rem;"></small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="jadwalBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════ Modal: Keuangan ══════ -->
+    <div class="modal fade" id="modalKeuangan" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border:0; border-radius:16px; overflow:hidden;">
+                <div class="modal-header"
+                    style="background:linear-gradient(135deg,#059669,#10b981); color:#fff; border:0; padding:1rem 1.5rem;">
+                    <div>
+                        <h5 class="modal-title" style="font-weight:700; font-size:0.95rem;">
+                            <span class="material-symbols-outlined"
+                                style="font-size:1.1rem; vertical-align:middle; margin-right:4px;">payments</span>
+                            Histori Keuangan
+                        </h5>
+                        <small id="keuanganSubtitle" style="opacity:0.85; font-size:0.72rem;"></small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="keuanganBody">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-success" role="status"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -244,7 +297,7 @@
     // ===== DATA FROM PHP =====
     const chartLabels = <?= json_encode($chartData['labels']) ?>;
     const chartValues = <?= json_encode($chartData['values']) ?>;
-    const metodeData  = <?= json_encode($metodeDistribusi) ?>;
+    const metodeData = <?= json_encode($metodeDistribusi) ?>;
 
     // ===== REVENUE TREND CHART =====
     const rCtx = document.getElementById('revenueChart').getContext('2d');
@@ -284,7 +337,7 @@
                     padding: 12,
                     cornerRadius: 8,
                     callbacks: {
-                        label: function(ctx) {
+                        label: function (ctx) {
                             return 'Rp ' + ctx.parsed.y.toLocaleString('id-ID');
                         }
                     }
@@ -304,9 +357,9 @@
                     ticks: {
                         font: { family: 'Inter', size: 11 },
                         color: '#94a3b8',
-                        callback: function(val) {
-                            if (val >= 1000000) return 'Rp ' + (val/1000000).toFixed(1) + 'jt';
-                            if (val >= 1000) return 'Rp ' + (val/1000) + 'rb';
+                        callback: function (val) {
+                            if (val >= 1000000) return 'Rp ' + (val / 1000000).toFixed(1) + 'jt';
+                            if (val >= 1000) return 'Rp ' + (val / 1000) + 'rb';
                             return 'Rp ' + val;
                         }
                     }
@@ -357,7 +410,7 @@
                     padding: 12,
                     cornerRadius: 8,
                     callbacks: {
-                        label: function(ctx) {
+                        label: function (ctx) {
                             return ctx.label + ': Rp ' + ctx.parsed.toLocaleString('id-ID');
                         }
                     }
@@ -415,7 +468,7 @@
                 // Build CSV
                 let csv = 'No,Kode Sewa,Tanggal,Nama Penyewa,Lapangan,Jam Mulai,Jam Selesai,Durasi,Total Bayar,Dibayar,Metode,Tipe,Status\n';
                 json.data.forEach((d, i) => {
-                    csv += `${i+1},"${d.kode_sewa}","${d.tanggal_main}","${d.nama_penyewa}","${d.nama_lapangan}","${d.jam_mulai}","${d.jam_selesai}","${d.durasi_jam}","${d.total_bayar}","${d.jumlah_bayar}","${d.metode_pembayaran}","${d.tipe_pesanan}","${d.status_pesanan}"\n`;
+                    csv += `${i + 1},"${d.kode_sewa}","${d.tanggal_main}","${d.nama_penyewa}","${d.nama_lapangan}","${d.jam_mulai}","${d.jam_selesai}","${d.durasi_jam}","${d.total_bayar}","${d.jumlah_bayar}","${d.metode_pembayaran}","${d.tipe_pesanan}","${d.status_pesanan}"\n`;
                 });
 
                 const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -468,6 +521,148 @@
 
         btn.classList.remove('loading');
         btn.disabled = false;
+    }
+
+    // ===== JADWAL MODAL =====
+    function openJadwalModal(idSewa, kodeSewa) {
+        document.getElementById('jadwalSubtitle').textContent = kodeSewa;
+        document.getElementById('jadwalBody').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></div>';
+        new bootstrap.Modal(document.getElementById('modalJadwal')).show();
+
+        fetch(`<?= base_url('/api/getJadwalMembership') ?>?id_sewa=${idSewa}`)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success || !res.jadwals.length) {
+                    document.getElementById('jadwalBody').innerHTML = '<p class="text-muted text-center py-3">Tidak ada data jadwal.</p>';
+                    return;
+                }
+
+                const jadwals = res.jadwals;
+                let totalDurasi = 0;
+                let rows = '';
+
+                jadwals.forEach((j, i) => {
+                    const start = parseInt(j.jam_mulai);
+                    const end = parseInt(j.jam_selesai);
+                    const durasi = end - start;
+                    totalDurasi += durasi;
+
+                    const tanggal = new Date(j.tanggal_main).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const statusClass = j.status_sesi === 'Terjadwal' ? 'text-bg-primary' : (j.status_sesi === 'Selesai' ? 'text-bg-success' : 'text-bg-secondary');
+
+                    rows += `
+                        <tr>
+                            <td style="font-size:0.78rem; color:var(--admin-secondary);">Sesi ${j.sesi_ke}</td>
+                            <td style="font-size:0.78rem; font-weight:600;">${tanggal}</td>
+                            <td style="font-size:0.78rem;">${j.jam_mulai.substring(0, 5)} - ${j.jam_selesai.substring(0, 5)}</td>
+                            <td style="font-size:0.78rem;">${durasi} Jam</td>
+                            <td><span class="badge ${statusClass}" style="font-size:0.6rem;">${j.status_sesi}</span></td>
+                        </tr>`;
+                });
+
+                document.getElementById('jadwalBody').innerHTML = `
+                    <div class="d-flex gap-3 mb-3 flex-wrap">
+                        <div class="px-3 py-2 rounded-3" style="background:#f0f5ff;">
+                            <small class="d-block" style="font-size:0.65rem; color:var(--admin-secondary); font-weight:600;">Total Durasi</small>
+                            <span style="font-weight:700; color:#0057cd; font-size:0.95rem;">${totalDurasi} Jam</span>
+                        </div>
+                        <div class="px-3 py-2 rounded-3" style="background:#f0fdf4;">
+                            <small class="d-block" style="font-size:0.65rem; color:var(--admin-secondary); font-weight:600;">Jumlah Sesi</small>
+                            <span style="font-weight:700; color:#059669; font-size:0.95rem;">${jadwals.length} Sesi</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:#f8fafc;">
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Sesi</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Tanggal</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Jam Bermain</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Durasi</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
+            })
+            .catch(() => {
+                document.getElementById('jadwalBody').innerHTML = '<p class="text-danger text-center py-3">Gagal memuat data jadwal.</p>';
+            });
+    }
+
+    // ===== KEUANGAN MODAL =====
+    function openKeuanganModal(idSewa, kodeSewa) {
+        document.getElementById('keuanganSubtitle').textContent = kodeSewa;
+        document.getElementById('keuanganBody').innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div></div>';
+        new bootstrap.Modal(document.getElementById('modalKeuangan')).show();
+
+        fetch(`<?= base_url('/api/getPembayaran') ?>?id_sewa=${idSewa}`)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success || !res.pembayarans.length) {
+                    document.getElementById('keuanganBody').innerHTML = '<p class="text-muted text-center py-3">Tidak ada data pembayaran.</p>';
+                    return;
+                }
+
+                const payments = res.pembayarans;
+                let totalBayar = 0;
+                let rows = '';
+
+                payments.forEach((p, i) => {
+                    totalBayar += parseInt(p.jumlah_bayar) || 0;
+
+                    const tanggal = p.waktu_pembayaran ? new Date(p.waktu_pembayaran).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+                    const statusClass = p.status_pembayaran === 'Sukses' ? 'text-bg-success' : (p.status_pembayaran === 'Pending' ? 'text-bg-warning' : 'text-bg-danger');
+
+                    let metodeClass = 'cash';
+                    if (p.metode && p.metode.includes('Transfer')) metodeClass = 'transfer';
+                    else if (p.metode && (p.metode.includes('E-Wallet') || p.metode.includes('Ewallet'))) metodeClass = 'ewallet';
+                    else if (p.metode && p.metode.includes('QRIS')) metodeClass = 'qris';
+
+                    rows += `
+                        <tr>
+                            <td style="font-size:0.78rem; color:var(--admin-secondary);">${i + 1}</td>
+                            <td style="font-size:0.78rem;">${tanggal}</td>
+                            <td style="font-size:0.78rem; font-weight:600;">
+                                <span class="badge ${p.jenis_pembayaran === 'DP' ? 'text-bg-warning' : 'text-bg-primary'}" style="font-size:0.6rem;">${p.jenis_pembayaran || '-'}</span>
+                            </td>
+                            <td style="font-size:0.78rem; font-weight:700;">Rp ${parseInt(p.jumlah_bayar || 0).toLocaleString('id-ID')}</td>
+                            <td style="font-size:0.78rem;"><span class="badge-method ${metodeClass}">${p.metode || '-'}</span></td>
+                            <td><span class="badge ${statusClass}" style="font-size:0.6rem;">${p.status_pembayaran}</span></td>
+                        </tr>`;
+                });
+
+                document.getElementById('keuanganBody').innerHTML = `
+                    <div class="d-flex gap-3 mb-3 flex-wrap">
+                        <div class="px-3 py-2 rounded-3" style="background:#f0fdf4;">
+                            <small class="d-block" style="font-size:0.65rem; color:var(--admin-secondary); font-weight:600;">Total Dibayar</small>
+                            <span style="font-weight:700; color:#059669; font-size:0.95rem;">Rp ${totalBayar.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="px-3 py-2 rounded-3" style="background:#fef3c7;">
+                            <small class="d-block" style="font-size:0.65rem; color:var(--admin-secondary); font-weight:600;">Jumlah Transaksi</small>
+                            <span style="font-weight:700; color:#d97706; font-size:0.95rem;">${payments.length}x Pembayaran</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0" style="font-size:0.8rem;">
+                            <thead>
+                                <tr style="background:#f8fafc;">
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">No</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Waktu</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Jenis</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Jumlah</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Metode</th>
+                                    <th style="font-size:0.68rem; text-transform:uppercase; color:var(--admin-secondary);">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
+            })
+            .catch(() => {
+                document.getElementById('keuanganBody').innerHTML = '<p class="text-danger text-center py-3">Gagal memuat data keuangan.</p>';
+            });
     }
 </script>
 

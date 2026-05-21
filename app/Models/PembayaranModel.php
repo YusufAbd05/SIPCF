@@ -33,9 +33,10 @@ class PembayaranModel extends Model
         $db = \Config\Database::connect();
         $builder = $db->table('t_sewa_lapangan s')
             ->select('p.metode, COUNT(*) as jumlah, SUM(p.jumlah_bayar) as total')
+            ->join('t_jadwal j1', 'j1.id_sewa = s.id_sewa AND j1.sesi_ke = 1', 'inner')
             ->join('t_pembayaran p', 'p.id_sewa = s.id_sewa AND p.status_pembayaran = "Sukses"', 'inner')
-            ->where('s.tanggal_main >=', $tglMulai)
-            ->where('s.tanggal_main <=', $tglSelesai)
+            ->where('j1.tanggal_main >=', $tglMulai)
+            ->where('j1.tanggal_main <=', $tglSelesai)
             ->whereIn('s.status_pesanan', ['Dikonfirmasi', 'Selesai'])
             ->groupBy('p.metode')
             ->orderBy('total', 'DESC');
