@@ -12,7 +12,12 @@ class Home extends BaseController
 {
     public function index(): string
     {
-        return view('index');
+        $lapangModel = new LapangModel();
+        $lapangs = $lapangModel->where('status_lapang', 'Tersedia')->findAll();
+
+        return view('index', [
+            'lapangs' => $lapangs,
+        ]);
     }
 
     public function ubahJadwal(): string
