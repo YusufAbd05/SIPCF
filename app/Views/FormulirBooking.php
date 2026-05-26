@@ -207,6 +207,7 @@
                             <input type="hidden" name="tipe_sewa" id="formTipeSewa" value="Per Jam">
                             <input type="hidden" name="jumlah_hari" id="formJumlahHari" value="1">
                             <input type="hidden" name="jenis_pembayaran" id="formJenisPembayaran" value="Full">
+                            <input type="hidden" name="items_json" id="formItemsJson">
 
                             <!-- Tipe Sewa -->
                             <div class="bf-field">
@@ -282,72 +283,147 @@
                                 </div>
                             </div>
 
-                            <!-- Pilih Lapang (if not pre-selected) -->
-                            <div class="bf-field" id="fieldPilihLapang">
-                                <label for="formPilihLapang" class="bf-field-label">
-                                    <span class="material-symbols-outlined bf-field-label-icon">stadium</span>
-                                    Pilih Lapangan
-                                </label>
-                                <div class="bf-input-wrap">
-                                    <span class="material-symbols-outlined bf-input-icon">location_on</span>
-                                    <select id="formPilihLapang" name="pilih_lapang" class="bf-input bf-select">
-                                        <option value="">-- Pilih Lapangan --</option>
-                                        <!-- Populated by JS from API -->
-                                    </select>
+                            <!-- ═══════════════════════════════════════════ -->
+                            <!--  CART ITEM SELECTOR (Per Jam mode only)    -->
+                            <!-- ═══════════════════════════════════════════ -->
+                            <div id="cartSection">
+                                <hr style="border-color:var(--outline-variant); margin:1rem 0;">
+                                <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.75rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary);">shopping_cart</span>
+                                    <span style="font-size:0.85rem;font-weight:700;color:var(--on-surface);">Tambah Item Booking</span>
+                                </div>
+
+                                <!-- Cart Item Input Row -->
+                                <div style="background:var(--surface-container);border:1px solid var(--outline-variant);border-radius:0.85rem;padding:0.85rem;">
+                                    <div class="bf-field" style="margin-bottom:0.6rem;">
+                                        <label class="bf-field-label" style="font-size:0.78rem;">
+                                            <span class="material-symbols-outlined bf-field-label-icon">stadium</span>
+                                            Lapangan
+                                        </label>
+                                        <select id="cartLapang" class="bf-input bf-select" style="font-size:0.85rem;">
+                                            <option value="">-- Pilih Lapangan --</option>
+                                        </select>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6 col-md-4">
+                                            <label class="bf-field-label" style="font-size:0.78rem;">
+                                                <span class="material-symbols-outlined bf-field-label-icon">event</span>
+                                                Tanggal
+                                            </label>
+                                            <input type="date" id="cartTanggal" class="bf-input bf-input-date" style="font-size:0.85rem;">
+                                        </div>
+                                        <div class="col-6 col-md-4">
+                                            <label class="bf-field-label" style="font-size:0.78rem;">
+                                                <span class="material-symbols-outlined bf-field-label-icon">schedule</span>
+                                                Jam Mulai
+                                            </label>
+                                            <select id="cartJam" class="bf-input bf-select" style="font-size:0.85rem;">
+                                                <option value="">-- Jam --</option>
+                                                <option value="08:00">08:00</option>
+                                                <option value="09:00">09:00</option>
+                                                <option value="10:00">10:00</option>
+                                                <option value="11:00">11:00</option>
+                                                <option value="12:00">12:00</option>
+                                                <option value="13:00">13:00</option>
+                                                <option value="14:00">14:00</option>
+                                                <option value="15:00">15:00</option>
+                                                <option value="16:00">16:00</option>
+                                                <option value="17:00">17:00</option>
+                                                <option value="18:00">18:00</option>
+                                                <option value="19:00">19:00</option>
+                                                <option value="20:00">20:00</option>
+                                                <option value="21:00">21:00</option>
+                                                <option value="22:00">22:00</option>
+                                                <option value="23:00">23:00</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label class="bf-field-label" style="font-size:0.78rem;">
+                                                <span class="material-symbols-outlined bf-field-label-icon">timer</span>
+                                                Durasi (Jam)
+                                            </label>
+                                            <input type="number" id="cartDurasi" class="bf-input" min="1" value="1" style="font-size:0.85rem;">
+                                        </div>
+                                    </div>
+                                    <button type="button" id="btnAddToCart" onclick="addToCart()" style="margin-top:0.65rem;width:100%;display:flex;align-items:center;justify-content:center;gap:0.35rem;padding:0.55rem 1rem;border:2px dashed var(--primary);background:color-mix(in srgb, var(--primary) 8%, transparent);color:var(--primary);border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all .2s;">
+                                        <span class="material-symbols-outlined" style="font-size:1.1rem;">add_circle</span>
+                                        Tambah ke Keranjang
+                                    </button>
+                                </div>
+
+                                <!-- Cart Items List -->
+                                <div id="cartItemsList" style="margin-top:0.75rem;"></div>
+
+                                <!-- Cart Empty Notice -->
+                                <div id="cartEmptyNotice" style="text-align:center;padding:1rem;color:var(--on-surface-variant);font-size:0.8rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.5rem;display:block;margin-bottom:0.25rem;opacity:0.4;">shopping_cart</span>
+                                    Belum ada item di keranjang
                                 </div>
                             </div>
 
-                            <!-- Pilih Tanggal (if not pre-selected) -->
-                            <div class="bf-field" id="fieldPilihTanggal">
-                                <label for="formPilihTanggal" class="bf-field-label">
-                                    <span class="material-symbols-outlined bf-field-label-icon">calendar_today</span>
-                                    Pilih Tanggal
-                                </label>
-                                <div class="bf-input-wrap">
-                                    <span class="material-symbols-outlined bf-input-icon">event</span>
-                                    <input type="date" id="formPilihTanggal" name="pilih_tanggal"
-                                        class="bf-input bf-input-date">
+                            <!-- ═══════════════════════════════════════════ -->
+                            <!--  SINGLE-ITEM FIELDS (Harian/Membership)   -->
+                            <!-- ═══════════════════════════════════════════ -->
+                            <div id="singleItemSection" style="display:none;">
+                                <div class="bf-field" id="fieldPilihLapang">
+                                    <label for="formPilihLapang" class="bf-field-label">
+                                        <span class="material-symbols-outlined bf-field-label-icon">stadium</span>
+                                        Pilih Lapangan
+                                    </label>
+                                    <div class="bf-input-wrap">
+                                        <span class="material-symbols-outlined bf-input-icon">location_on</span>
+                                        <select id="formPilihLapang" name="pilih_lapang" class="bf-input bf-select">
+                                            <option value="">-- Pilih Lapangan --</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <!-- Pilih Jam (if not pre-selected) -->
-                            <div class="bf-field" id="fieldPilihJam">
-                                <label for="formPilihJam" class="bf-field-label">
-                                    <span class="material-symbols-outlined bf-field-label-icon">schedule</span>
-                                    Pilih Jam
-                                </label>
-                                <div class="bf-input-wrap">
-                                    <span class="material-symbols-outlined bf-input-icon">schedule</span>
-                                    <select id="formPilihJam" name="pilih_jam" class="bf-select bf-input">
-                                        <option value="">-- Pilih Jam --</option>
-                                        <option value="08:00 - 09:00">08:00 - 09:00</option>
-                                        <option value="09:00 - 10:00">09:00 - 10:00</option>
-                                        <option value="10:00 - 11:00">10:00 - 11:00</option>
-                                        <option value="11:00 - 12:00">11:00 - 12:00</option>
-                                        <option value="12:00 - 13:00">12:00 - 13:00</option>
-                                        <option value="13:00 - 14:00">13:00 - 14:00</option>
-                                        <option value="14:00 - 15:00">14:00 - 15:00</option>
-                                        <option value="15:00 - 16:00">15:00 - 16:00</option>
-                                        <option value="16:00 - 17:00">16:00 - 17:00</option>
-                                        <option value="17:00 - 18:00">17:00 - 18:00</option>
-                                        <option value="18:00 - 19:00">18:00 - 19:00</option>
-                                        <option value="19:00 - 20:00">19:00 - 20:00</option>
-                                        <option value="20:00 - 21:00">20:00 - 21:00</option>
-                                        <option value="21:00 - 22:00">21:00 - 22:00</option>
-                                        <option value="22:00 - 23:00">22:00 - 23:00</option>
-                                        <option value="23:00 - 24:00">23:00 - 24:00</option>
-                                    </select>
+                                <div class="bf-field" id="fieldPilihTanggal">
+                                    <label for="formPilihTanggal" class="bf-field-label">
+                                        <span class="material-symbols-outlined bf-field-label-icon">calendar_today</span>
+                                        Pilih Tanggal
+                                    </label>
+                                    <div class="bf-input-wrap">
+                                        <span class="material-symbols-outlined bf-input-icon">event</span>
+                                        <input type="date" id="formPilihTanggal" name="pilih_tanggal" class="bf-input bf-input-date">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="bf-field" id="fieldDurasiWrap">
-                                <label for="formDurasi" class="bf-field-label">
-                                    <span class="material-symbols-outlined bf-field-label-icon">timer</span>
-                                    <span id="labelDurasiText">Durasi Bermain</span>
-                                </label>
-                                <div class="bf-input-wrap">
-                                    <span class="material-symbols-outlined bf-input-icon">schedule</span>
-                                    <input type="number" id="formDurasi" name="durasi" class="bf-input" min="1"
-                                        value="1">
+                                <div class="bf-field" id="fieldPilihJam">
+                                    <label for="formPilihJam" class="bf-field-label">
+                                        <span class="material-symbols-outlined bf-field-label-icon">schedule</span>
+                                        Pilih Jam
+                                    </label>
+                                    <div class="bf-input-wrap">
+                                        <span class="material-symbols-outlined bf-input-icon">schedule</span>
+                                        <select id="formPilihJam" name="pilih_jam" class="bf-select bf-input">
+                                            <option value="">-- Pilih Jam --</option>
+                                            <option value="08:00 - 09:00">08:00 - 09:00</option>
+                                            <option value="09:00 - 10:00">09:00 - 10:00</option>
+                                            <option value="10:00 - 11:00">10:00 - 11:00</option>
+                                            <option value="11:00 - 12:00">11:00 - 12:00</option>
+                                            <option value="12:00 - 13:00">12:00 - 13:00</option>
+                                            <option value="13:00 - 14:00">13:00 - 14:00</option>
+                                            <option value="14:00 - 15:00">14:00 - 15:00</option>
+                                            <option value="15:00 - 16:00">15:00 - 16:00</option>
+                                            <option value="16:00 - 17:00">16:00 - 17:00</option>
+                                            <option value="17:00 - 18:00">17:00 - 18:00</option>
+                                            <option value="18:00 - 19:00">18:00 - 19:00</option>
+                                            <option value="19:00 - 20:00">19:00 - 20:00</option>
+                                            <option value="20:00 - 21:00">20:00 - 21:00</option>
+                                            <option value="21:00 - 22:00">21:00 - 22:00</option>
+                                            <option value="22:00 - 23:00">22:00 - 23:00</option>
+                                            <option value="23:00 - 24:00">23:00 - 24:00</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="bf-field" id="fieldDurasiWrap">
+                                    <label for="formDurasi" class="bf-field-label">
+                                        <span class="material-symbols-outlined bf-field-label-icon">timer</span>
+                                        <span id="labelDurasiText">Durasi Bermain</span>
+                                    </label>
+                                    <div class="bf-input-wrap">
+                                        <span class="material-symbols-outlined bf-input-icon">schedule</span>
+                                        <input type="number" id="formDurasi" name="durasi" class="bf-input" min="1" value="1">
+                                    </div>
                                 </div>
                             </div>
 
@@ -363,22 +439,21 @@
                                 </div>
                             </div>
 
-                            <!-- Submit Button — opens payment guide modal -->
+                            <!-- Submit Button -->
                             <button type="button" class="bf-submit-btn" id="btnSubmitBooking" data-bs-toggle="modal"
                                 data-bs-target="#petunjukBayarModal">
                                 <span class="material-symbols-outlined" style="font-size:1.2rem;">check_circle</span>
                                 Booking Sekarang
                             </button>
 
-                            <!-- Terms -->
                             <p class="bf-terms">
                                 Dengan menekan tombol di atas, Anda menyetujui
-                                <a href="#">syarat & ketentuan</a> yang berlaku.
+                                <a href="#">syarat &amp; ketentuan</a> yang berlaku.
                             </p>
                         </form>
                     </div>
-                </div>
             </div>
+
 
         </div>
 
@@ -1186,7 +1261,265 @@
                 fetchTarif(fIdLapang.value || (selLapang ? selLapang.value : ''));
             });
         }
+    /* ===== TIPE SEWA: Toggle Cart vs Single-Item Section ===== */
+    (function () {
+        const radioReguler = document.getElementById('sewaReguler');
+        const radioHarian = document.getElementById('sewaHarian');
+        const radioMembership = document.getElementById('sewaMembership');
+        const cartSection = document.getElementById('cartSection');
+        const singleSection = document.getElementById('singleItemSection');
+
+        function toggleSections() {
+            const isPerJam = radioReguler && radioReguler.checked;
+            if (cartSection) cartSection.style.display = isPerJam ? 'block' : 'none';
+            if (singleSection) singleSection.style.display = isPerJam ? 'none' : 'block';
+        }
+
+        if (radioReguler) radioReguler.addEventListener('change', toggleSections);
+        if (radioHarian) radioHarian.addEventListener('change', toggleSections);
+        if (radioMembership) radioMembership.addEventListener('change', toggleSections);
+
+        // Initial state
+        toggleSections();
     })();
+
+    /* ===== CART: Multi-Item Booking System ===== */
+    let cartItems = [];
+    let cartLapangsData = [];
+
+    // Populate cart lapang dropdown
+    async function loadCartLapangs() {
+        try {
+            const res = await fetch('<?= base_url("/api/getLapangs") ?>');
+            cartLapangsData = await res.json();
+            const sel = document.getElementById('cartLapang');
+            if (sel) {
+                sel.innerHTML = '<option value="">-- Pilih Lapangan --</option>';
+                cartLapangsData.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id_lapang;
+                    opt.textContent = l.nama_lapangan;
+                    sel.appendChild(opt);
+                });
+            }
+        } catch (err) {
+            console.error('Failed to load cart lapangs:', err);
+        }
+    }
+
+    // Fetch tarif for a cart item
+    async function getCartItemPrice(idLapang, tanggal, jamMulai, durasi) {
+        try {
+            const res = await fetch(`<?= base_url('/api/getTarif') ?>?id_lapang=${idLapang}&tanggal=${tanggal}`);
+            const data = await res.json();
+            const tarifs = data.tarifs || [];
+            const jamHour = parseInt(jamMulai) || 0;
+            let total = 0;
+            for (let h = jamHour; h < jamHour + durasi; h++) {
+                let slotPrice = 0;
+                for (const t of tarifs) {
+                    const tStart = parseInt(t.jam_mulai) || 0;
+                    const tEnd = parseInt(t.jam_selesai) || 24;
+                    if (h >= tStart && h < tEnd) {
+                        slotPrice = parseInt(t.harga_umum) || 0;
+                        break;
+                    }
+                }
+                total += slotPrice;
+            }
+            return total;
+        } catch (err) {
+            console.error('Failed to fetch tarif:', err);
+            return 0;
+        }
+    }
+
+    // Check slot availability for a cart item
+    async function checkCartSlotAvailable(idLapang, tanggal, jamMulai, durasi) {
+        try {
+            const res = await fetch(`<?= base_url('/api/getBookedSlots') ?>?tanggal=${tanggal}`);
+            const bookedMap = await res.json();
+            const booked = bookedMap[idLapang] || [];
+            const jamHour = parseInt(jamMulai) || 0;
+            for (let h = jamHour; h < jamHour + durasi; h++) {
+                const slot = String(h).padStart(2, '0') + ':00';
+                if (booked.includes(slot)) return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Slot check failed:', err);
+            return true; // optimistic
+        }
+    }
+
+    async function addToCart() {
+        const idLapang = document.getElementById('cartLapang').value;
+        const tanggal = document.getElementById('cartTanggal').value;
+        const jamMulai = document.getElementById('cartJam').value;
+        const durasi = parseInt(document.getElementById('cartDurasi').value) || 1;
+
+        if (!idLapang || !tanggal || !jamMulai) {
+            alert('Silakan lengkapi Lapangan, Tanggal, dan Jam Mulai.');
+            return;
+        }
+
+        // Validate date not in the past
+        if (tanggal < new Date().toISOString().split('T')[0]) {
+            alert('Tanggal tidak boleh di masa lalu.');
+            return;
+        }
+
+        // Check for duplicate in cart
+        const isDuplicate = cartItems.some(item =>
+            item.id_lapang === idLapang &&
+            item.tanggal === tanggal &&
+            item.jam_mulai === jamMulai
+        );
+        if (isDuplicate) {
+            alert('Item ini sudah ada di keranjang.');
+            return;
+        }
+
+        // Check slot availability (server-side + local cart)
+        const isAvailable = await checkCartSlotAvailable(idLapang, tanggal, jamMulai, durasi);
+        if (!isAvailable) {
+            alert('Maaf, jam yang dipilih sudah terisi. Silakan pilih jam lain.');
+            return;
+        }
+
+        // Also check against other cart items
+        const jamHour = parseInt(jamMulai) || 0;
+        for (const existing of cartItems) {
+            if (existing.id_lapang === idLapang && existing.tanggal === tanggal) {
+                const exJam = parseInt(existing.jam_mulai) || 0;
+                const exEnd = exJam + (parseInt(existing.durasi) || 1);
+                const newEnd = jamHour + durasi;
+                if (jamHour < exEnd && newEnd > exJam) {
+                    alert('Jam ini bertabrakan dengan item lain di keranjang.');
+                    return;
+                }
+            }
+        }
+
+        // Get price
+        const harga = await getCartItemPrice(idLapang, tanggal, jamMulai, durasi);
+
+        // Get lapang name
+        const lapangName = cartLapangsData.find(l => String(l.id_lapang) === String(idLapang))?.nama_lapangan || 'Lapang ' + idLapang;
+
+        cartItems.push({
+            id_lapang: idLapang,
+            nama_lapang: lapangName,
+            tanggal: tanggal,
+            jam_mulai: jamMulai,
+            durasi: durasi,
+            harga: harga
+        });
+
+        renderCart();
+
+        // Reset inputs
+        document.getElementById('cartDurasi').value = 1;
+    }
+
+    function removeFromCart(index) {
+        cartItems.splice(index, 1);
+        renderCart();
+    }
+
+    function renderCart() {
+        const listEl = document.getElementById('cartItemsList');
+        const emptyEl = document.getElementById('cartEmptyNotice');
+        const formItemsJson = document.getElementById('formItemsJson');
+        const formTotalBayar = document.getElementById('formTotalBayar');
+        const sumHarga = document.getElementById('summaryHarga');
+
+        if (cartItems.length === 0) {
+            listEl.innerHTML = '';
+            emptyEl.style.display = 'block';
+            formItemsJson.value = '';
+            formTotalBayar.value = 0;
+            if (sumHarga) sumHarga.textContent = 'Rp -';
+            return;
+        }
+
+        emptyEl.style.display = 'none';
+
+        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+        let html = '';
+        let totalHarga = 0;
+
+        cartItems.forEach((item, idx) => {
+            totalHarga += item.harga;
+            const dt = new Date(item.tanggal);
+            const tglText = dt.getDate() + ' ' + MONTH_NAMES[dt.getMonth()] + ' ' + dt.getFullYear();
+            const jamEnd = String(parseInt(item.jam_mulai) + item.durasi).padStart(2, '0') + ':00';
+
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--surface-container);border:1px solid var(--outline-variant);border-radius:0.65rem;margin-bottom:0.4rem;animation:fadeIn .3s ease;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        <span class="material-symbols-outlined" style="font-size:0.85rem;vertical-align:-2px;color:var(--primary);margin-right:2px;">stadium</span>
+                        ${item.nama_lapang}
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--on-surface-variant);margin-top:1px;">
+                        ${tglText} · ${item.jam_mulai} - ${jamEnd} (${item.durasi} jam)
+                    </div>
+                    <div style="font-size:0.75rem;font-weight:700;color:var(--primary);margin-top:2px;">
+                        Rp ${item.harga.toLocaleString('id-ID')}
+                    </div>
+                </div>
+                <button type="button" onclick="removeFromCart(${idx})" style="background:none;border:none;cursor:pointer;padding:0.25rem;color:#dc2626;flex-shrink:0;" title="Hapus">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">delete</span>
+                </button>
+            </div>`;
+        });
+
+        // Cart total row
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0.75rem;background:color-mix(in srgb, var(--primary) 10%, transparent);border:1px solid color-mix(in srgb, var(--primary) 30%, transparent);border-radius:0.65rem;margin-top:0.4rem;">
+            <span style="font-size:0.82rem;font-weight:700;color:var(--on-surface);">
+                <span class="material-symbols-outlined" style="font-size:0.9rem;vertical-align:-2px;">shopping_cart</span>
+                ${cartItems.length} item
+            </span>
+            <span style="font-size:0.9rem;font-weight:800;color:var(--primary);">
+                Rp ${totalHarga.toLocaleString('id-ID')}
+            </span>
+        </div>`;
+
+        listEl.innerHTML = html;
+
+        // Update hidden fields
+        formItemsJson.value = JSON.stringify(cartItems);
+        formTotalBayar.value = totalHarga;
+        if (sumHarga) sumHarga.textContent = 'Rp ' + totalHarga.toLocaleString('id-ID');
+
+        // Also update summary card details
+        const sumLapang = document.getElementById('summaryLapang');
+        const sumTanggal = document.getElementById('summaryTanggal');
+        const sumJam = document.getElementById('summaryJam');
+        const sumDurasi = document.getElementById('summaryDurasi');
+        if (sumLapang) {
+            const names = [...new Set(cartItems.map(i => i.nama_lapang))];
+            sumLapang.textContent = names.join(', ');
+        }
+        if (sumTanggal) {
+            const dates = [...new Set(cartItems.map(i => i.tanggal))];
+            sumTanggal.textContent = dates.length === 1 ? (() => {
+                const d = new Date(dates[0]);
+                return d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+            })() : dates.length + ' tanggal berbeda';
+        }
+        if (sumJam) sumJam.textContent = cartItems.length + ' sesi';
+        if (sumDurasi) sumDurasi.textContent = cartItems.reduce((a, i) => a + i.durasi, 0) + ' Jam';
+
+        // Update payment type
+        const payTypeWrap = document.getElementById('summaryPaymentType');
+        if (payTypeWrap) payTypeWrap.style.display = totalHarga > 0 ? 'block' : 'none';
+        if (typeof updatePaymentType === 'function') updatePaymentType();
+    }
+
+    // Load cart lapangs on page load
+    loadCartLapangs();
 
     /* ===== MODAL PETUNJUK BAYAR ===== */
     (function () {
@@ -1272,9 +1605,22 @@
         kirimBtn.addEventListener('click', function () {
             const form = document.getElementById('bookingForm');
             if (form) {
+                const tipeSewa = document.getElementById('formTipeSewa');
+
+                // Cart validation for Per Jam mode
+                if (tipeSewa && tipeSewa.value === 'Per Jam') {
+                    if (typeof cartItems !== 'undefined' && cartItems.length === 0) {
+                        alert('Silakan tambahkan minimal 1 item ke keranjang booking.');
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('petunjukBayarModal'));
+                        if (modal) modal.hide();
+                        return;
+                    }
+                    // Ensure items_json is up to date
+                    document.getElementById('formItemsJson').value = JSON.stringify(cartItems);
+                }
+
                 // If harian mode, convert durasi (days) to total hours before submit
                 const durasiInput = document.getElementById('formDurasi');
-                const tipeSewa = document.getElementById('formTipeSewa');
                 if (tipeSewa && tipeSewa.value === 'Harian' && durasiInput) {
                     const opHours = parseInt(durasiInput.getAttribute('data-ophours')) || 12;
                     const days = parseInt(durasiInput.value) || 1;

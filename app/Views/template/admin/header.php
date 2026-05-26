@@ -31,6 +31,7 @@
                         <div class="px-3 py-2">
                             <p style="font-size:0.82rem;font-weight:700;margin:0;color:#0f172a;"><?= esc(session()->get('nama') ?? 'Admin') ?></p>
                             <p style="font-size:0.68rem;color:#94a3b8;margin:0;"><?= esc(session()->get('email') ?? '') ?></p>
+                            <span style="display:inline-block;margin-top:0.35rem;padding:0.15rem 0.6rem;font-size:0.62rem;font-weight:700;border-radius:999px;background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1d4ed8;letter-spacing:0.03em;"><?= esc(session()->get('role') ?? 'User') ?></span>
                         </div>
                     </li>
                     <li><hr class="dropdown-divider" style="margin:0.25rem 0;"></li>

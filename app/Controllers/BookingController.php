@@ -176,6 +176,7 @@ class BookingController extends BaseController
         $jadwalModel = new \App\Models\JadwalModel();
         $jadwalModel->insert([
             'id_sewa'      => $idSewa,
+            'id_lapang'    => $this->request->getPost('id_lapang'),
             'sesi_ke'      => 1,
             'tanggal_main' => $this->request->getPost('tanggal_main'),
             'jam_mulai'    => $this->request->getPost('jam_mulai'),
@@ -219,6 +220,7 @@ class BookingController extends BaseController
         $jadwal = $jadwalModel->where('id_sewa', $id)->where('sesi_ke', 1)->first();
         if ($jadwal) {
             $jadwalModel->update($jadwal['id_jadwal'], [
+                'id_lapang'    => $this->request->getPost('id_lapang'),
                 'tanggal_main' => $this->request->getPost('tanggal_main'),
                 'jam_mulai'    => $this->request->getPost('jam_mulai'),
                 'jam_selesai'  => $this->request->getPost('jam_selesai'),

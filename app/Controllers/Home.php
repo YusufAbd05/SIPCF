@@ -299,6 +299,7 @@ class Home extends BaseController
             foreach ($dates as $idx => $date) {
                 $jadwalModel->insert([
                     'id_sewa' => $idSewa,
+                    'id_lapang' => $idLapang,
                     'sesi_ke' => $idx + 1,
                     'tanggal_main' => $date,
                     'jam_mulai' => $jamMulai,
@@ -420,6 +421,7 @@ class Home extends BaseController
 
                 $jadwalModel->insert([
                     'id_sewa' => $idSewa,
+                    'id_lapang' => $idLapang,
                     'sesi_ke' => $idx + 1,
                     'tanggal_main' => $date,
                     'jam_mulai' => str_pad($dayJamBuka, 2, '0', STR_PAD_LEFT) . ':00',
@@ -448,74 +450,147 @@ class Home extends BaseController
         }
 
         // ═══════════════════════════════════════════════
-        //  MODE: PER JAM (single booking + 1 jadwal record)
+        //  MODE: PER JAM — Multi-Item Cart Support
+        //  → 1 booking record + N jadwal records (1 per item)
         // ═══════════════════════════════════════════════
-        $jamSelesai = str_pad($jamMulaiHour + $durasi, 2, '0', STR_PAD_LEFT) . ':00';
 
-        // ── Check slot availability via t_jadwal ──
+        // Check if cart items are submitted (multi-item mode)
+        $itemsJson = $this->request->getPost('items_json');
+        $cartItems = [];
+
+        if ($itemsJson) {
+            $cartItems = json_decode($itemsJson, true);
+            if (!is_array($cartItems) || empty($cartItems)) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Data keranjang booking tidak valid.');
+            }
+        } else {
+            // Backward compat: single item from old form
+            $jamSelesai = str_pad($jamMulaiHour + $durasi, 2, '0', STR_PAD_LEFT) . ':00';
+            $cartItems = [[
+                'id_lapang' => $idLapang,
+                'tanggal'   => $tanggalMain,
+                'jam_mulai' => $jamMulai,
+                'durasi'    => $durasi,
+            ]];
+        }
+
+        // ── Validate all items ──
         $jadwalModel = new JadwalModel();
-        $allSlots = $jadwalModel->getBookedSlotsForDate($tanggalMain);
+        $tarifModel  = new TarifModel();
+        $calculatedTotal = 0;
 
-        $occupiedHours = [];
-        foreach ($allSlots as $s) {
-            if ((string) $s['id_lapang'] === (string) $idLapang) {
-                $sStart = (int) substr($s['jam_mulai'], 0, 2);
-                $sEnd = (int) substr($s['jam_selesai'], 0, 2);
-                for ($h = $sStart; $h < $sEnd; $h++) {
-                    $occupiedHours[] = $h;
+        foreach ($cartItems as $idx => $item) {
+            $itemLapang  = $item['id_lapang'];
+            $itemTanggal = $item['tanggal'];
+            $itemJam     = $item['jam_mulai'];
+            $itemDurasi  = (int) ($item['durasi'] ?? 1);
+            $itemJamHour = (int) substr($itemJam, 0, 2);
+            $itemJamSelesai = str_pad($itemJamHour + $itemDurasi, 2, '0', STR_PAD_LEFT) . ':00';
+
+            // Validate date not in the past
+            if ($itemTanggal < date('Y-m-d')) {
+                return redirect()->back()->withInput()
+                    ->with('error', 'Item #' . ($idx + 1) . ': Tanggal sudah lewat.');
+            }
+
+            // Check slot availability
+            $allSlots = $jadwalModel->getBookedSlotsForDate($itemTanggal);
+            $occupiedHours = [];
+            foreach ($allSlots as $s) {
+                if ((string) $s['id_lapang'] === (string) $itemLapang) {
+                    $sStart = (int) substr($s['jam_mulai'], 0, 2);
+                    $sEnd   = (int) substr($s['jam_selesai'], 0, 2);
+                    for ($h = $sStart; $h < $sEnd; $h++) {
+                        $occupiedHours[] = $h;
+                    }
                 }
             }
+
+            for ($h = $itemJamHour; $h < $itemJamHour + $itemDurasi; $h++) {
+                if (in_array($h, $occupiedHours)) {
+                    return redirect()->back()->withInput()
+                        ->with('error', 'Item #' . ($idx + 1) . ': Jam yang dipilih sudah terisi. Silakan pilih jam lain.');
+                }
+            }
+
+            // Calculate price for this item
+            $dow = date('w', strtotime($itemTanggal));
+            $kategoriHari = ($dow == 0 || $dow == 6) ? 'Weekend' : 'Weekday';
+            $tarifs = $tarifModel->where('id_lapang', $itemLapang)->where('hari', $kategoriHari)->findAll();
+            if (empty($tarifs)) {
+                $tarifs = $tarifModel->where('id_lapang', $itemLapang)->findAll();
+            }
+
+            $itemHarga = 0;
+            for ($h = $itemJamHour; $h < $itemJamHour + $itemDurasi; $h++) {
+                $hargaSlot = 0;
+                foreach ($tarifs as $t) {
+                    $tStart = (int) substr($t['jam_mulai'], 0, 2);
+                    $tEnd   = (int) substr($t['jam_selesai'], 0, 2);
+                    if ($h >= $tStart && $h < $tEnd) {
+                        $hargaSlot = (int) $t['harga_umum'];
+                        break;
+                    }
+                }
+                $itemHarga += $hargaSlot;
+            }
+            $calculatedTotal += $itemHarga;
+
+            // Store calculated values back in item
+            $cartItems[$idx]['jam_selesai'] = $itemJamSelesai;
+            $cartItems[$idx]['harga']       = $itemHarga;
         }
 
-        for ($h = $jamMulaiHour; $h < $jamMulaiHour + $durasi; $h++) {
-            if (in_array($h, $occupiedHours)) {
-                return redirect()->back()->withInput()
-                    ->with('error', 'Maaf, jam yang Anda pilih sudah terisi. Silakan pilih jam lain.');
-            }
-        }
+        // Use server-calculated total (more secure)
+        $finalTotal = $calculatedTotal > 0 ? $calculatedTotal : $totalBayar;
 
         // ── Generate Kode Booking ──
         $dateStr = date('Ymd');
         $countToday = $bookingModel->like('kode_sewa', "BK-{$dateStr}-")->countAllResults();
         $kodeSewa = "BK-{$dateStr}-" . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
 
-        // ── Save Booking ──
+        // ── Save Booking (1 record) ──
+        $totalDurasi = array_sum(array_column($cartItems, 'durasi'));
         $dataBooking = [
-            'kode_sewa' => $kodeSewa,
-            'id_lapang' => $idLapang,
-            'nama_penyewa' => $this->request->getPost('nama'),
-            'no_hp_penyewa' => $this->request->getPost('whatsapp'),
-            'tipe_pesanan' => 'Online',
-            'tipe_sewa' => 'Per Jam',
-            'durasi_jam' => $durasi,
-            'total_bayar' => $totalBayar,
+            'kode_sewa'      => $kodeSewa,
+            'id_lapang'      => $cartItems[0]['id_lapang'], // first item for backward compat
+            'nama_penyewa'   => $this->request->getPost('nama'),
+            'no_hp_penyewa'  => $this->request->getPost('whatsapp'),
+            'tipe_pesanan'   => 'Online',
+            'tipe_sewa'      => 'Per Jam',
+            'durasi_jam'     => $totalDurasi,
+            'total_bayar'    => $finalTotal,
             'status_pesanan' => 'Menunggu Verifikasi',
         ];
 
         $bookingModel->insert($dataBooking);
         $idSewa = $bookingModel->getInsertID();
 
-        // ── Save Jadwal (1 record) ──
-        $jadwalModel->insert([
-            'id_sewa' => $idSewa,
-            'sesi_ke' => 1,
-            'tanggal_main' => $tanggalMain,
-            'jam_mulai' => $jamMulai,
-            'jam_selesai' => $jamSelesai,
-            'status_sesi' => 'Terjadwal',
-        ]);
+        // ── Save Jadwal (N records — 1 per cart item) ──
+        foreach ($cartItems as $idx => $item) {
+            $jadwalModel->insert([
+                'id_sewa'      => $idSewa,
+                'id_lapang'    => $item['id_lapang'],
+                'sesi_ke'      => $idx + 1,
+                'tanggal_main' => $item['tanggal'],
+                'jam_mulai'    => $item['jam_mulai'],
+                'jam_selesai'  => $item['jam_selesai'],
+                'status_sesi'  => 'Terjadwal',
+            ]);
+        }
 
         // ── Save Pembayaran ──
         $jenisBayar = $this->request->getPost('jenis_pembayaran') ?? 'Full';
-        $jumlahBayar = ($jenisBayar === 'DP') ? (int) ceil($totalBayar / 2) : $totalBayar;
+        $jumlahBayar = ($jenisBayar === 'DP') ? (int) ceil($finalTotal / 2) : $finalTotal;
         $dataPembayaran = [
-            'id_sewa' => $idSewa,
-            'jenis_pembayaran' => $jenisBayar,
-            'jumlah_bayar' => $jumlahBayar,
-            'metode' => 'Transfer Bank',
-            'url_bukti_bayar' => $urlBukti,
+            'id_sewa'           => $idSewa,
+            'jenis_pembayaran'  => $jenisBayar,
+            'jumlah_bayar'      => $jumlahBayar,
+            'metode'            => 'Transfer Bank',
+            'url_bukti_bayar'   => $urlBukti,
             'status_pembayaran' => 'Pending',
-            'waktu_pembayaran' => date('Y-m-d H:i:s'),
+            'waktu_pembayaran'  => date('Y-m-d H:i:s'),
         ];
         $pembayaranModel->insert($dataPembayaran);
 

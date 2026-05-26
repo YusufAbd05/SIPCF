@@ -38,8 +38,11 @@
                 <button class="table-filter-btn" id="filterAdmin" onclick="filterRole('Admin')">
                     <span class="material-symbols-outlined">admin_panel_settings</span> Admin
                 </button>
-                <button class="table-filter-btn" id="filterMembership" onclick="filterRole('Membership')">
-                    <span class="material-symbols-outlined">card_membership</span> Membership
+                <button class="table-filter-btn" id="filterManajer" onclick="filterRole('Manajer')">
+                    <span class="material-symbols-outlined">manage_accounts</span> Manajer
+                </button>
+                <button class="table-filter-btn" id="filterOwner" onclick="filterRole('Owner')">
+                    <span class="material-symbols-outlined">supervisor_account</span> Owner
                 </button>
             </div>
         </div>
@@ -180,7 +183,8 @@
                             <select name="role" class="form-control-custom" required>
                                 <option value="" disabled selected>Pilih role...</option>
                                 <option value="Admin">Admin</option>
-                                <option value="Membership">Membership</option>
+                                <option value="Manajer">Manajer</option>
+                                <option value="Owner">Owner</option>
                             </select>
                         </div>
                     </div>
@@ -252,7 +256,8 @@
                             </label>
                             <select name="role" id="editRole" class="form-control-custom" required>
                                 <option value="Admin">Admin</option>
-                                <option value="Membership">Membership</option>
+                                <option value="Manajer">Manajer</option>
+                                <option value="Owner">Owner</option>
                             </select>
                         </div>
                     </div>
@@ -365,9 +370,13 @@
         document.querySelectorAll('.table-filter-btn').forEach(btn => {
             btn.classList.remove('filter-active');
         });
-        const activeBtn = role === 'all' ? document.getElementById('filterAll') :
-            role === 'Admin' ? document.getElementById('filterAdmin') :
-                document.getElementById('filterMembership');
+        const btnMap = {
+            'all': 'filterAll',
+            'Admin': 'filterAdmin',
+            'Manajer': 'filterManajer',
+            'Owner': 'filterOwner',
+        };
+        const activeBtn = document.getElementById(btnMap[role]);
         if (activeBtn) {
             activeBtn.classList.add('filter-active');
         }

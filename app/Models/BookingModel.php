@@ -32,24 +32,28 @@ class BookingModel extends Model
      */
     public function getBookingsWithDetails()
     {
-        return $this->select('
+        $db = \Config\Database::connect();
+        return $db->table('t_sewa_lapangan')
+            ->select('
                 t_sewa_lapangan.*,
-                t_lapang.nama_lapangan,
+                GROUP_CONCAT(DISTINCT lp.nama_lapangan ORDER BY j1.sesi_ke SEPARATOR ", ") as nama_lapangan,
                 MIN(j1.tanggal_main) as tanggal_main,
                 MIN(j1.jam_mulai) as jam_mulai,
                 MIN(j1.jam_selesai) as jam_selesai,
                 MAX(t_pembayaran.metode) as metode_pembayaran,
                 MAX(t_pembayaran.url_bukti_bayar) as url_bukti_bayar,
-                SUM(t_pembayaran.jumlah_bayar) as jumlah_bayar
+                SUM(DISTINCT t_pembayaran.jumlah_bayar) as jumlah_bayar,
+                COUNT(DISTINCT j1.id_jadwal) as jumlah_item
             ')
-            ->join('t_lapang', 't_lapang.id_lapang = t_sewa_lapangan.id_lapang', 'left')
-            ->join('t_jadwal j1', 'j1.id_sewa = t_sewa_lapangan.id_sewa AND j1.sesi_ke = 1', 'left')
+            ->join('t_jadwal j1', 'j1.id_sewa = t_sewa_lapangan.id_sewa', 'left')
+            ->join('t_lapang lp', 'lp.id_lapang = j1.id_lapang', 'left')
             ->join('t_pembayaran', 't_pembayaran.id_sewa = t_sewa_lapangan.id_sewa', 'left')
             ->whereNotIn('t_sewa_lapangan.status_pesanan', ['Selesai'])
             ->groupBy('t_sewa_lapangan.id_sewa')
-            ->orderBy("FIELD(t_sewa_lapangan.status_pesanan, 'Ditolak','Dibatalkan')", '', false)
+            ->orderBy("FIELD(t_sewa_lapangan.status_pesanan, 'Ditolak','Dibatalkan')")
             ->orderBy('t_sewa_lapangan.created_at', 'DESC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
     }
 
     /**
@@ -59,17 +63,19 @@ class BookingModel extends Model
      */
     public function getLaporanBookings(string $tglMulai, string $tglSelesai, string $idLapang = 'all'): array
     {
-        $builder = $this->select('
+        $db = \Config\Database::connect();
+        $builder = $db->table('t_sewa_lapangan')
+            ->select('
                 t_sewa_lapangan.*,
-                t_lapang.nama_lapangan,
+                GROUP_CONCAT(DISTINCT lp.nama_lapangan ORDER BY j1.sesi_ke SEPARATOR ", ") as nama_lapangan,
                 MIN(j1.tanggal_main) as tanggal_main,
                 MIN(j1.jam_mulai) as jam_mulai,
                 MIN(j1.jam_selesai) as jam_selesai,
-                SUM(t_pembayaran.jumlah_bayar) as jumlah_bayar,
+                SUM(DISTINCT t_pembayaran.jumlah_bayar) as jumlah_bayar,
                 MAX(t_pembayaran.metode) as metode_pembayaran
             ')
-            ->join('t_lapang', 't_lapang.id_lapang = t_sewa_lapangan.id_lapang', 'left')
-            ->join('t_jadwal j1', 'j1.id_sewa = t_sewa_lapangan.id_sewa AND j1.sesi_ke = 1', 'left')
+            ->join('t_jadwal j1', 'j1.id_sewa = t_sewa_lapangan.id_sewa', 'left')
+            ->join('t_lapang lp', 'lp.id_lapang = j1.id_lapang', 'left')
             ->join('t_pembayaran', 't_pembayaran.id_sewa = t_sewa_lapangan.id_sewa AND t_pembayaran.status_pembayaran = "Sukses"', 'left')
             ->where('j1.tanggal_main >=', $tglMulai)
             ->where('j1.tanggal_main <=', $tglSelesai)
@@ -78,10 +84,10 @@ class BookingModel extends Model
             ->orderBy('tanggal_main', 'DESC');
 
         if ($idLapang !== 'all') {
-            $builder->where('t_sewa_lapangan.id_lapang', $idLapang);
+            $builder->where('j1.id_lapang', $idLapang);
         }
 
-        return $builder->findAll();
+        return $builder->get()->getResultArray();
     }
 
     /**
@@ -106,5 +112,88 @@ class BookingModel extends Model
         }
 
         return $builder->get()->getResultArray();
+    }
+
+    // ─────────────────────────────────────────
+    //  Dashboard Helper Methods
+    // ─────────────────────────────────────────
+
+    /**
+     * Hitung jumlah booking berdasarkan status pesanan.
+     */
+    public function countByStatus(string $status): int
+    {
+        return $this->where('status_pesanan', $status)->countAllResults();
+    }
+
+    /**
+     * Ambil N booking terbaru beserta nama lapangan.
+     */
+    public function getBookingTerbaru(int $limit = 5): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_sewa_lapangan s')
+            ->select('s.kode_sewa, s.nama_penyewa, s.status_pesanan, s.total_bayar, s.created_at, l.nama_lapangan')
+            ->join('t_lapang l', 'l.id_lapang = s.id_lapang', 'left')
+            ->orderBy('s.created_at', 'DESC')
+            ->limit($limit)
+            ->get()->getResultArray();
+    }
+
+    /**
+     * Hitung total booking dalam rentang tanggal (berdasarkan created_at).
+     */
+    public function countBookingBulan(string $tglAwal, string $tglAkhir): int
+    {
+        return $this->where('created_at >=', $tglAwal)
+            ->where('created_at <=', $tglAkhir . ' 23:59:59')
+            ->countAllResults();
+    }
+
+    /**
+     * Hitung total transaksi bulan ini (Dikonfirmasi + Selesai) berdasarkan jadwal.
+     */
+    public function countTransaksiBulan(string $tglAwal, string $tglAkhir): int
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_sewa_lapangan s')
+            ->join('t_jadwal j', 'j.id_sewa = s.id_sewa AND j.sesi_ke = 1', 'left')
+            ->where('j.tanggal_main >=', $tglAwal)
+            ->where('j.tanggal_main <=', $tglAkhir)
+            ->whereIn('s.status_pesanan', ['Dikonfirmasi', 'Selesai'])
+            ->countAllResults();
+    }
+
+    /**
+     * Distribusi status booking dalam rentang tanggal.
+     */
+    public function getStatusDistribusi(string $tglAwal, string $tglAkhir): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_sewa_lapangan')
+            ->select('status_pesanan, COUNT(*) as jumlah')
+            ->where('created_at >=', $tglAwal)
+            ->where('created_at <=', $tglAkhir . ' 23:59:59')
+            ->groupBy('status_pesanan')
+            ->get()->getResultArray();
+    }
+
+    /**
+     * Ambil lapangan terlaris bulan ini.
+     */
+    public function getLapangTerlaris(string $tglAwal, string $tglAkhir): ?array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_sewa_lapangan s')
+            ->select('l.nama_lapangan, COUNT(*) as jumlah')
+            ->join('t_lapang l', 'l.id_lapang = s.id_lapang', 'left')
+            ->join('t_jadwal j', 'j.id_sewa = s.id_sewa AND j.sesi_ke = 1', 'left')
+            ->where('j.tanggal_main >=', $tglAwal)
+            ->where('j.tanggal_main <=', $tglAkhir)
+            ->whereIn('s.status_pesanan', ['Dikonfirmasi', 'Selesai'])
+            ->groupBy('s.id_lapang')
+            ->orderBy('jumlah', 'DESC')
+            ->limit(1)
+            ->get()->getRowArray();
     }
 }

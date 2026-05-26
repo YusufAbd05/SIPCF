@@ -21,4 +21,12 @@ class LapangModel extends Model
         'jam_buka_weekend',
         'jam_tutup_weekend',
     ];
+
+    /**
+     * Hitung jumlah lapangan dengan status Tersedia.
+     */
+    public function countAktif(): int
+    {
+        return $this->where('status_lapang', 'Tersedia')->countAllResults();
+    }
 }
