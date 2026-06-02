@@ -11,6 +11,8 @@ $routes->get('/membership', 'Home::membership');
 $routes->get('/daftar-membership', 'Home::daftarMembership');
 $routes->get('/ubah-jadwal', 'Home::ubahJadwal');
 
+// $routes->get('emailtest', 'TestEmail::index');
+
 // Public API (no auth required)
 $routes->get('/api/getLapangs', 'Home::getLapangs');
 $routes->get('/api/getBookedSlots', 'Home::getBookedSlots');
