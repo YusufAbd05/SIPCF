@@ -1,12 +1,12 @@
 <?= $this->extend('template/admin/base') ?>
-<?= $this->section('title') ?>Laporan Keuangan<?= $this->endSection() ?>
+<?= $this->section('title') ?>Laporan<?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <main class="flex-grow-1 p-3 p-md-5" style="background:var(--admin-surface);">
 
     <!-- Page Header -->
     <div class="page-header animate-in">
         <div>
-            <h2 class="page-header__title">Laporan Keuangan</h2>
+            <h2 class="page-header__title">Laporan</h2>
             <p class="page-header__subtitle">Rekapitulasi pesanan dan pendapatan lapangan operasional</p>
         </div>
         <div class="action-group d-flex gap-2 flex-wrap">

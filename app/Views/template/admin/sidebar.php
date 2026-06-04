@@ -52,7 +52,7 @@
         <a href="<?= base_url('/admin/laporan') ?>"
             class="sidebar-link <?= uri_string() === 'admin/laporan' ? 'active' : '' ?>">
             <span class="material-symbols-outlined">analytics</span>
-            <span>Kelola Laporan</span>
+            <span>Laporan</span>
         </a>
     </nav>
 </aside>

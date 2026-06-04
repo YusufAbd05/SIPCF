@@ -5,8 +5,7 @@
             <span class="fw-bold fs-5 d-md-none" style="letter-spacing:-0.03em;">Digital Atrium</span>
             <!-- Search bar -->
             <div class="header-search d-none d-md-flex">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" placeholder="Search insights..." />
+                <strong>Carrera Futsal</strong>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
