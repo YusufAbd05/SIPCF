@@ -322,7 +322,19 @@ class Home extends BaseController
             ];
             $pembayaranModel->insert($dataPembayaran);
 
-            $this->_sendEmailToAdminBooking($dataBooking);
+            // Kirim notifikasi email ke Admin
+            $userModel = new \App\Models\UserModel();
+            $admins = $userModel->where('role', 'Admin')->findAll();
+            $adminEmails = array_filter(array_column($admins, 'email'));
+
+            if (!empty($adminEmails)) {
+                $emailService = \Config\Services::email();
+                $emailService->setTo($adminEmails);
+                $emailService->setSubject('Booking Baru (' . $dataBooking['tipe_sewa'] . '): ' . $dataBooking['kode_sewa']);
+                $message = view('email/admin_new_booking', $dataBooking, ['debug' => false]);
+                $emailService->setMessage($message);
+                $emailService->send();
+            }
 
             return redirect()->to('/booking?success=1&kode=' . $kodeSewa)
                 ->with('booking_success', true)
