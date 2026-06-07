@@ -17,6 +17,7 @@ class BookingModel extends Model
         'id_lapang',
         'nama_penyewa',
         'no_hp_penyewa',
+        'email_penyewa',
         'tipe_pesanan',
         'tipe_sewa',
         'durasi_jam',

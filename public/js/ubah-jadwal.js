@@ -8,6 +8,8 @@
 
     // ─── State ───
     let currentBooking=null;
+    let currentJadwals=[];
+    let currentEditJadwal=null;
     let lapangsData=[];
     let rcYear=today.getFullYear(), rcMonth=today.getMonth();
     let rcSelectedDate=null;
@@ -51,7 +53,8 @@
             const data=await res.json();
             if(data.success){
                 currentBooking=data.booking;
-                showBookingModal(data.booking);
+                currentJadwals=data.jadwals;
+                showBookingModal();
             }else{
                 document.getElementById('alertErrorTitle').textContent='Booking tidak dapat diubah';
                 document.getElementById('alertErrorMsg').textContent=data.message;
@@ -69,13 +72,23 @@
     };
 
     // ─── Modal ───
-    function showBookingModal(b){
+    function showBookingModal(){
+        const b=currentBooking;
         document.getElementById('modalKode').textContent=b.kode_sewa;
         document.getElementById('modalNama').textContent=b.nama_penyewa;
-        document.getElementById('modalLapang').textContent=b.nama_lapangan;
-        document.getElementById('modalTanggal').textContent=fmtTgl(b.tanggal_main);
-        document.getElementById('modalJam').textContent=fmtJam(b.jam_mulai)+' - '+fmtJam(b.jam_selesai);
-        document.getElementById('modalDurasi').textContent=b.durasi_jam+' Jam';
+        
+        if(currentJadwals.length === 1) {
+            document.getElementById('modalLapang').textContent=currentJadwals[0].nama_lapangan;
+            document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
+            document.getElementById('modalJam').textContent=fmtJam(currentJadwals[0].jam_mulai)+' - '+fmtJam(currentJadwals[0].jam_selesai);
+            document.getElementById('modalDurasi').textContent=currentJadwals[0].durasi+' Jam';
+        } else {
+            document.getElementById('modalLapang').textContent=currentJadwals.length + ' Lapangan';
+            document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
+            document.getElementById('modalJam').textContent='Multi Jadwal';
+            document.getElementById('modalDurasi').textContent='-';
+        }
+
         document.getElementById('modalHarga').textContent=fmtRp(b.total_bayar);
         const pill=document.getElementById('modalStatus');
         pill.textContent=b.status_pesanan;
@@ -86,27 +99,50 @@
 
         document.getElementById('btnEditBooking').onclick=function(){
             bootstrap.Modal.getInstance(document.getElementById('detailBookingModal')).hide();
-            showRescheduleSection();
+            showJadwalList();
         };
         new bootstrap.Modal(document.getElementById('detailBookingModal')).show();
     }
 
-    // ─── Show Reschedule Section ───
-    function showRescheduleSection(){
-        const b=currentBooking;
+    // ─── Jadwal List ───
+    window.showJadwalList=function(){
         document.getElementById('bookingLookup').classList.add('d-none');
         document.getElementById('bookingSuccess').classList.add('d-none');
+        document.getElementById('rescheduleSection').classList.add('d-none');
+        const sec=document.getElementById('jadwalListSection');
+        sec.classList.remove('d-none');
+        sec.style.animation='none';sec.offsetHeight;sec.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
+
+        const container = document.getElementById('jadwalListContainer');
+        let html = '';
+        currentJadwals.forEach((j, idx) => {
+            html += `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <h5 style="margin:0;font-size:1rem;font-weight:700;">${j.nama_lapangan}</h5>
+                    <div style="font-size:.85rem;color:#64748b;margin-top:.25rem;">
+                        <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:-2px;">calendar_month</span> ${fmtTgl(j.tanggal_main)} <br>
+                        <span class="material-symbols-outlined" style="font-size:.9rem;vertical-align:-2px;">schedule</span> ${fmtJam(j.jam_mulai)} - ${fmtJam(j.jam_selesai)} (${j.durasi} Jam)
+                    </div>
+                </div>
+                <button type="button" class="booking-submit-btn" style="padding:.5rem 1rem;font-size:.85rem;width:auto;" onclick="startEditJadwal(${idx})">Ubah Waktu</button>
+            </div>`;
+        });
+        container.innerHTML = html;
+    };
+
+    // ─── Start Edit Jadwal ───
+    window.startEditJadwal=function(idx){
+        currentEditJadwal = currentJadwals[idx];
+        document.getElementById('jadwalListSection').classList.add('d-none');
         const sec=document.getElementById('rescheduleSection');
         sec.classList.remove('d-none');
         sec.style.animation='none';sec.offsetHeight;sec.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
 
-        document.getElementById('editTitle').textContent=b.nama_lapangan;
-        document.getElementById('editCode').textContent=b.kode_sewa;
-        document.getElementById('editStatus').textContent=b.status_pesanan;
-        document.getElementById('editNama').textContent=b.nama_penyewa;
-        document.getElementById('editTanggal').textContent=fmtTgl(b.tanggal_main);
-        document.getElementById('editJam').textContent=fmtJam(b.jam_mulai)+' - '+fmtJam(b.jam_selesai);
-        document.getElementById('editDurasi').textContent=b.durasi_jam+' Jam';
+        document.getElementById('editTitle').textContent=currentEditJadwal.nama_lapangan;
+        document.getElementById('editCode').textContent=currentBooking.kode_sewa;
+        document.getElementById('editStatus').textContent=currentBooking.status_pesanan;
+        document.getElementById('editTanggal').textContent=fmtTgl(currentEditJadwal.tanggal_main);
+        document.getElementById('editJam').textContent=fmtJam(currentEditJadwal.jam_mulai)+' - '+fmtJam(currentEditJadwal.jam_selesai);
 
         rcSelectedDate=null;
         rcSelectedSlot=null;
@@ -114,9 +150,10 @@
         document.getElementById('rcConfirmWrap').style.display='none';
 
         renderCalendar();
-    }
+    };
 
     window.showLookup=function(){
+        document.getElementById('jadwalListSection').classList.add('d-none');
         document.getElementById('rescheduleSection').classList.add('d-none');
         document.getElementById('bookingSuccess').classList.add('d-none');
         const lk=document.getElementById('bookingLookup');
@@ -187,7 +224,6 @@
 
         dateLabel.innerHTML=`<span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:-3px;">today</span> ${fmtTgl(ds)}`;
 
-        // Fetch booked slots
         try{
             const res=await fetch(`${BASE}/api/getBookedSlots?tanggal=${ds}`);
             bookedSlotsData=await res.json();
@@ -195,18 +231,17 @@
 
         loading.style.display='none';
 
-        // Find the lapang for current booking
-        const lap=lapangsData.find(l=>l.id_lapang==currentBooking.id_lapang);
+        const lap=lapangsData.find(l=>l.id_lapang==currentEditJadwal.id_lapang);
         if(!lap){card.innerHTML='<p class="text-center text-muted">Lapangan tidak ditemukan.</p>';return;}
 
         const{jamBuka,jamTutup,isWeekend}=getOpHours(lap,ds);
-        const bookedSlots=bookedSlotsData[currentBooking.id_lapang]||[];
-        const durasi=parseInt(currentBooking.durasi_jam);
+        const bookedSlots=bookedSlotsData[currentEditJadwal.id_lapang]||[];
+        const durasi=parseInt(currentEditJadwal.durasi);
 
-        // Exclude own booking hours if same date
+        // Exclude own booking hours if same date and same lapang
         let ownHours=[];
-        if(ds===currentBooking.tanggal_main){
-            const sh=parseInt(currentBooking.jam_mulai.substring(0,2));
+        if(ds===currentEditJadwal.tanggal_main){
+            const sh=parseInt(currentEditJadwal.jam_mulai.substring(0,2));
             for(let h=sh;h<sh+durasi;h++)ownHours.push(pad(h)+':00');
         }
 
@@ -266,7 +301,6 @@
         summary.style.display='flex';
         summaryText.textContent=`${availCount} slot tersedia · ${bookedCount} terisi`;
 
-        // Attach slot click handlers
         card.querySelectorAll('.timeslot-box--available').forEach(box=>{
             box.addEventListener('click',function(){
                 card.querySelectorAll('.timeslot-box--selected').forEach(s=>{if(s!==box)s.classList.remove('timeslot-box--selected');});
@@ -288,8 +322,8 @@
 
     // ─── Confirm Reschedule ───
     window.confirmReschedule=async function(){
-        if(!rcSelectedDate||!rcSelectedSlot||!currentBooking){alert('Pilih tanggal dan jam baru.');return;}
-        if(rcSelectedDate===currentBooking.tanggal_main&&rcSelectedSlot.jam_mulai===currentBooking.jam_mulai.substring(0,5)){
+        if(!rcSelectedDate||!rcSelectedSlot||!currentEditJadwal){alert('Pilih tanggal dan jam baru.');return;}
+        if(rcSelectedDate===currentEditJadwal.tanggal_main&&rcSelectedSlot.jam_mulai===currentEditJadwal.jam_mulai.substring(0,5)){
             alert('Jadwal baru sama dengan jadwal saat ini.');return;
         }
         const btn=document.getElementById('btnConfirm');
@@ -299,14 +333,26 @@
         try{
             const fd=new FormData();
             fd.append('kode_sewa',currentBooking.kode_sewa);
+            fd.append('id_jadwal', currentEditJadwal.id_jadwal);
             fd.append('tanggal_baru',rcSelectedDate);
             fd.append('jam_mulai_baru',rcSelectedSlot.jam_mulai);
-            const res=await fetch(`${BASE}/api/ubahJadwal`,{method:'POST',body:fd});
+            const res=await fetch(`${BASE}/api/processUbahJadwalItem`,{method:'POST',body:fd});
             const data=await res.json();
             if(data.success){
                 document.getElementById('rescheduleSection').classList.add('d-none');
                 document.getElementById('successDate').textContent=fmtTgl(data.data.tanggal_baru);
                 document.getElementById('successTime').textContent=fmtJam(data.data.jam_mulai)+' - '+fmtJam(data.data.jam_selesai);
+                
+                const pd = document.getElementById('paymentDetails');
+                if (data.data.price_diff !== 0) {
+                    pd.style.display = 'flex';
+                    document.getElementById('successTotal').textContent = fmtRp(data.data.total_bayar);
+                    document.getElementById('successDibayar').textContent = fmtRp(data.data.sudah_dibayar);
+                    document.getElementById('successSisa').textContent = fmtRp(data.data.sisa_bayar);
+                } else {
+                    pd.style.display = 'none';
+                }
+
                 const sc=document.getElementById('bookingSuccess');sc.classList.remove('d-none');
                 sc.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
                 window.scrollTo({top:0,behavior:'smooth'});

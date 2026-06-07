@@ -92,13 +92,11 @@
         </div>
         <div class="stat-chip stat-chip--elevated">
             <div class="stat-chip__icon indigo">
-                <span class="material-symbols-outlined">avg_pace</span>
+                <span class="material-symbols-outlined">event_available</span>
             </div>
             <div>
-                <p class="stat-chip__label">Rata-rata / Sesi</p>
-                <p class="stat-chip__value">Rp
-                    <?= $totalPesanan > 0 ? number_format(round($totalOmset / $totalPesanan), 0, ',', '.') : '0' ?>
-                </p>
+                <p class="stat-chip__label">Hari Teramai</p>
+                <p class="stat-chip__value" style="font-size:0.9rem;"><?= esc($hariTeramai ?? '-') ?></p>
             </div>
         </div>
     </div>

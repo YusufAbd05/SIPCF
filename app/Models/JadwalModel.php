@@ -35,17 +35,21 @@ class JadwalModel extends Model
      * Returns array of ['id_sewa' => ..., 'id_lapang' => ..., 'jam_mulai' => ..., 'jam_selesai' => ...].
      * Now reads id_lapang directly from t_jadwal (supports multi-lapang per booking).
      */
-    public function getBookedSlotsForDate(string $tanggal): array
+    public function getBookedSlotsForDate(string $tanggal, ?int $exclude_idSewa = null): array
     {
         $db = \Config\Database::connect();
-        return $db->table('t_jadwal jm')
+        $builder = $db->table('t_jadwal jm')
             ->select('jm.id_sewa, jm.id_lapang, jm.jam_mulai, jm.jam_selesai')
             ->join('t_sewa_lapangan s', 's.id_sewa = jm.id_sewa')
             ->where('jm.tanggal_main', $tanggal)
             ->where('jm.status_sesi', 'Terjadwal')
-            ->whereNotIn('s.status_pesanan', ['Ditolak', 'Dibatalkan'])
-            ->get()
-            ->getResultArray();
+            ->whereNotIn('s.status_pesanan', ['Ditolak', 'Dibatalkan']);
+            
+        if ($exclude_idSewa !== null) {
+            $builder->where('jm.id_sewa !=', $exclude_idSewa);
+        }
+            
+        return $builder->get()->getResultArray();
     }
 
     /**

@@ -24,7 +24,7 @@ $routes->post('/booking', 'Home::saveBooking');
 
 // UC-3: Ubah Jadwal (Public API)
 $routes->get('/api/lookupBooking', 'Home::lookupBooking');
-$routes->post('/api/ubahJadwal', 'Home::processUbahJadwal');
+$routes->post('/api/processUbahJadwalItem', 'Home::processUbahJadwalItem');
 
 // Auth
 $routes->get('/login', 'AuthController::loginPage');

@@ -65,7 +65,7 @@ $nama = session()->get('nama') ?? 'User';
                     <span class="metric-badge down" style="color:#d97706; background:#fffbeb;">Perlu Cek</span>
                 </div>
                 <p class="metric-label">Menunggu Verifikasi</p>
-                <h3 class="metric-value"><?= $menungguVerifikasi ?> <span style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Pesanan</span></h3>
+                <h3 class="metric-value"><?= $menungguVerifikasi ?> <span style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Booking</span></h3>
             </div>
         </div>
 
@@ -79,7 +79,7 @@ $nama = session()->get('nama') ?? 'User';
                     <span class="metric-badge up">Aktif</span>
                 </div>
                 <p class="metric-label">Dikonfirmasi</p>
-                <h3 class="metric-value"><?= $dikonfirmasi ?> <span style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Pesanan</span></h3>
+                <h3 class="metric-value"><?= $dikonfirmasi ?> <span style="font-size:0.9rem; font-weight:600; color:var(--admin-secondary);">Booking</span></h3>
             </div>
         </div>
 
@@ -106,7 +106,7 @@ $nama = session()->get('nama') ?? 'User';
                 <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3">
                     <div>
                         <h4 class="content-card__title">Booking Terbaru</h4>
-                        <p class="content-card__subtitle mb-0">5 pesanan terakhir yang masuk ke sistem</p>
+                        <p class="content-card__subtitle mb-0">5 data booking terakhir yang masuk ke sistem</p>
                     </div>
                     <a href="<?= base_url('/admin/booking') ?>" class="btn-view-all" style="width:auto;padding:0.4rem 1rem;">
                         Lihat Semua

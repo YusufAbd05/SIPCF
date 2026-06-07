@@ -20,7 +20,7 @@
         </div>
         <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addUserModal">
             <span class="material-symbols-outlined">person_add</span>
-            Tambah User
+            Tambah
         </button>
     </div>
 

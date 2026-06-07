@@ -19,7 +19,7 @@ class TarifModel extends Model
         'jam_mulai',
         'jam_selesai',
         'harga_umum',
-        'harga_member',
+        'harga_harian',
     ];
 
     /**

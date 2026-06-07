@@ -222,6 +222,7 @@ class Home extends BaseController
         $idLapang = $this->request->getPost('id_lapang');
         $totalBayar = (int) $this->request->getPost('total_bayar');
         $jamMulaiHour = (int) substr($jamMulai, 0, 2);
+        $emailPenyewa = $this->request->getPost('email');
 
         // ── Upload Bukti Bayar (shared across all modes) ──
         $buktiFile = $this->request->getFile('bukti_bayar');
@@ -285,6 +286,7 @@ class Home extends BaseController
                 'id_lapang' => $idLapang,
                 'nama_penyewa' => $this->request->getPost('nama'),
                 'no_hp_penyewa' => $this->request->getPost('whatsapp'),
+                'email_penyewa' => $emailPenyewa,
                 'tipe_pesanan' => 'Online',
                 'tipe_sewa' => 'Membership',
                 'durasi_jam' => $durasi,
@@ -320,6 +322,8 @@ class Home extends BaseController
             ];
             $pembayaranModel->insert($dataPembayaran);
 
+            $this->_sendEmailToAdminBooking($dataBooking);
+
             return redirect()->to('/booking?success=1&kode=' . $kodeSewa)
                 ->with('booking_success', true)
                 ->with('kode_sewa', $kodeSewa);
@@ -329,58 +333,88 @@ class Home extends BaseController
         //  MODE: HARIAN (Full Day, multi-day support)
         //  → 1 booking record + N jadwal records (1 per day)
         // ═══════════════════════════════════════════════
-        if ($tipeSewa === 'Harian') {
+                if ($tipeSewa === 'Harian') {
             $lapangModel = new LapangModel();
-            $lapangData = $lapangModel->find($idLapang);
-            $jumlahHari = max(1, (int) $this->request->getPost('jumlah_hari'));
-
-            // Determine operating hours from lapang data
-            $opJamBuka = 8;
-            $opJamTutup = 20;
-            if ($lapangData) {
-                $dow = date('w', strtotime($tanggalMain));
-                $isWeekend = ($dow == 0 || $dow == 6);
-                $opJamBuka = (int) ($isWeekend ? $lapangData['jam_buka_weekend'] : $lapangData['jam_buka_weekday']);
-                $opJamTutup = (int) ($isWeekend ? $lapangData['jam_tutup_weekend'] : $lapangData['jam_tutup_weekday']);
-                if ($opJamTutup <= $opJamBuka)
-                    $opJamTutup = 24;
+            
+            $itemsJson = $this->request->getPost('items_json');
+            $cartItems = [];
+            if (!empty($itemsJson)) {
+                $cartItems = json_decode($itemsJson, true);
             }
 
-            $jamMulai = str_pad($opJamBuka, 2, '0', STR_PAD_LEFT) . ':00';
-            $jamSelesai = str_pad($opJamTutup, 2, '0', STR_PAD_LEFT) . ':00';
-            $durasiPerHari = $opJamTutup - $opJamBuka;
-
-            // Generate consecutive dates
-            $dates = [];
-            $baseDate = new \DateTime($tanggalMain);
-            for ($i = 0; $i < $jumlahHari; $i++) {
-                $date = clone $baseDate;
-                $date->modify("+{$i} days");
-                $dates[] = $date->format('Y-m-d');
+            // Fallback for single item mode if JSON is empty or parsing failed
+            if (empty($cartItems)) {
+                $cartItems = [[
+                    'id_lapang' => $idLapang,
+                    'tanggal' => $this->request->getPost('tanggal_main'),
+                    'durasi' => max(1, (int) $this->request->getPost('jumlah_hari'))
+                ]];
             }
 
-            // Validate slot availability for ALL dates via t_jadwal
+            // To hold all jadwal to be inserted later
+            $allJadwalToInsert = [];
+            $totalDurasiPerHariAllItems = 0;
             $jadwalModel = new JadwalModel();
-            foreach ($dates as $date) {
-                $allSlots = $jadwalModel->getBookedSlotsForDate($date);
 
-                $occupied = [];
-                foreach ($allSlots as $s) {
-                    if ((string) $s['id_lapang'] === (string) $idLapang) {
-                        $sStart = (int) substr($s['jam_mulai'], 0, 2);
-                        $sEnd = (int) substr($s['jam_selesai'], 0, 2);
-                        for ($h = $sStart; $h < $sEnd; $h++) {
-                            $occupied[] = $h;
-                        }
-                    }
+            foreach ($cartItems as $item) {
+                $itemIdLapang = $item['id_lapang'];
+                $itemTanggal = $item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d');
+                $itemDurasiHari = (int) $item['durasi'];
+
+                $lapangData = $lapangModel->find($itemIdLapang);
+                if (!$lapangData) continue;
+
+                // Determine base operating hours
+                $baseJamBuka = 8;
+                $baseJamTutup = 20;
+
+                // Generate consecutive dates for this item
+                $dates = [];
+                $baseDate = new \DateTime($itemTanggal);
+                for ($i = 0; $i < $itemDurasiHari; $i++) {
+                    $date = clone $baseDate;
+                    $date->modify("+{$i} days");
+                    $dates[] = $date->format('Y-m-d');
                 }
 
-                for ($h = $opJamBuka; $h < $opJamTutup; $h++) {
-                    if (in_array($h, $occupied)) {
-                        $readableDate = date('d M Y', strtotime($date));
-                        return redirect()->back()->withInput()
-                            ->with('error', "Maaf, lapangan sudah terisi pada tanggal {$readableDate}. Silakan pilih tanggal lain.");
+                foreach ($dates as $idx => $date) {
+                    $dow = date('w', strtotime($date));
+                    $isWeekend = ($dow == 0 || $dow == 6);
+                    $opJamBuka = (int) ($isWeekend ? $lapangData['jam_buka_weekend'] : $lapangData['jam_buka_weekday']);
+                    $opJamTutup = (int) ($isWeekend ? $lapangData['jam_tutup_weekend'] : $lapangData['jam_tutup_weekday']);
+                    if ($opJamTutup <= $opJamBuka) $opJamTutup = 24;
+
+                    $totalDurasiPerHariAllItems += ($opJamTutup - $opJamBuka);
+
+                    // Validate slot availability for this date
+                    $allSlots = $jadwalModel->getBookedSlotsForDate($date);
+                    $occupied = [];
+                    foreach ($allSlots as $s) {
+                        if ((string) $s['id_lapang'] === (string) $itemIdLapang) {
+                            $sStart = (int) substr($s['jam_mulai'], 0, 2);
+                            $sEnd = (int) substr($s['jam_selesai'], 0, 2);
+                            for ($h = $sStart; $h < $sEnd; $h++) {
+                                $occupied[] = $h;
+                            }
+                        }
                     }
+
+                    for ($h = $opJamBuka; $h < $opJamTutup; $h++) {
+                        if (in_array($h, $occupied)) {
+                            $readableDate = date('d M Y', strtotime($date));
+                            return redirect()->back()->withInput()
+                                ->with('error', "Maaf, lapangan {$lapangData['nama_lapangan']} sudah terisi pada tanggal {$readableDate}. Silakan pilih tanggal lain.");
+                        }
+                    }
+
+                    // Prepare to insert
+                    $allJadwalToInsert[] = [
+                        'id_lapang' => $itemIdLapang,
+                        'tanggal_main' => $date,
+                        'jam_mulai' => str_pad($opJamBuka, 2, '0', STR_PAD_LEFT) . ':00',
+                        'jam_selesai' => str_pad($opJamTutup, 2, '0', STR_PAD_LEFT) . ':00',
+                        'status_sesi' => 'Terjadwal',
+                    ];
                 }
             }
 
@@ -392,12 +426,13 @@ class Home extends BaseController
             // Create 1 booking record
             $dataBooking = [
                 'kode_sewa' => $kodeSewa,
-                'id_lapang' => $idLapang,
+                'id_lapang' => $idLapang, // Fallback main id_lapang for foreign key constraints if any
                 'nama_penyewa' => $this->request->getPost('nama'),
                 'no_hp_penyewa' => $this->request->getPost('whatsapp'),
+                'email_penyewa' => $emailPenyewa,
                 'tipe_pesanan' => 'Online',
                 'tipe_sewa' => 'Harian',
-                'durasi_jam' => $durasiPerHari,
+                'durasi_jam' => $totalDurasiPerHariAllItems,
                 'total_bayar' => $totalBayar,
                 'status_pesanan' => 'Menunggu Verifikasi',
             ];
@@ -405,29 +440,12 @@ class Home extends BaseController
             $bookingModel->insert($dataBooking);
             $idSewa = $bookingModel->getInsertID();
 
-            // Create N jadwal records (1 per day)
-            foreach ($dates as $idx => $date) {
-                // Recalculate operating hours per day (weekend/weekday may differ)
-                $dow2 = date('w', strtotime($date));
-                $isWe2 = ($dow2 == 0 || $dow2 == 6);
-                $dayJamBuka = $opJamBuka;
-                $dayJamTutup = $opJamTutup;
-                if ($lapangData) {
-                    $dayJamBuka = (int) ($isWe2 ? $lapangData['jam_buka_weekend'] : $lapangData['jam_buka_weekday']);
-                    $dayJamTutup = (int) ($isWe2 ? $lapangData['jam_tutup_weekend'] : $lapangData['jam_tutup_weekday']);
-                    if ($dayJamTutup <= $dayJamBuka)
-                        $dayJamTutup = 24;
-                }
-
-                $jadwalModel->insert([
-                    'id_sewa' => $idSewa,
-                    'id_lapang' => $idLapang,
-                    'sesi_ke' => $idx + 1,
-                    'tanggal_main' => $date,
-                    'jam_mulai' => str_pad($dayJamBuka, 2, '0', STR_PAD_LEFT) . ':00',
-                    'jam_selesai' => str_pad($dayJamTutup, 2, '0', STR_PAD_LEFT) . ':00',
-                    'status_sesi' => 'Terjadwal',
-                ]);
+            // Insert Jadwal records
+            $sesiKe = 1;
+            foreach ($allJadwalToInsert as $jadwalData) {
+                $jadwalData['id_sewa'] = $idSewa;
+                $jadwalData['sesi_ke'] = $sesiKe++;
+                $jadwalModel->insert($jadwalData);
             }
 
             // Create 1 pembayaran
@@ -443,6 +461,37 @@ class Home extends BaseController
                 'waktu_pembayaran' => date('Y-m-d H:i:s'),
             ];
             $pembayaranModel->insert($dataPembayaran);
+
+            // Kirim Email ke Admin
+            $userModel = new \App\Models\UserModel();
+            $admins = $userModel->where('role', 'Admin')->findAll();
+            $emails = [];
+            foreach ($admins as $admin) {
+                if (!empty($admin['email'])) {
+                    $emails[] = $admin['email'];
+                }
+            }
+
+            if (!empty($emails)) {
+                $jadwals = [];
+                $booking = $bookingModel->where('kode_sewa', $dataBooking['kode_sewa'])->first();
+                if ($booking) {
+                    $jadwals = $jadwalModel->select('t_jadwal.*, t_lapang.nama_lapangan')
+                                           ->join('t_lapang', 't_lapang.id_lapang = t_jadwal.id_lapang')
+                                           ->where('t_jadwal.id_sewa', $booking['id_sewa'])
+                                           ->orderBy('t_jadwal.sesi_ke', 'ASC')
+                                           ->findAll();
+                }
+                $dataBooking['jadwals'] = $jadwals;
+                $dataBooking['no_hp'] = $dataBooking['no_hp_penyewa'];
+
+                $emailService = \Config\Services::email();
+                $emailService->setTo($emails);
+                $emailService->setSubject('Pesanan Booking Baru: ' . $dataBooking['kode_sewa']);
+                $message = view('email/admin_new_booking', $dataBooking, ['debug' => false]);
+                $emailService->setMessage($message);
+                $emailService->send();
+            }
 
             return redirect()->to('/booking?success=1&kode=' . $kodeSewa)
                 ->with('booking_success', true)
@@ -533,6 +582,9 @@ class Home extends BaseController
                         break;
                     }
                 }
+                if ($hargaSlot === 0 && !empty($tarifs)) {
+                    $hargaSlot = (int) $tarifs[0]['harga_umum'];
+                }
                 $itemHarga += $hargaSlot;
             }
             $calculatedTotal += $itemHarga;
@@ -557,6 +609,7 @@ class Home extends BaseController
             'id_lapang'      => $cartItems[0]['id_lapang'], // first item for backward compat
             'nama_penyewa'   => $this->request->getPost('nama'),
             'no_hp_penyewa'  => $this->request->getPost('whatsapp'),
+            'email_penyewa'  => $emailPenyewa,
             'tipe_pesanan'   => 'Online',
             'tipe_sewa'      => 'Per Jam',
             'durasi_jam'     => $totalDurasi,
@@ -595,6 +648,37 @@ class Home extends BaseController
         $pembayaranModel->insert($dataPembayaran);
 
         // ── Redirect to success page ──
+        // Kirim Email ke Admin
+        $userModel = new \App\Models\UserModel();
+        $admins = $userModel->where('role', 'Admin')->findAll();
+        $emails = [];
+        foreach ($admins as $admin) {
+            if (!empty($admin['email'])) {
+                $emails[] = $admin['email'];
+            }
+        }
+
+        if (!empty($emails)) {
+            $jadwals = [];
+            $booking = $bookingModel->where('kode_sewa', $dataBooking['kode_sewa'])->first();
+            if ($booking) {
+                $jadwals = $jadwalModel->select('t_jadwal.*, t_lapang.nama_lapangan')
+                                       ->join('t_lapang', 't_lapang.id_lapang = t_jadwal.id_lapang')
+                                       ->where('t_jadwal.id_sewa', $booking['id_sewa'])
+                                       ->orderBy('t_jadwal.sesi_ke', 'ASC')
+                                       ->findAll();
+            }
+            $dataBooking['jadwals'] = $jadwals;
+            $dataBooking['no_hp'] = $dataBooking['no_hp_penyewa'];
+
+            $emailService = \Config\Services::email();
+            $emailService->setTo($emails);
+            $emailService->setSubject('Pesanan Booking Baru: ' . $dataBooking['kode_sewa']);
+            $message = view('email/admin_new_booking', $dataBooking, ['debug' => false]);
+            $emailService->setMessage($message);
+            $emailService->send();
+        }
+
         return redirect()->to('/booking?success=1&kode=' . $kodeSewa)
             ->with('booking_success', true)
             ->with('kode_sewa', $kodeSewa);
@@ -635,27 +719,23 @@ class Home extends BaseController
             ]);
         }
 
-        // Get first jadwal for schedule info
+        // Get all jadwals
         $jadwalModel = new JadwalModel();
-        $jadwal = $jadwalModel->where('id_sewa', $booking['id_sewa'])->where('sesi_ke', 1)->first();
+        $jadwals = $jadwalModel->select('t_jadwal.*, t_lapang.nama_lapangan')
+                               ->join('t_lapang', 't_lapang.id_lapang = t_jadwal.id_lapang')
+                               ->where('t_jadwal.id_sewa', $booking['id_sewa'])
+                               ->orderBy('t_jadwal.sesi_ke', 'ASC')
+                               ->findAll();
 
-        // Check reschedule deadline: minimum 3 hours before play time
-        $tanggalMain = $jadwal['tanggal_main'] ?? date('Y-m-d');
-        $jamMulai = $jadwal['jam_mulai'] ?? '00:00';
-        $playDateTime = strtotime($tanggalMain . ' ' . $jamMulai);
-        $now = time();
-        $hoursUntilPlay = ($playDateTime - $now) / 3600;
-
-        if ($hoursUntilPlay < 3) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Batas waktu ubah jadwal telah habis. Minimal 3 jam sebelum jadwal bermain.'
-            ]);
+        if (empty($jadwals)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Tidak ada jadwal ditemukan untuk pesanan ini.']);
         }
 
-        // Get lapang name
-        $lapang = $lapangModel->find($booking['id_lapang']);
-        $namaLapangan = $lapang ? $lapang['nama_lapangan'] : 'Lapangan';
+        // Add duration to each jadwal
+        foreach ($jadwals as &$j) {
+            $j['durasi'] = (int)substr($j['jam_selesai'], 0, 2) - (int)substr($j['jam_mulai'], 0, 2);
+            if ($j['durasi'] <= 0) $j['durasi'] = 1;
+        }
 
         return $this->response->setJSON([
             'success' => true,
@@ -663,16 +743,11 @@ class Home extends BaseController
                 'id_sewa' => $booking['id_sewa'],
                 'kode_sewa' => $booking['kode_sewa'],
                 'nama_penyewa' => $booking['nama_penyewa'],
-                'id_lapang' => $booking['id_lapang'],
-                'nama_lapangan' => $namaLapangan,
-                'tanggal_main' => $tanggalMain,
-                'jam_mulai' => $jamMulai,
-                'jam_selesai' => $jadwal['jam_selesai'] ?? '00:00',
-                'durasi_jam' => $booking['durasi_jam'],
                 'total_bayar' => $booking['total_bayar'],
                 'status_pesanan' => $booking['status_pesanan'],
                 'tipe_pesanan' => $booking['tipe_pesanan'],
             ],
+            'jadwals' => $jadwals
         ]);
     }
 
@@ -681,66 +756,56 @@ class Home extends BaseController
      * Reschedule a booking: update tanggal_main, jam_mulai, jam_selesai.
      * Validates slot availability and reschedule deadline.
      */
-    public function processUbahJadwal()
+    public function processUbahJadwalItem()
     {
         $bookingModel = new BookingModel();
+        $jadwalModel = new JadwalModel();
 
         $kodeSewa = $this->request->getPost('kode_sewa');
+        $idJadwal = $this->request->getPost('id_jadwal');
         $tanggalBaru = $this->request->getPost('tanggal_baru');
         $jamMulaiBaru = $this->request->getPost('jam_mulai_baru');
 
-        // ── Basic validation ──
-        if (!$kodeSewa || !$tanggalBaru || !$jamMulaiBaru) {
+        if (!$kodeSewa || !$idJadwal || !$tanggalBaru || !$jamMulaiBaru) {
             return $this->response->setJSON(['success' => false, 'message' => 'Semua field wajib diisi.']);
         }
 
-        // ── Find booking ──
         $booking = $bookingModel->where('kode_sewa', $kodeSewa)->first();
         if (!$booking) {
             return $this->response->setJSON(['success' => false, 'message' => 'Kode booking tidak ditemukan.']);
         }
 
-        // ── Check status ──
         $allowedStatuses = ['Menunggu', 'Menunggu Pembayaran', 'Menunggu Verifikasi', 'Dikonfirmasi'];
         if (!in_array($booking['status_pesanan'], $allowedStatuses)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Booking ini tidak dapat diubah jadwalnya.'
-            ]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Booking ini tidak dapat diubah jadwalnya.']);
         }
 
-        // ── Get current jadwal ──
-        $jadwalModel = new JadwalModel();
-        $jadwal = $jadwalModel->where('id_sewa', $booking['id_sewa'])->where('sesi_ke', 1)->first();
+        $jadwal = $jadwalModel->where('id_jadwal', $idJadwal)->where('id_sewa', $booking['id_sewa'])->first();
+        if (!$jadwal) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Jadwal tidak ditemukan.']);
+        }
 
-        // ── Reschedule deadline: 3 hours before original play time ──
-        $tanggalLama = $jadwal['tanggal_main'] ?? date('Y-m-d');
-        $jamLama = $jadwal['jam_mulai'] ?? '00:00';
+        $tanggalLama = $jadwal['tanggal_main'];
+        $jamLama = $jadwal['jam_mulai'];
         $playDateTime = strtotime($tanggalLama . ' ' . $jamLama);
-        $now = time();
-        if (($playDateTime - $now) / 3600 < 3) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Batas waktu ubah jadwal telah habis (minimal 3 jam sebelum bermain).'
-            ]);
+        if (($playDateTime - time()) / 3600 < 3) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Batas waktu ubah jadwal telah habis (minimal 3 jam sebelum jadwal asli dimulai).']);
         }
 
-        // ── Validate new date ──
         if ($tanggalBaru < date('Y-m-d')) {
             return $this->response->setJSON(['success' => false, 'message' => 'Tanggal baru tidak boleh di masa lalu.']);
         }
 
-        // ── Calculate new jam_selesai ──
-        $durasi = (int) $booking['durasi_jam'];
+        $durasi = (int)substr($jadwal['jam_selesai'], 0, 2) - (int)substr($jadwal['jam_mulai'], 0, 2);
+        if ($durasi <= 0) $durasi = 1;
+
         $jamMulaiHour = (int) substr($jamMulaiBaru, 0, 2);
         $jamSelesaiBaru = str_pad($jamMulaiHour + $durasi, 2, '0', STR_PAD_LEFT) . ':00';
 
-        // ── Check slot availability via t_jadwal (exclude current booking) ──
         $allSlots = $jadwalModel->getBookedSlotsForDate($tanggalBaru);
-
         $occupiedHours = [];
         foreach ($allSlots as $s) {
-            if ((string) $s['id_lapang'] === (string) $booking['id_lapang'] && (string) $s['id_sewa'] !== (string) $booking['id_sewa']) {
+            if ((string)$s['id_lapang'] === (string)$jadwal['id_lapang'] && (string)$s['id_sewa'] !== (string)$booking['id_sewa']) {
                 $sStart = (int) substr($s['jam_mulai'], 0, 2);
                 $sEnd = (int) substr($s['jam_selesai'], 0, 2);
                 for ($h = $sStart; $h < $sEnd; $h++) {
@@ -751,73 +816,79 @@ class Home extends BaseController
 
         for ($h = $jamMulaiHour; $h < $jamMulaiHour + $durasi; $h++) {
             if (in_array($h, $occupiedHours)) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Maaf, jam yang Anda pilih sudah terisi. Silakan pilih jam lain.'
-                ]);
+                return $this->response->setJSON(['success' => false, 'message' => 'Maaf, jam yang Anda pilih sudah terisi. Silakan pilih jam lain.']);
             }
         }
 
-        // ── Recalculate price based on new date's tariff ──
+        // Calculate old price for this jadwal
         $tarifModel = new TarifModel();
-        $dow = date('w', strtotime($tanggalBaru));
-        $kategoriHari = ($dow == 0 || $dow == 6) ? 'Weekend' : 'Weekday';
-
-        $tarifs = $tarifModel
-            ->where('id_lapang', $booking['id_lapang'])
-            ->where('hari', $kategoriHari)
-            ->findAll();
-
-        if (empty($tarifs)) {
-            $tarifs = $tarifModel
-                ->where('id_lapang', $booking['id_lapang'])
-                ->findAll();
-        }
-
-        // Calculate new total based on tariff slots
-        $newTotal = 0;
-        for ($h = $jamMulaiHour; $h < $jamMulaiHour + $durasi; $h++) {
-            $slotTime = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
-            $harga = 0;
-            foreach ($tarifs as $t) {
-                $tStart = substr($t['jam_mulai'], 0, 5);
-                $tEnd = substr($t['jam_selesai'], 0, 5);
-                if ($slotTime >= $tStart && $slotTime < $tEnd) {
-                    $harga = (int) $t['harga_umum'];
-                    break;
+        function getHarga($tarifModel, $id_lapang, $tanggal, $jamStart, $durasi) {
+            $dow = date('w', strtotime($tanggal));
+            $kategoriHari = ($dow == 0 || $dow == 6) ? 'Weekend' : 'Weekday';
+            $tarifs = $tarifModel->where('id_lapang', $id_lapang)->where('hari', $kategoriHari)->findAll();
+            if (empty($tarifs)) $tarifs = $tarifModel->where('id_lapang', $id_lapang)->findAll();
+            
+            $total = 0;
+            for ($h = $jamStart; $h < $jamStart + $durasi; $h++) {
+                $slotTime = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
+                $harga = 0;
+                foreach ($tarifs as $t) {
+                    if ($slotTime >= substr($t['jam_mulai'], 0, 5) && $slotTime < substr($t['jam_selesai'], 0, 5)) {
+                        $harga = (int) $t['harga_umum']; break;
+                    }
                 }
+                if ($harga === 0 && !empty($tarifs)) $harga = (int) $tarifs[0]['harga_umum'];
+                $total += $harga;
             }
-            $newTotal += $harga;
+            return $total;
         }
 
-        // If we couldn't find tariff, keep original total
-        if ($newTotal <= 0) {
-            $newTotal = (int) $booking['total_bayar'];
-        }
+        $oldPrice = getHarga($tarifModel, $jadwal['id_lapang'], $jadwal['tanggal_main'], (int)substr($jadwal['jam_mulai'], 0, 2), $durasi);
+        $newPrice = getHarga($tarifModel, $jadwal['id_lapang'], $tanggalBaru, $jamMulaiHour, $durasi);
 
-        // ── Update booking total ──
+        $priceDiff = $newPrice - $oldPrice;
+        $newTotal = (int)$booking['total_bayar'] + $priceDiff;
+
         $bookingModel->update($booking['id_sewa'], [
             'total_bayar' => $newTotal,
         ]);
 
-        // ── Update jadwal sesi_ke=1 ──
-        if ($jadwal) {
-            $jadwalModel->update($jadwal['id_jadwal'], [
-                'tanggal_main' => $tanggalBaru,
-                'jam_mulai' => $jamMulaiBaru,
-                'jam_selesai' => $jamSelesaiBaru,
-            ]);
+        $jadwalModel->update($jadwal['id_jadwal'], [
+            'tanggal_main' => $tanggalBaru,
+            'jam_mulai' => $jamMulaiBaru,
+            'jam_selesai' => $jamSelesaiBaru,
+        ]);
+
+        $this->_sendEmailToAdminUbahJadwal(
+            $booking['kode_sewa'], 
+            $booking['nama_penyewa'], 
+            $jadwal['tanggal_main'] . ' ' . $jadwal['jam_mulai'], 
+            $tanggalBaru . ' ' . $jamMulaiBaru
+        );
+
+        // Get paid amount
+        $pembayaranModel = new \App\Models\PembayaranModel();
+        $pembayaran = $pembayaranModel->where('id_sewa', $booking['id_sewa'])->findAll();
+        $sudahDibayar = 0;
+        foreach($pembayaran as $p) {
+            if ($p['status_pembayaran'] === 'Sukses') {
+                $sudahDibayar += (int)$p['jumlah_bayar'];
+            }
         }
+        $sisaBayar = $newTotal - $sudahDibayar;
+        if ($sisaBayar < 0) $sisaBayar = 0;
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => 'Jadwal booking berhasil diubah!',
+            'message' => 'Jadwal berhasil diubah!',
             'data' => [
-                'kode_sewa' => $kodeSewa,
                 'tanggal_baru' => $tanggalBaru,
                 'jam_mulai' => $jamMulaiBaru,
                 'jam_selesai' => $jamSelesaiBaru,
                 'total_bayar' => $newTotal,
+                'sudah_dibayar' => $sudahDibayar,
+                'sisa_bayar' => $sisaBayar,
+                'price_diff' => $priceDiff
             ],
         ]);
     }
@@ -864,4 +935,3 @@ class Home extends BaseController
     }
 
 }
-

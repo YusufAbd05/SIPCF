@@ -52,7 +52,7 @@
                         <th>Kategori Hari</th>
                         <th>Rentang Jam</th>
                         <th>Harga Umum</th>
-                        <th>Harga Member</th>
+                        <th>Harga Harian</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -75,7 +75,7 @@
 
                             // Format harga
                             $hargaUmum = 'Rp ' . number_format($tarif['harga_umum'], 0, ',', '.');
-                            $hargaMember = 'Rp ' . number_format($tarif['harga_member'], 0, ',', '.');
+                            $hargaHarian = 'Rp ' . number_format($tarif['harga_harian'] ?? 0, 0, ',', '.');
                             ?>
                             <tr data-hari="<?= esc($tarif['hari']) ?>">
                                 <td>
@@ -89,11 +89,11 @@
                                     <?= $jamMulai ?> - <?= $jamSelesai ?>
                                 </td>
                                 <td class="td-price"><?= $hargaUmum ?></td>
-                                <td class="td-price" style="color:#059669;"><?= $hargaMember ?></td>
+                                <td class="td-price" style="color:#059669;"><?= $hargaHarian ?></td>
                                 <td style="text-align:center;">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <button class="action-btn edit" title="Edit"
-                                            onclick="openEditModal(<?= $tarif['id_tarif'] ?>, '<?= esc($tarif['nama_tarif']) ?>', <?= $tarif['id_lapang'] ?>, '<?= esc($tarif['hari']) ?>', '<?= esc($tarif['jam_mulai']) ?>', '<?= esc($tarif['jam_selesai']) ?>', <?= $tarif['harga_umum'] ?>, <?= $tarif['harga_member'] ?>)">
+                                            onclick="openEditModal(<?= $tarif['id_tarif'] ?>, '<?= esc($tarif['nama_tarif']) ?>', <?= $tarif['id_lapang'] ?>, '<?= esc($tarif['hari']) ?>', '<?= esc($tarif['jam_mulai']) ?>', '<?= esc($tarif['jam_selesai']) ?>', <?= $tarif['harga_umum'] ?>, <?= $tarif['harga_harian'] ?? 0 ?>)">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
                                         <button class="action-btn delete" title="Hapus"
@@ -196,13 +196,13 @@
                         <div class="col-md-6">
                             <label class="form-label-custom" style="color:#059669;">
                                 <span class="material-symbols-outlined" style="color:#059669;">workspace_premium</span>
-                                Harga Member / Jam
+                                Harga Harian / Hari
                             </label>
                             <div class="price-input-wrap">
                                 <span class="prefix" style="color:#059669;">Rp</span>
-                                <input type="number" name="harga_member" id="formHargaMember"
+                                <input type="number" name="harga_harian" id="formHargaHarian"
                                     class="form-control-custom" style="border-color:#a7f3d0; background:#f0fdf4;"
-                                    placeholder="Nominal diskon" required>
+                                    placeholder="Nominal harga harian" required>
                             </div>
                         </div>
                     </div>
@@ -274,12 +274,12 @@
         document.getElementById('formJamMulai').value = '08:00';
         document.getElementById('formJamSelesai').value = '16:00';
         document.getElementById('formHargaUmum').value = '';
-        document.getElementById('formHargaMember').value = '';
+        document.getElementById('formHargaHarian').value = '';
         new bootstrap.Modal(document.getElementById('tambahTarifModal')).show();
     }
 
     // Open modal for editing existing tarif
-    function openEditModal(id, nama, idLapang, hari, jamMulai, jamSelesai, hargaUmum, hargaMember) {
+    function openEditModal(id, nama, idLapang, hari, jamMulai, jamSelesai, hargaUmum, hargaHarian) {
         document.getElementById('tarifModalLabel').innerHTML =
             '<span class="material-symbols-outlined">edit</span> Edit Tarif';
         document.getElementById('formTarif').action = UPDATE_URL;
@@ -290,7 +290,7 @@
         document.getElementById('formJamMulai').value = jamMulai.substring(0, 5);
         document.getElementById('formJamSelesai').value = jamSelesai.substring(0, 5);
         document.getElementById('formHargaUmum').value = Math.round(hargaUmum);
-        document.getElementById('formHargaMember').value = Math.round(hargaMember);
+        document.getElementById('formHargaHarian').value = Math.round(hargaHarian);
         new bootstrap.Modal(document.getElementById('tambahTarifModal')).show();
     }
 

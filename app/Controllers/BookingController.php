@@ -54,13 +54,16 @@ class BookingController extends BaseController
     public function getBookedSlots()
     {
         $tanggal = $this->request->getGet('tanggal');
+        $excludeId = $this->request->getGet('exclude_id');
+        
         if (!$tanggal) {
             return $this->response->setJSON([]);
         }
 
         // All schedule data is now in t_jadwal
         $jadwalModel = new \App\Models\JadwalModel();
-        $allSlots = $jadwalModel->getBookedSlotsForDate($tanggal);
+        $excludeIdInt = $excludeId ? (int)$excludeId : null;
+        $allSlots = $jadwalModel->getBookedSlotsForDate($tanggal, $excludeIdInt);
 
         $bookedMap = [];
         foreach ($allSlots as $s) {
@@ -157,14 +160,25 @@ class BookingController extends BaseController
         $countToday = $bookingModel->like('kode_sewa', "BK-{$dateStr}-")->countAllResults();
         $kodeSewa = "BK-{$dateStr}-" . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
 
+        $itemsJson = $this->request->getPost('items_json');
+        $cartItems = [];
+        if (!empty($itemsJson)) {
+            $cartItems = json_decode($itemsJson, true);
+        }
+
+        $idLapang = $this->request->getPost('id_lapang'); // Fallback primary lapang ID
+        $durasiJam = $this->request->getPost('durasi_jam'); // Total durasi
+        $tipeSewa = $this->request->getPost('tipe_sewa') ?? 'Per Jam'; // Default to Per Jam if not provided
+
         // Save Booking (no schedule columns — those go to t_jadwal)
         $dataBooking = [
             'kode_sewa' => $kodeSewa,
-            'id_lapang' => $this->request->getPost('id_lapang'),
+            'id_lapang' => $idLapang,
             'nama_penyewa' => $this->request->getPost('nama_penyewa'),
             'no_hp_penyewa' => $this->request->getPost('no_hp'),
             'tipe_pesanan' => $tipePesanan,
-            'durasi_jam' => $this->request->getPost('durasi_jam'),
+            'tipe_sewa' => $tipeSewa,
+            'durasi_jam' => $durasiJam,
             'total_bayar' => $totalBayar,
             'status_pesanan' => $statusPesanan,
         ];
@@ -172,17 +186,37 @@ class BookingController extends BaseController
         $bookingModel->insert($dataBooking);
         $idSewa = $bookingModel->getInsertID();
 
-        // Save Jadwal (1 record for walk-in)
+        // Save Jadwal
         $jadwalModel = new \App\Models\JadwalModel();
-        $jadwalModel->insert([
-            'id_sewa'      => $idSewa,
-            'id_lapang'    => $this->request->getPost('id_lapang'),
-            'sesi_ke'      => 1,
-            'tanggal_main' => $this->request->getPost('tanggal_main'),
-            'jam_mulai'    => $this->request->getPost('jam_mulai'),
-            'jam_selesai'  => $this->request->getPost('jam_selesai'),
-            'status_sesi'  => 'Terjadwal',
-        ]);
+        
+        if (!empty($cartItems) && is_array($cartItems)) {
+            $sesiKe = 1;
+            foreach ($cartItems as $item) {
+                $jamMulai = $item['jam_mulai'];
+                $jamSelesai = str_pad((int)substr($jamMulai, 0, 2) + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                
+                $jadwalModel->insert([
+                    'id_sewa'      => $idSewa,
+                    'id_lapang'    => $item['id_lapang'],
+                    'sesi_ke'      => $sesiKe++,
+                    'tanggal_main' => $item['tanggal'],
+                    'jam_mulai'    => $jamMulai,
+                    'jam_selesai'  => $jamSelesai,
+                    'status_sesi'  => 'Terjadwal',
+                ]);
+            }
+        } else {
+            // Fallback for single item (if JSON not provided)
+            $jadwalModel->insert([
+                'id_sewa'      => $idSewa,
+                'id_lapang'    => $idLapang,
+                'sesi_ke'      => 1,
+                'tanggal_main' => $this->request->getPost('tanggal_main'),
+                'jam_mulai'    => $this->request->getPost('jam_mulai'),
+                'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                'status_sesi'  => 'Terjadwal',
+            ]);
+        }
 
         // Save Pembayaran (Dinamis: Lunas / DP)
         $dataPembayaran = [
@@ -211,20 +245,48 @@ class BookingController extends BaseController
             'no_hp_penyewa' => $this->request->getPost('no_hp'),
             'durasi_jam' => $this->request->getPost('durasi_jam'),
             'total_bayar' => $this->request->getPost('total_bayar'),
+            'tipe_sewa' => $this->request->getPost('tipe_sewa') ?? 'Per Jam',
         ];
 
         $bookingModel->update($id, $data);
 
-        // Update jadwal sesi_ke=1
+        // Update jadwal
         $jadwalModel = new \App\Models\JadwalModel();
-        $jadwal = $jadwalModel->where('id_sewa', $id)->where('sesi_ke', 1)->first();
-        if ($jadwal) {
-            $jadwalModel->update($jadwal['id_jadwal'], [
-                'id_lapang'    => $this->request->getPost('id_lapang'),
-                'tanggal_main' => $this->request->getPost('tanggal_main'),
-                'jam_mulai'    => $this->request->getPost('jam_mulai'),
-                'jam_selesai'  => $this->request->getPost('jam_selesai'),
-            ]);
+        $itemsJson = $this->request->getPost('items_json');
+
+        if (!empty($itemsJson)) {
+            $cartItems = json_decode($itemsJson, true);
+            if (is_array($cartItems) && count($cartItems) > 0) {
+                // Remove existing
+                $jadwalModel->where('id_sewa', $id)->delete();
+                
+                // Re-insert
+                $sesiKe = 1;
+                foreach ($cartItems as $item) {
+                    $itemJamMulaiHour = (int) substr($item['jam_mulai'], 0, 2);
+                    $itemJamSelesai = str_pad($itemJamMulaiHour + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                    $jadwalModel->insert([
+                        'id_sewa'      => $id,
+                        'id_lapang'    => $item['id_lapang'],
+                        'sesi_ke'      => $sesiKe++,
+                        'tanggal_main' => $item['tanggal'],
+                        'jam_mulai'    => $item['jam_mulai'],
+                        'jam_selesai'  => $itemJamSelesai,
+                        'status_sesi'  => 'Terjadwal',
+                    ]);
+                }
+            }
+        } else {
+            // Backward compatibility
+            $jadwal = $jadwalModel->where('id_sewa', $id)->where('sesi_ke', 1)->first();
+            if ($jadwal) {
+                $jadwalModel->update($jadwal['id_jadwal'], [
+                    'id_lapang'    => $this->request->getPost('id_lapang'),
+                    'tanggal_main' => $this->request->getPost('tanggal_main'),
+                    'jam_mulai'    => $this->request->getPost('jam_mulai'),
+                    'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                ]);
+            }
         }
 
         return redirect()->to('/admin/booking')->with('success', 'Data pesanan berhasil diperbarui!');
@@ -237,6 +299,8 @@ class BookingController extends BaseController
 
         $idSewa = $this->request->getPost('id_sewa');
         $action = $this->request->getPost('action'); // 'terima' or 'tolak'
+        
+        $booking = $bookingModel->find($idSewa);
 
         if ($action === 'terima') {
             $bookingModel->update($idSewa, ['status_pesanan' => 'Dikonfirmasi', 'alasan_penolakan' => null]);
@@ -244,6 +308,21 @@ class BookingController extends BaseController
             $pembayaran = $pembayaranModel->where('id_sewa', $idSewa)->first();
             if ($pembayaran) {
                 $pembayaranModel->update($pembayaran['id_pembayaran'], ['status_pembayaran' => 'Sukses']);
+            }
+            if ($booking && !empty($booking['email_penyewa'])) {
+                $jadwalModel = new \App\Models\JadwalModel();
+                $booking['jadwals'] = $jadwalModel->select('t_jadwal.*, t_lapang.nama_lapangan')
+                                                  ->join('t_lapang', 't_lapang.id_lapang = t_jadwal.id_lapang')
+                                                  ->where('t_jadwal.id_sewa', $booking['id_sewa'])
+                                                  ->orderBy('t_jadwal.sesi_ke', 'ASC')
+                                                  ->findAll();
+
+                $emailService = \Config\Services::email();
+                $emailService->setTo($booking['email_penyewa']);
+                $emailService->setSubject('Booking Dikonfirmasi: ' . $booking['kode_sewa']);
+                $message = view('email/user_booking_approved', $booking, ['debug' => false]);
+                $emailService->setMessage($message);
+                $emailService->send();
             }
             return redirect()->to('/admin/booking')->with('success', 'Pesanan berhasil diverifikasi dan dikonfirmasi!');
         } elseif ($action === 'tolak') {
@@ -253,6 +332,22 @@ class BookingController extends BaseController
             $pembayaran = $pembayaranModel->where('id_sewa', $idSewa)->first();
             if ($pembayaran) {
                 $pembayaranModel->update($pembayaran['id_pembayaran'], ['status_pembayaran' => 'Ditolak']);
+            }
+            if ($booking && !empty($booking['email_penyewa'])) {
+                $jadwalModel = new \App\Models\JadwalModel();
+                $booking['jadwals'] = $jadwalModel->select('t_jadwal.*, t_lapang.nama_lapangan')
+                                                  ->join('t_lapang', 't_lapang.id_lapang = t_jadwal.id_lapang')
+                                                  ->where('t_jadwal.id_sewa', $booking['id_sewa'])
+                                                  ->orderBy('t_jadwal.sesi_ke', 'ASC')
+                                                  ->findAll();
+                $booking['alasan_penolakan'] = $alasan; // pass the reason to the view
+
+                $emailService = \Config\Services::email();
+                $emailService->setTo($booking['email_penyewa']);
+                $emailService->setSubject('Booking Ditolak: ' . $booking['kode_sewa']);
+                $message = view('email/user_booking_rejected', $booking, ['debug' => false]);
+                $emailService->setMessage($message);
+                $emailService->send();
             }
             return redirect()->to('/admin/booking')->with('success', 'Pesanan telah ditolak dan dibatalkan.');
         }
@@ -285,4 +380,5 @@ class BookingController extends BaseController
 
         return redirect()->to('/admin/booking')->with('success', 'Pelunasan transaksi berhasil disimpan dan status menjadi Selesai!');
     }
+
 }

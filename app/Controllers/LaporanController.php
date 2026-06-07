@@ -50,6 +50,28 @@ class LaporanController extends BaseController
             $lapangTerlaris = array_key_first($lapangCount);
         }
 
+        // Cari hari paling ramai
+        $hariCount = [];
+        $hariNama = [
+            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 
+            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+        ];
+        foreach ($bookings as $b) {
+            if (!empty($b['tanggal_main'])) {
+                $dayOfWeek = date('l', strtotime($b['tanggal_main']));
+                if (!isset($hariCount[$dayOfWeek])) {
+                    $hariCount[$dayOfWeek] = 0;
+                }
+                $hariCount[$dayOfWeek]++;
+            }
+        }
+        $hariTeramai = '-';
+        if (!empty($hariCount)) {
+            arsort($hariCount);
+            $topDay = array_key_first($hariCount);
+            $hariTeramai = $hariNama[$topDay];
+        }
+
         // Data chart & distribusi metode dari model
         $pendapatanHarian = $bookingModel->getPendapatanHarian($tglMulai, $tglSelesai, $idLapang);
         $chartData = $this->formatChartData($pendapatanHarian);
@@ -64,6 +86,7 @@ class LaporanController extends BaseController
             'totalPesanan' => $totalPesanan,
             'totalOmset' => $totalOmset,
             'lapangTerlaris' => $lapangTerlaris,
+            'hariTeramai' => $hariTeramai,
             'chartData' => $chartData,
             'metodeDistribusi' => $metodeDistribusi,
         ];

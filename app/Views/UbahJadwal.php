@@ -48,10 +48,20 @@
             </div>
         </div>
 
-        <!-- ═══ STEP 2: Reschedule with Calendar (hidden) ═══ -->
-        <div class="d-none" id="rescheduleSection" style="max-width:900px;margin:0 auto;">
+        <!-- ═══ STEP 1.5: List Jadwal (hidden) ═══ -->
+        <div class="d-none" id="jadwalListSection" style="max-width:800px;margin:0 auto;">
             <button type="button" class="booking-back-btn mb-4" onclick="showLookup()">
                 <span class="material-symbols-outlined" style="font-size:1.1rem;">arrow_back</span> Kembali
+            </button>
+            <h4 class="mb-3" style="font-weight:700;">Daftar Jadwal Booking Anda</h4>
+            <p class="text-muted mb-4">Pilih jadwal lapangan yang ingin Anda ubah waktunya. Perubahan hanya bisa dilakukan untuk masing-masing jadwal.</p>
+            <div id="jadwalListContainer" style="display:flex;flex-direction:column;gap:1rem;"></div>
+        </div>
+
+        <!-- ═══ STEP 2: Reschedule with Calendar (hidden) ═══ -->
+        <div class="d-none" id="rescheduleSection" style="max-width:900px;margin:0 auto;">
+            <button type="button" class="booking-back-btn mb-4" onclick="showJadwalList()">
+                <span class="material-symbols-outlined" style="font-size:1.1rem;">arrow_back</span> Kembali ke Daftar Jadwal
             </button>
 
             <!-- Current Booking Info -->
@@ -66,26 +76,14 @@
                 <div class="booking-result__details">
                     <div class="booking-detail-row">
                         <div class="booking-detail-item">
-                            <span class="material-symbols-outlined booking-detail-icon">person</span>
-                            <div><span class="booking-detail-label">Penyewa</span><span class="booking-detail-value"
-                                    id="editNama">-</span></div>
-                        </div>
-                        <div class="booking-detail-item">
                             <span class="material-symbols-outlined booking-detail-icon">calendar_month</span>
                             <div><span class="booking-detail-label">Tanggal Saat Ini</span><span
                                     class="booking-detail-value" id="editTanggal">-</span></div>
                         </div>
-                    </div>
-                    <div class="booking-detail-row">
                         <div class="booking-detail-item">
                             <span class="material-symbols-outlined booking-detail-icon">schedule</span>
                             <div><span class="booking-detail-label">Jam Saat Ini</span><span
                                     class="booking-detail-value" id="editJam">-</span></div>
-                        </div>
-                        <div class="booking-detail-item">
-                            <span class="material-symbols-outlined booking-detail-icon">timer</span>
-                            <div><span class="booking-detail-label">Durasi</span><span class="booking-detail-value"
-                                    id="editDurasi">-</span></div>
                         </div>
                     </div>
                 </div>
@@ -109,20 +107,6 @@
                     <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
                 </div>
                 <div class="cal-grid cal-dates" id="rcCalDates"></div>
-                <div class="cal-legend">
-                    <div class="cal-legend-item">
-                        <span class="cal-legend-dot" style="background:var(--primary);"></span>
-                        <span>Hari Ini</span>
-                    </div>
-                    <div class="cal-legend-item">
-                        <span class="cal-legend-dot" style="background:var(--primary);opacity:.3;"></span>
-                        <span>Terpilih</span>
-                    </div>
-                    <div class="cal-legend-item">
-                        <span class="cal-legend-dot" style="background:var(--outline);opacity:.35;"></span>
-                        <span>Lampau</span>
-                    </div>
-                </div>
             </div>
 
             <!-- Timeslot cards (hidden until date selected) -->
@@ -174,7 +158,7 @@
                 <div class="booking-success-icon"><span class="material-symbols-outlined">check_circle</span></div>
             </div>
             <h4 class="booking-card__title">Jadwal Berhasil Diubah!</h4>
-            <p class="booking-card__desc">Jadwal booking Anda telah berhasil diperbarui.</p>
+            <p class="booking-card__desc">Jadwal lapangan Anda telah berhasil diperbarui.</p>
             <div class="booking-result__details mt-3 mb-4">
                 <div class="booking-detail-row">
                     <div class="booking-detail-item">
@@ -186,6 +170,26 @@
                         <span class="material-symbols-outlined booking-detail-icon">schedule</span>
                         <div><span class="booking-detail-label">Waktu Baru</span><span class="booking-detail-value"
                                 id="successTime">-</span></div>
+                    </div>
+                </div>
+                <div class="booking-detail-row mt-2" id="paymentDetails" style="display:none;">
+                    <div class="booking-detail-item" style="flex-direction:column;align-items:flex-start;gap:.25rem;background:#f8fafc;width:100%;">
+                        <div style="display:flex;justify-content:space-between;width:100%;font-size:.85rem;margin-bottom:.25rem;">
+                            <span class="text-muted">Total Harga Baru:</span>
+                            <span style="font-weight:700;" id="successTotal">-</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;width:100%;font-size:.85rem;margin-bottom:.25rem;">
+                            <span class="text-muted">Sudah Dibayar:</span>
+                            <span style="font-weight:700;color:#10b981;" id="successDibayar">-</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;width:100%;font-size:.9rem;border-top:1px dashed #cbd5e1;padding-top:.5rem;">
+                            <span style="font-weight:700;color:#0f172a;">Sisa Bayar:</span>
+                            <span style="font-weight:800;color:#ef4444;" id="successSisa">-</span>
+                        </div>
+                        <div class="mt-2" style="font-size:.75rem;color:#64748b;display:flex;gap:.35rem;">
+                            <span class="material-symbols-outlined" style="font-size:1rem;color:#f59e0b;">info</span>
+                            <span>Uang sisa dibayarkan setelah Anda selesai bermain di tempat.</span>
+                        </div>
                     </div>
                 </div>
             </div>

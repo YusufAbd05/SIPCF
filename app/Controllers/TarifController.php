@@ -35,7 +35,7 @@ class TarifController extends BaseController
             'jam_mulai' => $this->request->getPost('jam_mulai'),
             'jam_selesai' => $this->request->getPost('jam_selesai'),
             'harga_umum' => $this->request->getPost('harga_umum'),
-            'harga_member' => $this->request->getPost('harga_member'),
+            'harga_harian' => $this->request->getPost('harga_harian'),
         ];
 
         $tarifModel->insert($data);
@@ -55,7 +55,7 @@ class TarifController extends BaseController
             'jam_mulai' => $this->request->getPost('jam_mulai'),
             'jam_selesai' => $this->request->getPost('jam_selesai'),
             'harga_umum' => $this->request->getPost('harga_umum'),
-            'harga_member' => $this->request->getPost('harga_member'),
+            'harga_harian' => $this->request->getPost('harga_harian'),
         ];
 
         $tarifModel->update($id, $data);
