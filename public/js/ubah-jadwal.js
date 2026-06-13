@@ -144,6 +144,10 @@
         document.getElementById('editTanggal').textContent=fmtTgl(currentEditJadwal.tanggal_main);
         document.getElementById('editJam').textContent=fmtJam(currentEditJadwal.jam_mulai)+' - '+fmtJam(currentEditJadwal.jam_selesai);
 
+        const durasiLama = parseInt(currentEditJadwal.durasi);
+        const selDurasi = document.getElementById('rcDurasiBaru');
+        if (selDurasi) selDurasi.value = durasiLama > 12 ? 12 : durasiLama;
+
         rcSelectedDate=null;
         rcSelectedSlot=null;
         document.getElementById('rcSlotSection').style.display='none';
@@ -202,6 +206,24 @@
         rcMonth++;if(rcMonth>11){rcMonth=0;rcYear++;}renderCalendar();
     });
 
+    window.changeRcDurasi = function(step) {
+        const input = document.getElementById('rcDurasiBaru');
+        if (!input) return;
+        let val = parseInt(input.value) + step;
+        if (val < 1) val = 1;
+        if (val > 12) val = 12;
+        if (val !== parseInt(input.value)) {
+            input.value = val;
+            updateRcDurasi();
+        }
+    };
+
+    window.updateRcDurasi = function() {
+        if (rcSelectedDate) {
+            selectRcDate(rcSelectedDate);
+        }
+    };
+
     // ─── Select Date → Show Timeslots ───
     async function selectRcDate(ds){
         rcSelectedDate=ds;
@@ -236,7 +258,8 @@
 
         const{jamBuka,jamTutup,isWeekend}=getOpHours(lap,ds);
         const bookedSlots=bookedSlotsData[currentEditJadwal.id_lapang]||[];
-        const durasi=parseInt(currentEditJadwal.durasi);
+        const durasiStr = document.getElementById('rcDurasiBaru') ? document.getElementById('rcDurasiBaru').value : currentEditJadwal.durasi;
+        const durasi=parseInt(durasiStr);
 
         // Exclude own booking hours if same date and same lapang
         let ownHours=[];
@@ -323,7 +346,8 @@
     // ─── Confirm Reschedule ───
     window.confirmReschedule=async function(){
         if(!rcSelectedDate||!rcSelectedSlot||!currentEditJadwal){alert('Pilih tanggal dan jam baru.');return;}
-        if(rcSelectedDate===currentEditJadwal.tanggal_main&&rcSelectedSlot.jam_mulai===currentEditJadwal.jam_mulai.substring(0,5)){
+        const durasiBaru = document.getElementById('rcDurasiBaru') ? parseInt(document.getElementById('rcDurasiBaru').value) : parseInt(currentEditJadwal.durasi);
+        if(rcSelectedDate===currentEditJadwal.tanggal_main && rcSelectedSlot.jam_mulai===currentEditJadwal.jam_mulai.substring(0,5) && durasiBaru === parseInt(currentEditJadwal.durasi)){
             alert('Jadwal baru sama dengan jadwal saat ini.');return;
         }
         const btn=document.getElementById('btnConfirm');
@@ -336,6 +360,7 @@
             fd.append('id_jadwal', currentEditJadwal.id_jadwal);
             fd.append('tanggal_baru',rcSelectedDate);
             fd.append('jam_mulai_baru',rcSelectedSlot.jam_mulai);
+            fd.append('durasi_baru', durasiBaru);
             const res=await fetch(`${BASE}/api/processUbahJadwalItem`,{method:'POST',body:fd});
             const data=await res.json();
             if(data.success){

@@ -89,6 +89,23 @@
                 </div>
             </div>
 
+            <!-- Duration -->
+            <h5 style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;">
+                <span class="material-symbols-outlined"
+                    style="font-size:1.2rem;color:var(--primary);">timer</span>
+                Pilih Durasi Baru
+            </h5>
+            <div class="mb-4" style="display:flex; align-items:center; gap:0.5rem;">
+                <button type="button" class="btn btn-outline-secondary" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:#cbd5e1;" onclick="changeRcDurasi(-1)">
+                    <span class="material-symbols-outlined" style="font-size:1.2rem;">remove</span>
+                </button>
+                <input type="text" id="rcDurasiBaru" readonly value="1" style="width:60px; text-align:center; padding:0.5rem; border-radius:0.5rem; border:1px solid #cbd5e1; font-weight:700; font-size:1.1rem; background-color:#fff; color:#333;">
+                <span style="font-weight:600; color:#64748b; margin-right:0.5rem;">Jam</span>
+                <button type="button" class="btn btn-outline-secondary" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:#cbd5e1;" onclick="changeRcDurasi(1)">
+                    <span class="material-symbols-outlined" style="font-size:1.2rem;">add</span>
+                </button>
+            </div>
+
             <!-- Calendar for new date -->
             <h5 style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;">
                 <span class="material-symbols-outlined"

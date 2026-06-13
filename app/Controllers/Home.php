@@ -777,6 +777,7 @@ class Home extends BaseController
         $idJadwal = $this->request->getPost('id_jadwal');
         $tanggalBaru = $this->request->getPost('tanggal_baru');
         $jamMulaiBaru = $this->request->getPost('jam_mulai_baru');
+        $durasiBaruInput = $this->request->getPost('durasi_baru');
 
         if (!$kodeSewa || !$idJadwal || !$tanggalBaru || !$jamMulaiBaru) {
             return $this->response->setJSON(['success' => false, 'message' => 'Semua field wajib diisi.']);
@@ -808,11 +809,14 @@ class Home extends BaseController
             return $this->response->setJSON(['success' => false, 'message' => 'Tanggal baru tidak boleh di masa lalu.']);
         }
 
-        $durasi = (int)substr($jadwal['jam_selesai'], 0, 2) - (int)substr($jadwal['jam_mulai'], 0, 2);
-        if ($durasi <= 0) $durasi = 1;
+        $durasiLama = (int)substr($jadwal['jam_selesai'], 0, 2) - (int)substr($jadwal['jam_mulai'], 0, 2);
+        if ($durasiLama <= 0) $durasiLama = 1;
+
+        $durasiBaru = $durasiBaruInput ? (int)$durasiBaruInput : $durasiLama;
+        if ($durasiBaru <= 0) $durasiBaru = 1;
 
         $jamMulaiHour = (int) substr($jamMulaiBaru, 0, 2);
-        $jamSelesaiBaru = str_pad($jamMulaiHour + $durasi, 2, '0', STR_PAD_LEFT) . ':00';
+        $jamSelesaiBaru = str_pad($jamMulaiHour + $durasiBaru, 2, '0', STR_PAD_LEFT) . ':00';
 
         $allSlots = $jadwalModel->getBookedSlotsForDate($tanggalBaru);
         $occupiedHours = [];
@@ -826,7 +830,7 @@ class Home extends BaseController
             }
         }
 
-        for ($h = $jamMulaiHour; $h < $jamMulaiHour + $durasi; $h++) {
+        for ($h = $jamMulaiHour; $h < $jamMulaiHour + $durasiBaru; $h++) {
             if (in_array($h, $occupiedHours)) {
                 return $this->response->setJSON(['success' => false, 'message' => 'Maaf, jam yang Anda pilih sudah terisi. Silakan pilih jam lain.']);
             }
@@ -855,14 +859,18 @@ class Home extends BaseController
             return $total;
         }
 
-        $oldPrice = getHarga($tarifModel, $jadwal['id_lapang'], $jadwal['tanggal_main'], (int)substr($jadwal['jam_mulai'], 0, 2), $durasi);
-        $newPrice = getHarga($tarifModel, $jadwal['id_lapang'], $tanggalBaru, $jamMulaiHour, $durasi);
+        $oldPrice = getHarga($tarifModel, $jadwal['id_lapang'], $jadwal['tanggal_main'], (int)substr($jadwal['jam_mulai'], 0, 2), $durasiLama);
+        $newPrice = getHarga($tarifModel, $jadwal['id_lapang'], $tanggalBaru, $jamMulaiHour, $durasiBaru);
 
         $priceDiff = $newPrice - $oldPrice;
         $newTotal = (int)$booking['total_bayar'] + $priceDiff;
 
+        $durasiDiff = $durasiBaru - $durasiLama;
+        $newDurasiJam = (isset($booking['durasi_jam']) ? (int)$booking['durasi_jam'] : 0) + $durasiDiff;
+
         $bookingModel->update($booking['id_sewa'], [
             'total_bayar' => $newTotal,
+            'durasi_jam' => $newDurasiJam,
         ]);
 
         $jadwalModel->update($jadwal['id_jadwal'], [
@@ -944,6 +952,35 @@ class Home extends BaseController
             'success' => true,
             'pembayarans' => $pembayarans,
         ]);
+    }
+
+    private function _sendEmailToAdminUbahJadwal($kode_sewa, $nama_penyewa, $jadwal_lama, $jadwal_baru)
+    {
+        $userModel = new \App\Models\UserModel();
+        $admins = $userModel->where('role', 'Admin')->findAll();
+        $emails = [];
+        foreach ($admins as $admin) {
+            if (!empty($admin['email'])) {
+                $emails[] = $admin['email'];
+            }
+        }
+
+        if (!empty($emails)) {
+            $emailService = \Config\Services::email();
+            $emailService->setTo($emails);
+            $emailService->setSubject('Perubahan Jadwal Booking: ' . $kode_sewa);
+            
+            $data = [
+                'kode_sewa' => $kode_sewa,
+                'nama_penyewa' => $nama_penyewa,
+                'jadwal_lama' => $jadwal_lama,
+                'jadwal_baru' => $jadwal_baru,
+            ];
+            
+            $message = view('email/admin_schedule_changed', $data, ['debug' => false]);
+            $emailService->setMessage($message);
+            $emailService->send();
+        }
     }
 
 }
