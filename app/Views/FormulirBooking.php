@@ -1297,11 +1297,34 @@
                             }];
                             renderCart();
                         } else if (sewaMode === 'per-hari') {
-                            selectedHarianCourtId = found.id_lapang;
-                            fIdLapang.value = found.id_lapang;
-                            fTanggal.value = paramTanggal;
-                            fJam.value = pad(getOperatingHours(found, paramTanggal).jamBuka) + ':00';
-                            updateSummaryData();
+                            const { jamBuka } = getOperatingHours(found, paramTanggal);
+                            try {
+                                const res = await fetch(`${API_TARIF}?id_lapang=${found.id_lapang}&tanggal=${paramTanggal}`);
+                                const data = await res.json();
+                                const tarifs = data.tarifs || [];
+                                const harianTarif = tarifs.find(t => parseInt(t.harga_harian) > 0);
+                                const hargaHarian = harianTarif ? parseInt(harianTarif.harga_harian) : 0;
+                                cartItems = [{
+                                    id_lapang: found.id_lapang,
+                                    nama_lapang: found.nama_lapangan,
+                                    tanggal: paramTanggal,
+                                    jam_mulai: pad(jamBuka) + ':00',
+                                    durasi: 1,
+                                    harga_satuan: hargaHarian,
+                                    harga: hargaHarian
+                                }];
+                            } catch(e) {
+                                cartItems = [{
+                                    id_lapang: found.id_lapang,
+                                    nama_lapang: found.nama_lapangan,
+                                    tanggal: paramTanggal,
+                                    jam_mulai: pad(jamBuka) + ':00',
+                                    durasi: 1,
+                                    harga_satuan: 0,
+                                    harga: 0
+                                }];
+                            }
+                            renderCart();
                         } else if (sewaMode === 'membership' && paramJam) {
                             const jamFormatted = paramJam.split('.')[0].padStart(2, '0') + ':00';
                             selectedMembershipSlot = {
@@ -1333,10 +1356,14 @@
                     for (const t of tarifs) {
                         const tStart = parseInt(t.jam_mulai) || 0;
                         const tEnd = parseInt(t.jam_selesai) || 24;
-                        if (h >= tStart && h < tEnd) {
+                        if (h >= tStart && h < tEnd && parseInt(t.harga_umum) > 0) {
                             slotPrice = parseInt(t.harga_umum) || 0;
                             break;
                         }
+                    }
+                    if (slotPrice === 0 && tarifs.length > 0) {
+                        const defaultTarif = tarifs.find(t => parseInt(t.harga_umum) > 0);
+                        slotPrice = defaultTarif ? parseInt(defaultTarif.harga_umum) : 0;
                     }
                     total += slotPrice;
                 }
@@ -1394,7 +1421,7 @@
 
             fTipeSewa.value = sewaMode === 'per-hari' ? 'Harian' : (sewaMode === 'membership' ? 'Membership' : 'Per Jam');
 
-            if (sewaMode === 'per-jam' || sewaMode === 'per-hari') return;
+            if (sewaMode === 'per-jam') return;
 
             const idLapang = fIdLapang.value;
             const tanggal = fTanggal.value;
@@ -1437,7 +1464,8 @@
                 const tarifs = data.tarifs || [];
 
                 if (tarifs.length > 0) {
-                    hargaHarianExplicit = parseInt(tarifs[0].harga_harian) || 0;
+                    const harianTarif = tarifs.find(t => parseInt(t.harga_harian) > 0);
+                    hargaHarianExplicit = harianTarif ? parseInt(harianTarif.harga_harian) : 0;
                 }
 
                 const jamHour = parseInt(jamMulai) || 0;
@@ -1451,13 +1479,14 @@
                         for (const t of tarifs) {
                             const tStart = parseInt(t.jam_mulai) || 0;
                             const tEnd = parseInt(t.jam_selesai) || 24;
-                            if (h >= tStart && h < tEnd) {
+                            if (h >= tStart && h < tEnd && parseInt(t.harga_umum) > 0) {
                                 slotPrice = parseInt(t.harga_umum) || 0;
                                 break;
                             }
                         }
                         if (slotPrice === 0 && tarifs.length > 0) {
-                            slotPrice = parseInt(tarifs[0].harga_umum) || 0;
+                            const defaultTarif = tarifs.find(t => parseInt(t.harga_umum) > 0);
+                            slotPrice = defaultTarif ? parseInt(defaultTarif.harga_umum) : 0;
                         }
                         hargaAccumulated += slotPrice;
 
@@ -1788,7 +1817,8 @@
                     const res = await fetch(`${API_TARIF}?id_lapang=${idLapang}&tanggal=${selectedDate}`);
                     const data = await res.json();
                     const tarifs = data.tarifs || [];
-                    const hargaHarian = tarifs.length > 0 ? (parseInt(tarifs[0].harga_harian) || 0) : 0;
+                    const harianTarif = tarifs.find(t => parseInt(t.harga_harian) > 0);
+                    const hargaHarian = harianTarif ? parseInt(harianTarif.harga_harian) : 0;
                     
                     cartItems.push({
                         id_lapang: idLapang,
@@ -2217,8 +2247,8 @@
 
                 const cartSection = document.getElementById('cartSection');
                 const singleSection = document.getElementById('singleItemSection');
-                if (cartSection) cartSection.style.display = (sewaMode === 'per-jam') ? 'block' : 'none';
-                if (singleSection) singleSection.style.display = (sewaMode !== 'per-jam') ? 'block' : 'none';
+                if (cartSection) cartSection.style.display = (sewaMode === 'per-jam' || sewaMode === 'per-hari') ? 'block' : 'none';
+                if (singleSection) singleSection.style.display = (sewaMode === 'membership') ? 'block' : 'none';
             }
 
             await renderCalendar();

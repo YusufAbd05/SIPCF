@@ -28,14 +28,20 @@ class TarifController extends BaseController
     {
         $tarifModel = new TarifModel();
 
+        $jenis_sewa = $this->request->getPost('jenis_sewa');
+        $harga = $this->request->getPost('harga');
+
+        $harga_umum = ($jenis_sewa === 'Umum') ? $harga : 0;
+        $harga_harian = ($jenis_sewa === 'Harian') ? $harga : 0;
+
         $data = [
             'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_tarif' => $this->request->getPost('nama_tarif'),
             'hari' => $this->request->getPost('hari'),
             'jam_mulai' => $this->request->getPost('jam_mulai'),
             'jam_selesai' => $this->request->getPost('jam_selesai'),
-            'harga_umum' => $this->request->getPost('harga_umum'),
-            'harga_harian' => $this->request->getPost('harga_harian'),
+            'harga_umum' => $harga_umum,
+            'harga_harian' => $harga_harian,
         ];
 
         $tarifModel->insert($data);
@@ -48,14 +54,20 @@ class TarifController extends BaseController
         $tarifModel = new TarifModel();
         $id = $this->request->getPost('id_tarif');
 
+        $jenis_sewa = $this->request->getPost('jenis_sewa');
+        $harga = $this->request->getPost('harga');
+
+        $harga_umum = ($jenis_sewa === 'Umum') ? $harga : 0;
+        $harga_harian = ($jenis_sewa === 'Harian') ? $harga : 0;
+
         $data = [
             'id_lapang' => $this->request->getPost('id_lapang'),
             'nama_tarif' => $this->request->getPost('nama_tarif'),
             'hari' => $this->request->getPost('hari'),
             'jam_mulai' => $this->request->getPost('jam_mulai'),
             'jam_selesai' => $this->request->getPost('jam_selesai'),
-            'harga_umum' => $this->request->getPost('harga_umum'),
-            'harga_harian' => $this->request->getPost('harga_harian'),
+            'harga_umum' => $harga_umum,
+            'harga_harian' => $harga_harian,
         ];
 
         $tarifModel->update($id, $data);

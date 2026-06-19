@@ -59,112 +59,133 @@
         </div>
 
         <!-- ═══ STEP 2: Reschedule with Calendar (hidden) ═══ -->
-        <div class="d-none" id="rescheduleSection" style="max-width:900px;margin:0 auto;">
-            <button type="button" class="booking-back-btn mb-4" onclick="showJadwalList()">
-                <span class="material-symbols-outlined" style="font-size:1.1rem;">arrow_back</span> Kembali ke Daftar Jadwal
-            </button>
-
-            <!-- Current Booking Info -->
-            <div class="booking-result-card mb-4" style="max-width:100%;">
-                <div class="booking-result__header">
-                    <div class="booking-result__status">
-                        <span class="status-pill status-pill--available" id="editStatus">Aktif</span>
-                    </div>
-                    <h4 class="booking-result__title" id="editTitle">Lapangan</h4>
-                    <p class="booking-result__code" id="editCode">BK-XXXX</p>
-                </div>
-                <div class="booking-result__details">
-                    <div class="booking-detail-row">
-                        <div class="booking-detail-item">
-                            <span class="material-symbols-outlined booking-detail-icon">calendar_month</span>
-                            <div><span class="booking-detail-label">Tanggal Saat Ini</span><span
-                                    class="booking-detail-value" id="editTanggal">-</span></div>
-                        </div>
-                        <div class="booking-detail-item">
-                            <span class="material-symbols-outlined booking-detail-icon">schedule</span>
-                            <div><span class="booking-detail-label">Jam Saat Ini</span><span
-                                    class="booking-detail-value" id="editJam">-</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Duration -->
-            <h5 style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;">
-                <span class="material-symbols-outlined"
-                    style="font-size:1.2rem;color:var(--primary);">timer</span>
-                Pilih Durasi Baru
-            </h5>
-            <div class="mb-4" style="display:flex; align-items:center; gap:0.5rem;">
-                <button type="button" class="btn btn-outline-secondary" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:#cbd5e1;" onclick="changeRcDurasi(-1)">
-                    <span class="material-symbols-outlined" style="font-size:1.2rem;">remove</span>
+        <div class="d-none" id="rescheduleSection" style="max-width:1000px;margin:0 auto;">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <button type="button" class="booking-back-btn" onclick="showJadwalList()">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">arrow_back</span> Kembali ke Daftar
                 </button>
-                <input type="text" id="rcDurasiBaru" readonly value="1" style="width:60px; text-align:center; padding:0.5rem; border-radius:0.5rem; border:1px solid #cbd5e1; font-weight:700; font-size:1.1rem; background-color:#fff; color:#333;">
-                <span style="font-weight:600; color:#64748b; margin-right:0.5rem;">Jam</span>
-                <button type="button" class="btn btn-outline-secondary" style="border-radius:50%; width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:#cbd5e1;" onclick="changeRcDurasi(1)">
-                    <span class="material-symbols-outlined" style="font-size:1.2rem;">add</span>
-                </button>
+                <div class="step-indicator d-none d-sm-block">
+                    <span class="step-badge">Tahap 2 dari 2</span>
+                </div>
             </div>
 
-            <!-- Calendar for new date -->
-            <h5 style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;">
-                <span class="material-symbols-outlined"
-                    style="font-size:1.2rem;color:var(--primary);">edit_calendar</span>
-                Pilih Tanggal Baru
-            </h5>
-            <div class="cal-card mb-4">
-                <div class="cal-header">
-                    <button type="button" class="cal-nav-btn" id="rcCalPrev"><span
-                            class="material-symbols-outlined">chevron_left</span></button>
-                    <span class="cal-month-label" id="rcCalLabel">Mei 2026</span>
-                    <button type="button" class="cal-nav-btn" id="rcCalNext"><span
-                            class="material-symbols-outlined">chevron_right</span></button>
-                </div>
-                <div class="cal-grid cal-dow">
-                    <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
-                </div>
-                <div class="cal-grid cal-dates" id="rcCalDates"></div>
-            </div>
-
-            <!-- Timeslot cards (hidden until date selected) -->
-            <div id="rcSlotSection" style="display:none;">
-                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
-                    <div>
-                        <h5 class="results-title mb-1" style="font-size:1rem;">Pilih Jam Baru</h5>
-                        <p class="results-subtitle mb-0" id="rcDateLabel" style="font-size:.8rem;">
-                            <span class="material-symbols-outlined"
-                                style="font-size:.95rem;vertical-align:-3px;">today</span>
-                            Pilih tanggal di kalender
-                        </p>
+            <div class="reschedule-layout">
+                <!-- Left Sidebar: Current Info & Duration -->
+                <div class="reschedule-sidebar">
+                    <!-- Current Booking Info -->
+                    <div class="booking-result-card mb-4" style="max-width:100%; border:1px solid #e2e8f0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.05);">
+                        <div class="booking-result__header" style="background:#f8fafc;">
+                            <div class="booking-result__status">
+                                <span class="status-pill status-pill--available" id="editStatus">Aktif</span>
+                            </div>
+                            <h4 class="booking-result__title" id="editTitle">Lapangan</h4>
+                            <p class="booking-result__code" id="editCode">BK-XXXX</p>
+                        </div>
+                        <div class="booking-result__details" style="padding:1rem;">
+                            <div class="booking-detail-row" style="flex-direction:column; gap:0.75rem;">
+                                <div class="booking-detail-item" style="width:100%;">
+                                    <span class="material-symbols-outlined booking-detail-icon">calendar_month</span>
+                                    <div><span class="booking-detail-label">Tanggal Saat Ini</span><span
+                                            class="booking-detail-value" id="editTanggal">-</span></div>
+                                </div>
+                                <div class="booking-detail-item" style="width:100%;">
+                                    <span class="material-symbols-outlined booking-detail-icon">schedule</span>
+                                    <div><span class="booking-detail-label">Jam Saat Ini</span><span
+                                            class="booking-detail-value" id="editJam">-</span></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="results-count" id="rcSlotSummary" style="display:none;">
-                        <span class="material-symbols-outlined" style="font-size:1rem;">check_circle</span>
-                        <span id="rcSlotSummaryText"></span>
-                    </div>
-                </div>
 
-                <div id="rcSlotLoading" class="text-center py-3" style="display:none;">
-                    <div class="spinner-border text-primary" role="status" style="width:2rem;height:2rem;"></div>
-                    <p class="mt-2" style="font-size:.85rem;color:var(--on-surface-variant);">Memuat slot...</p>
-                </div>
-
-                <!-- Single lapang card with timeslots -->
-                <div id="rcTimeslotCard"></div>
-
-                <!-- Error -->
-                <div class="booking-alert booking-alert--error d-none mt-3" id="rcError">
-                    <span class="material-symbols-outlined">error</span>
-                    <div><strong>Gagal mengubah jadwal</strong>
-                        <p class="mb-0" id="rcErrorMsg"></p>
+                    <!-- Duration Picker Card -->
+                    <div class="booking-card" style="padding:1.5rem; max-width:100%;">
+                        <h5 style="font-weight:700;font-size:1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;">
+                            <div style="width:2.25rem;height:2.25rem;background:#fef3c7;color:#d97706;border-radius:.6rem;display:flex;align-items:center;justify-content:center;">
+                                <span class="material-symbols-outlined" style="font-size:1.3rem;">timer</span>
+                            </div>
+                            Pilih Durasi Baru
+                        </h5>
+                        <div class="duration-picker-modern">
+                            <button type="button" class="duration-btn-modern" onclick="changeRcDurasi(-1)">
+                                <span class="material-symbols-outlined">remove</span>
+                            </button>
+                            <div class="duration-display">
+                                <input type="text" id="rcDurasiBaru" readonly value="1" class="duration-val">
+                                <span class="duration-lbl">Jam</span>
+                            </div>
+                            <button type="button" class="duration-btn-modern" onclick="changeRcDurasi(1)">
+                                <span class="material-symbols-outlined">add</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Confirm button (shown after selecting a timeslot) -->
-                <div id="rcConfirmWrap" style="display:none;" class="mt-3">
-                    <button type="button" class="booking-confirm-btn" id="btnConfirm" onclick="confirmReschedule()">
-                        <span class="material-symbols-outlined" style="font-size:1.15rem;">check_circle</span>
-                        Konfirmasi Perubahan Jadwal
-                    </button>
+                <!-- Right Content: Calendar & Slots -->
+                <div class="reschedule-main">
+                    <div class="booking-card" style="padding:1.5rem; max-width:100%;">
+                        <h5 style="font-weight:700;font-size:1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem;">
+                            <div style="width:2.25rem;height:2.25rem;background:#dbeafe;color:#2563eb;border-radius:.6rem;display:flex;align-items:center;justify-content:center;">
+                                <span class="material-symbols-outlined" style="font-size:1.3rem;">edit_calendar</span>
+                            </div>
+                            Pilih Tanggal Baru
+                        </h5>
+                        
+                        <div class="cal-card mb-4" style="box-shadow:none;border:1px solid #e2e8f0;border-radius:1rem;background:#f8fafc;">
+                            <div class="cal-header">
+                                <button type="button" class="cal-nav-btn" id="rcCalPrev"><span
+                                        class="material-symbols-outlined">chevron_left</span></button>
+                                <span class="cal-month-label" id="rcCalLabel">Mei 2026</span>
+                                <button type="button" class="cal-nav-btn" id="rcCalNext"><span
+                                        class="material-symbols-outlined">chevron_right</span></button>
+                            </div>
+                            <div class="cal-grid cal-dow">
+                                <span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span>
+                            </div>
+                            <div class="cal-grid cal-dates" id="rcCalDates"></div>
+                        </div>
+
+                        <!-- Timeslot cards (hidden until date selected) -->
+                        <div id="rcSlotSection" style="display:none;border-top:1px dashed #cbd5e1;padding-top:1.5rem;">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+                                <div>
+                                    <h5 class="results-title mb-1" style="font-size:1.1rem;color:#0f172a;">Pilih Jam Baru</h5>
+                                    <p class="results-subtitle mb-0" id="rcDateLabel" style="font-size:.85rem;color:#64748b;">
+                                        <span class="material-symbols-outlined"
+                                            style="font-size:1rem;vertical-align:-3px;">today</span>
+                                        Pilih tanggal di kalender
+                                    </p>
+                                </div>
+                                <div class="results-count" id="rcSlotSummary" style="display:none;background:#ecfdf5;color:#059669;padding:.4rem .85rem;border-radius:2rem;font-size:.8rem;font-weight:700;align-items:center;gap:.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
+                                    <span id="rcSlotSummaryText"></span>
+                                </div>
+                            </div>
+
+                            <div id="rcSlotLoading" class="text-center py-4" style="display:none;">
+                                <div class="spinner-border text-primary" role="status" style="width:2.5rem;height:2.5rem;"></div>
+                                <p class="mt-3" style="font-size:.9rem;color:#64748b;font-weight:600;">Memuat slot waktu...</p>
+                            </div>
+
+                            <!-- Single lapang card with timeslots -->
+                            <div id="rcTimeslotCard"></div>
+
+                            <!-- Error -->
+                            <div class="booking-alert booking-alert--error d-none mt-4" id="rcError" style="border-radius:0.75rem;">
+                                <span class="material-symbols-outlined">error</span>
+                                <div><strong>Gagal mengubah jadwal</strong>
+                                    <p class="mb-0" id="rcErrorMsg"></p>
+                                </div>
+                            </div>
+
+                            <!-- Confirm button (shown after selecting a timeslot) -->
+                            <div id="rcConfirmWrap" style="display:none;" class="mt-4">
+                                <button type="button" class="booking-confirm-btn w-100" id="btnConfirm" onclick="confirmReschedule()" style="padding:1.1rem;font-size:1.1rem;border-radius:0.75rem;box-shadow:0 10px 20px -5px rgba(37,99,235,0.3);">
+                                    <span class="material-symbols-outlined" style="font-size:1.3rem;">check_circle</span>
+                                    Konfirmasi Perubahan Jadwal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -267,9 +288,9 @@
                                 id="modalJam">-</span></div>
                     </div>
                     <div class="dbm-detail-item">
-                        <div class="dbm-detail-icon"><span class="material-symbols-outlined">timer</span></div>
-                        <div><span class="dbm-detail-label">Durasi</span><span class="dbm-detail-value"
-                                id="modalDurasi">-</span></div>
+                        <div class="dbm-detail-icon"><span class="material-symbols-outlined">account_balance_wallet</span></div>
+                        <div><span class="dbm-detail-label">Sisa Pembayaran</span><span class="dbm-detail-value"
+                                style="color:#ef4444;font-weight:700;" id="modalSisa">-</span></div>
                     </div>
                     <div class="dbm-detail-item">
                         <div class="dbm-detail-icon"><span class="material-symbols-outlined">payments</span></div>
@@ -509,6 +530,98 @@
 
     .stat--booked {
         color: #dc2626;
+    }
+
+    /* Reschedule Grid Layout */
+    .reschedule-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    @media (max-width: 768px) {
+        .reschedule-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Duration Picker Modern UI */
+    .duration-picker-modern {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 0.6rem;
+    }
+
+    .duration-btn-modern {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        border: none;
+        background: #fff;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .duration-btn-modern:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .duration-btn-modern:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .duration-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .duration-val {
+        width: 4rem;
+        text-align: center;
+        background: transparent;
+        border: none;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        outline: none;
+        line-height: 1;
+        margin-bottom: 0.15rem;
+    }
+
+    .duration-lbl {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .step-badge {
+        background: var(--primary-fixed, #dae2ff);
+        color: var(--on-primary-fixed, #001946);
+        padding: 0.45rem 0.85rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 </style>
 

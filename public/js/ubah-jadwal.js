@@ -81,12 +81,12 @@
             document.getElementById('modalLapang').textContent=currentJadwals[0].nama_lapangan;
             document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
             document.getElementById('modalJam').textContent=fmtJam(currentJadwals[0].jam_mulai)+' - '+fmtJam(currentJadwals[0].jam_selesai);
-            document.getElementById('modalDurasi').textContent=currentJadwals[0].durasi+' Jam';
+            document.getElementById('modalSisa').textContent=fmtRp(b.sisa_bayar);
         } else {
             document.getElementById('modalLapang').textContent=currentJadwals.length + ' Lapangan';
             document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
             document.getElementById('modalJam').textContent='Multi Jadwal';
-            document.getElementById('modalDurasi').textContent='-';
+            document.getElementById('modalSisa').textContent=fmtRp(b.sisa_bayar);
         }
 
         document.getElementById('modalHarga').textContent=fmtRp(b.total_bayar);
@@ -280,7 +280,7 @@
             if(isPastSlot(ds,h))ok=false;
 
             const jm=pad(h)+':00',js=pad(h+durasi)+':00';
-            const label=`${pad(h)}.00 - ${pad(h+durasi)}.00`;
+            const label=`${pad(h)}.00`;
             let boxClass='timeslot-box';
             let icon='schedule',badge='';
 

@@ -51,8 +51,8 @@
                         <th>Nama & Lapangan</th>
                         <th>Kategori Hari</th>
                         <th>Rentang Jam</th>
-                        <th>Harga Umum</th>
-                        <th>Harga Harian</th>
+                        <th style="text-align:center;">Jenis Sewa</th>
+                        <th>Harga</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -74,8 +74,10 @@
                             $jamSelesai = substr($tarif['jam_selesai'], 0, 5);
 
                             // Format harga
-                            $hargaUmum = 'Rp ' . number_format($tarif['harga_umum'], 0, ',', '.');
-                            $hargaHarian = 'Rp ' . number_format($tarif['harga_harian'] ?? 0, 0, ',', '.');
+                            $isHarian = ($tarif['harga_harian'] > 0);
+                            $jenisSewa = $isHarian ? 'Harian' : 'Umum';
+                            $harga = $isHarian ? ($tarif['harga_harian'] ?? 0) : $tarif['harga_umum'];
+                            $hargaFormat = 'Rp ' . number_format($harga, 0, ',', '.');
                             ?>
                             <tr data-hari="<?= esc($tarif['hari']) ?>">
                                 <td>
@@ -88,12 +90,14 @@
                                         style="font-size:1rem; color:var(--admin-secondary);">schedule</span>
                                     <?= $jamMulai ?> - <?= $jamSelesai ?>
                                 </td>
-                                <td class="td-price"><?= $hargaUmum ?></td>
-                                <td class="td-price" style="color:#059669;"><?= $hargaHarian ?></td>
+                                <td style="text-align:center;">
+                                    <span class="badge-pill" style="background:var(--admin-surface); border:1px solid var(--admin-outline); color:var(--admin-on-surface);"><?= $jenisSewa ?></span>
+                                </td>
+                                <td class="td-price" <?= $isHarian ? 'style="color:#059669;"' : '' ?>><?= $hargaFormat ?></td>
                                 <td style="text-align:center;">
                                     <div class="d-flex gap-2 justify-content-center">
                                         <button class="action-btn edit" title="Edit"
-                                            onclick="openEditModal(<?= $tarif['id_tarif'] ?>, '<?= esc($tarif['nama_tarif']) ?>', <?= $tarif['id_lapang'] ?>, '<?= esc($tarif['hari']) ?>', '<?= esc($tarif['jam_mulai']) ?>', '<?= esc($tarif['jam_selesai']) ?>', <?= $tarif['harga_umum'] ?>, <?= $tarif['harga_harian'] ?? 0 ?>)">
+                                            onclick="openEditModal(<?= $tarif['id_tarif'] ?>, '<?= esc($tarif['nama_tarif']) ?>', <?= $tarif['id_lapang'] ?>, '<?= esc($tarif['hari']) ?>', '<?= esc($tarif['jam_mulai']) ?>', '<?= esc($tarif['jam_selesai']) ?>', '<?= $jenisSewa ?>', <?= $harga ?>)">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
                                         <button class="action-btn delete" title="Hapus"
@@ -154,7 +158,12 @@
                             <option value="" disabled selected>Pilih lapangan...</option>
                             <?php if (!empty($lapangs)): ?>
                                 <?php foreach ($lapangs as $lapang): ?>
-                                    <option value="<?= $lapang['id_lapang'] ?>"><?= esc($lapang['nama_lapangan']) ?>
+                                    <option value="<?= $lapang['id_lapang'] ?>"
+                                        data-buka-weekday="<?= esc($lapang['jam_buka_weekday'] ?? '08:00') ?>"
+                                        data-tutup-weekday="<?= esc($lapang['jam_tutup_weekday'] ?? '22:00') ?>"
+                                        data-buka-weekend="<?= esc($lapang['jam_buka_weekend'] ?? '08:00') ?>"
+                                        data-tutup-weekend="<?= esc($lapang['jam_tutup_weekend'] ?? '22:00') ?>">
+                                        <?= esc($lapang['nama_lapangan']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -185,24 +194,18 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label-custom"><span class="material-symbols-outlined">sell</span> Harga
-                                Umum / Jam</label>
-                            <div class="price-input-wrap">
-                                <span class="prefix">Rp</span>
-                                <input type="number" name="harga_umum" id="formHargaUmum" class="form-control-custom"
-                                    placeholder="Nominal angka" required>
-                            </div>
+                            <label class="form-label-custom"><span class="material-symbols-outlined">category</span> Jenis Sewa</label>
+                            <select name="jenis_sewa" id="formJenisSewa" class="form-control-custom" required>
+                                <option value="Umum">Umum (Per Jam)</option>
+                                <option value="Harian">Harian (Per Hari)</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label-custom" style="color:#059669;">
-                                <span class="material-symbols-outlined" style="color:#059669;">workspace_premium</span>
-                                Harga Harian / Hari
-                            </label>
+                            <label class="form-label-custom"><span class="material-symbols-outlined">sell</span> Harga</label>
                             <div class="price-input-wrap">
-                                <span class="prefix" style="color:#059669;">Rp</span>
-                                <input type="number" name="harga_harian" id="formHargaHarian"
-                                    class="form-control-custom" style="border-color:#a7f3d0; background:#f0fdf4;"
-                                    placeholder="Nominal harga harian" required>
+                                <span class="prefix">Rp</span>
+                                <input type="number" name="harga" id="formHarga" class="form-control-custom"
+                                    placeholder="Nominal harga" required>
                             </div>
                         </div>
                     </div>
@@ -273,13 +276,14 @@
         document.getElementById('formHari').value = 'Weekday';
         document.getElementById('formJamMulai').value = '08:00';
         document.getElementById('formJamSelesai').value = '16:00';
-        document.getElementById('formHargaUmum').value = '';
-        document.getElementById('formHargaHarian').value = '';
+        document.getElementById('formJenisSewa').value = 'Umum';
+        document.getElementById('formHarga').value = '';
+        applyJamHarian();
         new bootstrap.Modal(document.getElementById('tambahTarifModal')).show();
     }
 
     // Open modal for editing existing tarif
-    function openEditModal(id, nama, idLapang, hari, jamMulai, jamSelesai, hargaUmum, hargaHarian) {
+    function openEditModal(id, nama, idLapang, hari, jamMulai, jamSelesai, jenisSewa, harga) {
         document.getElementById('tarifModalLabel').innerHTML =
             '<span class="material-symbols-outlined">edit</span> Edit Tarif';
         document.getElementById('formTarif').action = UPDATE_URL;
@@ -289,8 +293,9 @@
         document.getElementById('formHari').value = hari;
         document.getElementById('formJamMulai').value = jamMulai.substring(0, 5);
         document.getElementById('formJamSelesai').value = jamSelesai.substring(0, 5);
-        document.getElementById('formHargaUmum').value = Math.round(hargaUmum);
-        document.getElementById('formHargaHarian').value = Math.round(hargaHarian);
+        document.getElementById('formJenisSewa').value = jenisSewa;
+        document.getElementById('formHarga').value = Math.round(harga);
+        applyJamHarian();
         new bootstrap.Modal(document.getElementById('tambahTarifModal')).show();
     }
 
@@ -334,8 +339,40 @@
         }
     }
 
-    // Auto-dismiss flash message
+    // Handle auto fill jam untuk jenis sewa harian
+    function applyJamHarian() {
+        const jenisSewa = document.getElementById('formJenisSewa').value;
+        const jamMulai = document.getElementById('formJamMulai');
+        const jamSelesai = document.getElementById('formJamSelesai');
+        
+        if (jenisSewa === 'Harian') {
+            const lapangSelect = document.getElementById('formIdLapang');
+            const hariSelect = document.getElementById('formHari');
+            const selectedOption = lapangSelect.options[lapangSelect.selectedIndex];
+            
+            if (selectedOption && selectedOption.value) {
+                const isWeekend = (hariSelect.value === 'Weekend');
+                const buka = isWeekend ? selectedOption.getAttribute('data-buka-weekend') : selectedOption.getAttribute('data-buka-weekday');
+                const tutup = isWeekend ? selectedOption.getAttribute('data-tutup-weekend') : selectedOption.getAttribute('data-tutup-weekday');
+                
+                if (buka) jamMulai.value = buka.substring(0, 5);
+                if (tutup) jamSelesai.value = tutup.substring(0, 5);
+            }
+            
+            jamMulai.setAttribute('readonly', 'true');
+            jamSelesai.setAttribute('readonly', 'true');
+        } else {
+            jamMulai.removeAttribute('readonly');
+            jamSelesai.removeAttribute('readonly');
+        }
+    }
+
+    // Auto-dismiss flash message and set event listeners
     document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('formJenisSewa').addEventListener('change', applyJamHarian);
+        document.getElementById('formIdLapang').addEventListener('change', applyJamHarian);
+        document.getElementById('formHari').addEventListener('change', applyJamHarian);
+
         const toast = document.getElementById('alertToast');
         if (toast) {
             setTimeout(() => {

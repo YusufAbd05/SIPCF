@@ -589,13 +589,18 @@ class Home extends BaseController
                 foreach ($tarifs as $t) {
                     $tStart = (int) substr($t['jam_mulai'], 0, 2);
                     $tEnd   = (int) substr($t['jam_selesai'], 0, 2);
-                    if ($h >= $tStart && $h < $tEnd) {
+                    if ($h >= $tStart && $h < $tEnd && $t['harga_umum'] > 0) {
                         $hargaSlot = (int) $t['harga_umum'];
                         break;
                     }
                 }
                 if ($hargaSlot === 0 && !empty($tarifs)) {
-                    $hargaSlot = (int) $tarifs[0]['harga_umum'];
+                    foreach ($tarifs as $t) {
+                        if ($t['harga_umum'] > 0) {
+                            $hargaSlot = (int) $t['harga_umum'];
+                            break;
+                        }
+                    }
                 }
                 $itemHarga += $hargaSlot;
             }
@@ -749,6 +754,18 @@ class Home extends BaseController
             if ($j['durasi'] <= 0) $j['durasi'] = 1;
         }
 
+        // Calculate Sisa Bayar
+        $pembayaranModel = new \App\Models\PembayaranModel();
+        $pembayaran = $pembayaranModel->where('id_sewa', $booking['id_sewa'])->findAll();
+        $sudahDibayar = 0;
+        foreach($pembayaran as $p) {
+            if ($p['status_pembayaran'] === 'Sukses') {
+                $sudahDibayar += (int)$p['jumlah_bayar'];
+            }
+        }
+        $sisaBayar = (int)$booking['total_bayar'] - $sudahDibayar;
+        if ($sisaBayar < 0) $sisaBayar = 0;
+
         return $this->response->setJSON([
             'success' => true,
             'booking' => [
@@ -758,6 +775,7 @@ class Home extends BaseController
                 'total_bayar' => $booking['total_bayar'],
                 'status_pesanan' => $booking['status_pesanan'],
                 'tipe_pesanan' => $booking['tipe_pesanan'],
+                'sisa_bayar' => $sisaBayar,
             ],
             'jadwals' => $jadwals
         ]);
