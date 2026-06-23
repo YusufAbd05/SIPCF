@@ -430,19 +430,29 @@
         `;
     });
 
+    let laporanPaginator;
+
     // ===== TABLE SEARCH / FILTER =====
     function filterTable() {
+        if(!laporanPaginator) return;
         const q = document.getElementById('searchInput').value.toLowerCase();
-        const rows = document.querySelectorAll('#laporanTable tbody tr');
         let visible = 0;
-        rows.forEach(row => {
+        laporanPaginator.applyFilter((row) => {
             const text = row.textContent.toLowerCase();
             const show = text.includes(q);
-            row.style.display = show ? '' : 'none';
-            if (show) visible++;
+            if(show) visible++;
+            return show;
         });
-        document.getElementById('displayCount').textContent = visible;
+        
+        const displayCount = document.getElementById('displayCount');
+        if(displayCount) displayCount.textContent = visible;
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof CustomPaginator !== 'undefined') {
+            laporanPaginator = new CustomPaginator('#laporanTable tbody', 10);
+        }
+    });
 
     // ===== EXPORT FUNCTIONS =====
     function getFilterParams() {

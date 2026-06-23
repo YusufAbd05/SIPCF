@@ -1,5 +1,5 @@
 <?php $role = session()->get('role'); ?>
-<aside class="admin-sidebar d-none d-md-flex flex-column">
+<aside class="admin-sidebar flex-column" id="adminSidebar">
     <div class="sidebar-brand">
         <h1>Sistem Informasi Pelayanan</h1>
     </div>

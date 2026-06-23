@@ -348,26 +348,28 @@
         new bootstrap.Modal(document.getElementById('deleteLapangModal')).show();
     }
 
+    let lapangPaginator;
+    let currentStatusFilter = 'all';
+
+    function runFilters() {
+        if(!lapangPaginator) return;
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        lapangPaginator.applyFilter((row) => {
+            const text = row.textContent.toLowerCase();
+            const matchesSearch = text.includes(query);
+            const matchesStatus = (currentStatusFilter === 'all') || (row.dataset.status === currentStatusFilter);
+            return matchesSearch && matchesStatus;
+        });
+    }
+
     // Search table
     function searchTable() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const rows = document.querySelectorAll('#lapangTable tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
-        });
+        runFilters();
     }
 
     // Filter by status
     function filterStatus(status) {
-        const rows = document.querySelectorAll('#lapangTable tbody tr');
-        rows.forEach(row => {
-            if (status === 'all') {
-                row.style.display = '';
-            } else {
-                row.style.display = row.dataset.status === status ? '' : 'none';
-            }
-        });
+        currentStatusFilter = status;
 
         // Update active button styling
         document.querySelectorAll('.table-filter-btn').forEach(btn => {
@@ -379,6 +381,8 @@
         if (activeBtn) {
             activeBtn.classList.add('filter-active');
         }
+
+        runFilters();
     }
 
     // Auto-dismiss flash message
@@ -391,6 +395,11 @@
                 toast.style.transform = 'translateX(100px)';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
+        }
+
+        // Initialize Custom Paginator
+        if (typeof CustomPaginator !== 'undefined') {
+            lapangPaginator = new CustomPaginator('#lapangTable tbody', 10);
         }
 
         // Set "Semua" filter as active by default

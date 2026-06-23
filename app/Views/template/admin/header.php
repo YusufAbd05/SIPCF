@@ -1,17 +1,21 @@
 <header class="admin-header">
     <div class="d-flex align-items-center justify-content-between w-100">
         <div class="d-flex align-items-center gap-4">
+            <!-- Hamburger Menu (Mobile) -->
+            <button class="header-icon-btn d-md-none" id="mobileMenuBtn" style="margin-right: -0.5rem;">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <!-- Mobile brand -->
-            <span class="fw-bold fs-5 d-md-none" style="letter-spacing:-0.03em;">Digital Atrium</span>
+            <span class="fw-bold fs-5 d-md-none" style="letter-spacing:-0.03em;">Carrera Futsal</span>
             <!-- Search bar -->
             <div class="header-search d-none d-md-flex">
                 <strong>Carrera Futsal</strong>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button class="header-icon-btn">
+            <!-- <button class="header-icon-btn">
                 <span class="material-symbols-outlined">notifications</span>
-            </button>
+            </button> -->
             <div class="header-divider"></div>
             <!-- User dropdown -->
             <div class="dropdown">

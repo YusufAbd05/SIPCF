@@ -191,9 +191,30 @@ class BookingController extends BaseController
         
         if (!empty($cartItems) && is_array($cartItems)) {
             $sesiKe = 1;
+            $lapangModel = new LapangModel();
+            
             foreach ($cartItems as $item) {
                 $jamMulai = $item['jam_mulai'];
-                $jamSelesai = str_pad((int)substr($jamMulai, 0, 2) + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                
+                // For Harian mode, jadwal should cover full operating hours
+                if ($tipeSewa === 'Harian') {
+                    $lapangData = $lapangModel->find($item['id_lapang']);
+                    if ($lapangData) {
+                        $itemTanggal = $item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d');
+                        $dow = date('w', strtotime($itemTanggal));
+                        $isWeekend = ($dow == 0 || $dow == 6);
+                        $opJamBuka = (int) ($isWeekend ? $lapangData['jam_buka_weekend'] : $lapangData['jam_buka_weekday']);
+                        $opJamTutup = (int) ($isWeekend ? $lapangData['jam_tutup_weekend'] : $lapangData['jam_tutup_weekday']);
+                        if ($opJamTutup <= $opJamBuka) $opJamTutup = 24;
+                        
+                        $jamMulai = str_pad($opJamBuka, 2, '0', STR_PAD_LEFT) . ':00';
+                        $jamSelesai = str_pad($opJamTutup, 2, '0', STR_PAD_LEFT) . ':00';
+                    } else {
+                        $jamSelesai = str_pad((int)substr($jamMulai, 0, 2) + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                    }
+                } else {
+                    $jamSelesai = str_pad((int)substr($jamMulai, 0, 2) + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                }
                 
                 $jadwalModel->insert([
                     'id_sewa'      => $idSewa,
@@ -262,16 +283,40 @@ class BookingController extends BaseController
                 
                 // Re-insert
                 $sesiKe = 1;
+                $lapangModel = new LapangModel();
+                $tipeSewa = $this->request->getPost('tipe_sewa') ?? 'Per Jam';
+                
                 foreach ($cartItems as $item) {
-                    $itemJamMulaiHour = (int) substr($item['jam_mulai'], 0, 2);
-                    $itemJamSelesai = str_pad($itemJamMulaiHour + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                    $jamMulai = $item['jam_mulai'];
+                    
+                    if ($tipeSewa === 'Harian') {
+                        $lapangData = $lapangModel->find($item['id_lapang']);
+                        if ($lapangData) {
+                            $itemTanggal = $item['tanggal'] ?? $this->request->getPost('tanggal_main') ?? date('Y-m-d');
+                            $dow = date('w', strtotime($itemTanggal));
+                            $isWeekend = ($dow == 0 || $dow == 6);
+                            $opJamBuka = (int) ($isWeekend ? $lapangData['jam_buka_weekend'] : $lapangData['jam_buka_weekday']);
+                            $opJamTutup = (int) ($isWeekend ? $lapangData['jam_tutup_weekend'] : $lapangData['jam_tutup_weekday']);
+                            if ($opJamTutup <= $opJamBuka) $opJamTutup = 24;
+                            
+                            $jamMulai = str_pad($opJamBuka, 2, '0', STR_PAD_LEFT) . ':00';
+                            $jamSelesai = str_pad($opJamTutup, 2, '0', STR_PAD_LEFT) . ':00';
+                        } else {
+                            $itemJamMulaiHour = (int) substr($jamMulai, 0, 2);
+                            $jamSelesai = str_pad($itemJamMulaiHour + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                        }
+                    } else {
+                        $itemJamMulaiHour = (int) substr($jamMulai, 0, 2);
+                        $jamSelesai = str_pad($itemJamMulaiHour + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
+                    }
+                    
                     $jadwalModel->insert([
                         'id_sewa'      => $id,
                         'id_lapang'    => $item['id_lapang'],
                         'sesi_ke'      => $sesiKe++,
                         'tanggal_main' => $item['tanggal'],
-                        'jam_mulai'    => $item['jam_mulai'],
-                        'jam_selesai'  => $itemJamSelesai,
+                        'jam_mulai'    => $jamMulai,
+                        'jam_selesai'  => $jamSelesai,
                         'status_sesi'  => 'Terjadwal',
                     ]);
                 }

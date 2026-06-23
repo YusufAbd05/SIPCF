@@ -306,26 +306,28 @@
         new bootstrap.Modal(document.getElementById('deleteTarifModal')).show();
     }
 
+    let tarifPaginator;
+    let currentHariFilter = 'all';
+
+    function runFilters() {
+        if(!tarifPaginator) return;
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        tarifPaginator.applyFilter((row) => {
+            const text = row.textContent.toLowerCase();
+            const matchesSearch = text.includes(query);
+            const matchesHari = (currentHariFilter === 'all') || (row.dataset.hari === currentHariFilter);
+            return matchesSearch && matchesHari;
+        });
+    }
+
     // Search table
     function searchTable() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const rows = document.querySelectorAll('#tarifTable tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
-        });
+        runFilters();
     }
 
     // Filter by hari
     function filterHari(hari) {
-        const rows = document.querySelectorAll('#tarifTable tbody tr');
-        rows.forEach(row => {
-            if (hari === 'all') {
-                row.style.display = '';
-            } else {
-                row.style.display = row.dataset.hari === hari ? '' : 'none';
-            }
-        });
+        currentHariFilter = hari;
 
         // Update active button styling
         document.querySelectorAll('.table-filter-btn').forEach(btn => {
@@ -337,6 +339,8 @@
         if (activeBtn) {
             activeBtn.classList.add('filter-active');
         }
+
+        runFilters();
     }
 
     // Handle auto fill jam untuk jenis sewa harian
@@ -381,6 +385,11 @@
                 toast.style.transform = 'translateX(100px)';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
+        }
+
+        // Initialize Custom Paginator
+        if (typeof CustomPaginator !== 'undefined') {
+            tarifPaginator = new CustomPaginator('#tarifTable tbody', 10);
         }
 
         // Set "Semua" filter as active by default

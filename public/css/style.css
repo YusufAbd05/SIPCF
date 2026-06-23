@@ -512,7 +512,32 @@ body {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 767.98px) {
     .admin-sidebar {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        bottom: 0;
+        z-index: 1050;
+        transition: left 0.3s ease;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        display: flex !important; /* Override any d-none */
+    }
+    .admin-sidebar.show {
+        left: 0;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1040;
         display: none;
+    }
+    .sidebar-overlay.show {
+        display: block;
     }
 
     .admin-header .header-search {
@@ -2652,4 +2677,69 @@ select.form-control-custom {
     .booking-table {
         min-width: 1100px;
     }
+}
+
+/* ===== CUSTOM PAGINATION ===== */
+.custom-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--admin-surface-lowest);
+    border-top: 1px solid var(--admin-surface-container);
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+}
+
+.custom-pagination__info {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--admin-secondary);
+}
+
+.custom-pagination__controls {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.custom-pagination__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--admin-surface-container);
+    background: var(--admin-surface-lowest);
+    color: var(--admin-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.custom-pagination__btn:hover:not(:disabled) {
+    background: var(--admin-surface-low);
+    color: var(--admin-on-surface);
+}
+
+.custom-pagination__btn.active {
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+    color: white;
+}
+
+.custom-pagination__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.custom-pagination__dots {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+    color: var(--admin-secondary);
+    font-size: 0.8rem;
 }

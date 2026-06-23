@@ -1023,8 +1023,8 @@
                 let cls = 'adm-cal__day';
                 if (isToday) cls += ' today';
                 if (isSel) cls += ' selected';
-                if (dow === 0) cls += ' empty'; // Sunday disabled
-                html += `<button type="button" class="${cls}" data-day="${d}" ${dow === 0 ? 'disabled' : ''}>${d}</button>`;
+                // Sunday is no longer disabled
+                html += `<button type="button" class="${cls}" data-day="${d}">${d}</button>`;
             }
 
             calGrid.innerHTML = html;
@@ -1485,8 +1485,8 @@
                 let cls = 'adm-cal__day';
                 if (isToday) cls += ' today';
                 if (isSel) cls += ' selected';
-                if (dow === 0) cls += ' empty';
-                html += `<button type="button" class="${cls}" data-day="${d}" ${dow === 0 ? 'disabled' : ''}>${d}</button>`;
+                // Sunday is no longer disabled
+                html += `<button type="button" class="${cls}" data-day="${d}">${d}</button>`;
             }
 
             ecGrid.innerHTML = html;
@@ -2112,6 +2112,47 @@
                 container.innerHTML = '<div class="text-center py-3 text-danger">Gagal memuat data jadwal.</div>';
             });
     }
+
+    // ===== BOOKING PAGINATION & FILTER =====
+    let bookingPaginator;
+    let currentBookingStatus = 'all';
+
+    function runBookingFilters() {
+        if(!bookingPaginator) return;
+        const q = document.getElementById('searchBooking').value.toLowerCase();
+        bookingPaginator.applyFilter((row) => {
+            const text = row.textContent.toLowerCase();
+            const matchesSearch = text.includes(q);
+            let matchesStatus = false;
+
+            if (currentBookingStatus === 'all') {
+                matchesStatus = true;
+            } else if (currentBookingStatus === 'butuh_dikonfirmasi') {
+                matchesStatus = (row.dataset.status === 'Menunggu Verifikasi');
+            } else {
+                matchesStatus = (row.dataset.status === currentBookingStatus);
+            }
+
+            return matchesSearch && matchesStatus;
+        });
+    }
+
+    window.searchBookingTable = function() {
+        runBookingFilters();
+    };
+
+    window.filterStatus = function(status, btn) {
+        currentBookingStatus = status;
+        document.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        runBookingFilters();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof CustomPaginator !== 'undefined') {
+            bookingPaginator = new CustomPaginator('#bookingTableBody', 10);
+        }
+    });
 </script>
 
 <style>

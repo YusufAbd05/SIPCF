@@ -345,26 +345,28 @@
         new bootstrap.Modal(document.getElementById('deleteUserModal')).show();
     }
 
+    let userPaginator;
+    let currentRoleFilter = 'all';
+
+    function runFilters() {
+        if(!userPaginator) return;
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        userPaginator.applyFilter((row) => {
+            const text = row.textContent.toLowerCase();
+            const matchesSearch = text.includes(query);
+            const matchesRole = (currentRoleFilter === 'all') || (row.dataset.role === currentRoleFilter);
+            return matchesSearch && matchesRole;
+        });
+    }
+
     // Search table
     function searchTable() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const rows = document.querySelectorAll('#userTable tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(query) ? '' : 'none';
-        });
+        runFilters();
     }
 
     // Filter by role
     function filterRole(role) {
-        const rows = document.querySelectorAll('#userTable tbody tr');
-        rows.forEach(row => {
-            if (role === 'all') {
-                row.style.display = '';
-            } else {
-                row.style.display = row.dataset.role === role ? '' : 'none';
-            }
-        });
+        currentRoleFilter = role;
 
         // Update active button styling
         document.querySelectorAll('.table-filter-btn').forEach(btn => {
@@ -380,6 +382,8 @@
         if (activeBtn) {
             activeBtn.classList.add('filter-active');
         }
+
+        runFilters();
     }
 
     // Auto-dismiss flash message
@@ -392,6 +396,11 @@
                 toast.style.transform = 'translateX(100px)';
                 setTimeout(() => toast.remove(), 500);
             }, 3000);
+        }
+
+        // Initialize Custom Paginator
+        if (typeof CustomPaginator !== 'undefined') {
+            userPaginator = new CustomPaginator('#userTable tbody', 10);
         }
 
         // Set "Semua" filter as active by default

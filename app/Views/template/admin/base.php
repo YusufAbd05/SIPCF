@@ -22,6 +22,9 @@
 
 <body>
     <div class="admin-wrapper">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
         <!-- Sidebar -->
         <?= $this->include('template/admin/sidebar') ?>
 
@@ -37,8 +40,22 @@
             <?= $this->include('template/admin/footer') ?>
         </div>
     </div>
+    <script src="<?= base_url('js/table-pagination.js') ?>"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-<!-- Bootstrap 5 JS Bundle -->
+    <script>
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+        if (mobileMenuBtn && adminSidebar && sidebarOverlay) {
+            function toggleSidebar() {
+                adminSidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            }
+            mobileMenuBtn.addEventListener('click', toggleSidebar);
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+    </script>
+</body>
 </html>

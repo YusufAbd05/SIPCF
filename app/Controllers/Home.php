@@ -30,25 +30,25 @@ class Home extends BaseController
         return view('FormulirBooking');
     }
 
-    public function membership(): string
-    {
-        return view('Membership');
-    }
+    // public function membership(): string
+    // {
+    //     return view('Membership');
+    // }
 
-    public function daftarMembership(): string
-    {
-        return view('DaftarMembership');
-    }
+    // public function daftarMembership(): string
+    // {
+    //     return view('DaftarMembership');
+    // }
 
-    public function adminDashboard(): string
-    {
-        return view('admin/dashboard');
-    }
+    // public function adminDashboard(): string
+    // {
+    //     return view('admin/dashboard');
+    // }
 
-    public function adminBooking(): string
-    {
-        return view('admin/ViewBooking');
-    }
+    // public function adminBooking(): string
+    // {
+    //     return view('admin/ViewBooking');
+    // }
 
     // ───────────────────────────────────────────
     //  PUBLIC API (no auth required)

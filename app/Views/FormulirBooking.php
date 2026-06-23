@@ -1266,6 +1266,11 @@
             sewaMode = paramSewa;
         }
 
+        // Helper: map JS sewaMode to DB tipe_sewa value
+        function getTipeSewa() {
+            return sewaMode === 'per-hari' ? 'Harian' : (sewaMode === 'membership' ? 'Membership' : 'Per Jam');
+        }
+
         // Set initial date from URL param
         if (paramTanggal) {
             selectedDate = paramTanggal;
@@ -1419,7 +1424,7 @@
             let durasiVal = parseInt(formDurasi.value) || 1;
             let totalHarga = 0;
 
-            fTipeSewa.value = sewaMode === 'per-hari' ? 'Harian' : (sewaMode === 'membership' ? 'Membership' : 'Per Jam');
+            fTipeSewa.value = getTipeSewa();
 
             if (sewaMode === 'per-jam') return;
 
@@ -1569,6 +1574,8 @@
 
         // ─── Render Cart (Per Jam) ───
         function renderCart() {
+            // Always sync tipe_sewa hidden field with current sewaMode
+            fTipeSewa.value = getTipeSewa();
             const listEl = document.getElementById('cartItemsList');
             const emptyEl = document.getElementById('cartEmptyNotice');
             const sumHarga = document.getElementById('summaryHarga');
@@ -2244,6 +2251,9 @@
                 document.querySelectorAll('.sewa-pill').forEach(p => {
                     p.classList.toggle('sewa-pill--active', p.dataset.sewa === sewaMode);
                 });
+
+                // Sync hidden tipe_sewa field with the URL param sewa mode
+                fTipeSewa.value = getTipeSewa();
 
                 const cartSection = document.getElementById('cartSection');
                 const singleSection = document.getElementById('singleItemSection');
