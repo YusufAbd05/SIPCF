@@ -1,103 +1,103 @@
-(function(){
+(function () {
     // ─── Constants ───
-    const MN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const DN=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    const BASE='';
-    const today=new Date();
-    const todayStr=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+    const MN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const DN = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const BASE = '';
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
 
     // ─── State ───
-    let currentBooking=null;
-    let currentJadwals=[];
-    let currentEditJadwal=null;
-    let lapangsData=[];
-    let rcYear=today.getFullYear(), rcMonth=today.getMonth();
-    let rcSelectedDate=null;
-    let rcSelectedSlot=null;
-    let bookedSlotsData={};
+    let currentBooking = null;
+    let currentJadwals = [];
+    let currentEditJadwal = null;
+    let lapangsData = [];
+    let rcYear = today.getFullYear(), rcMonth = today.getMonth();
+    let rcSelectedDate = null;
+    let rcSelectedSlot = null;
+    let bookedSlotsData = {};
 
     // ─── Helpers ───
-    function pad(n){return String(n).padStart(2,'0');}
-    function dateStr(y,m,d){return`${y}-${pad(m+1)}-${pad(d)}`;}
-    function fmtTgl(s){const d=new Date(s+'T00:00:00');return`${DN[d.getDay()]}, ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`;}
-    function fmtJam(s){return s.substring(0,5)+' WIB';}
-    function fmtRp(n){return'Rp '+parseInt(n).toLocaleString('id-ID');}
-    function isPastSlot(ds,h){if(ds!==todayStr)return false;return h<=today.getHours();}
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function dateStr(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+    function fmtTgl(s) { const d = new Date(s + 'T00:00:00'); return `${DN[d.getDay()]}, ${d.getDate()} ${MN[d.getMonth()]} ${d.getFullYear()}`; }
+    function fmtJam(s) { return s.substring(0, 5) + ' WIB'; }
+    function fmtRp(n) { return 'Rp ' + parseInt(n).toLocaleString('id-ID'); }
+    function isPastSlot(ds, h) { if (ds !== todayStr) return false; return h <= today.getHours(); }
 
-    function getOpHours(lap,ds){
-        const dow=new Date(ds+'T00:00:00').getDay();
-        const isWE=(dow===0||dow===6);
-        const jB=parseInt(isWE?lap.jam_buka_weekend:lap.jam_buka_weekday)||0;
-        let jT=parseInt(isWE?lap.jam_tutup_weekend:lap.jam_tutup_weekday)||0;
-        if(jT<=jB)jT=24;
-        return{jamBuka:jB,jamTutup:jT,isWeekend:isWE};
+    function getOpHours(lap, ds) {
+        const dow = new Date(ds + 'T00:00:00').getDay();
+        const isWE = (dow === 0 || dow === 6);
+        const jB = parseInt(isWE ? lap.jam_buka_weekend : lap.jam_buka_weekday) || 0;
+        let jT = parseInt(isWE ? lap.jam_tutup_weekend : lap.jam_tutup_weekday) || 0;
+        if (jT <= jB) jT = 24;
+        return { jamBuka: jB, jamTutup: jT, isWeekend: isWE };
     }
 
     // ─── API ───
-    async function fetchLapangs(){
-        try{const r=await fetch(`${BASE}/api/getLapangs`);lapangsData=await r.json();}
-        catch(e){lapangsData=[];}
+    async function fetchLapangs() {
+        try { const r = await fetch(`${BASE}/api/getLapangs`); lapangsData = await r.json(); }
+        catch (e) { lapangsData = []; }
     }
 
     // ─── Lookup ───
-    window.handleLookup=async function(e){
+    window.handleLookup = async function (e) {
         e.preventDefault();
-        const code=document.getElementById('inputBookingCode').value.trim().toUpperCase();
-        const alertErr=document.getElementById('alertError');
-        const btn=document.getElementById('btnLookup');
+        const code = document.getElementById('inputBookingCode').value.trim().toUpperCase();
+        const alertErr = document.getElementById('alertError');
+        const btn = document.getElementById('btnLookup');
         alertErr.classList.add('d-none');
-        btn.disabled=true;
-        btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span> Mencari...';
-        try{
-            const res=await fetch(`${BASE}/api/lookupBooking?kode=${encodeURIComponent(code)}`);
-            const data=await res.json();
-            if(data.success){
-                currentBooking=data.booking;
-                currentJadwals=data.jadwals;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mencari...';
+        try {
+            const res = await fetch(`${BASE}/api/lookupBooking?kode=${encodeURIComponent(code)}`);
+            const data = await res.json();
+            if (data.success) {
+                currentBooking = data.booking;
+                currentJadwals = data.jadwals;
                 showBookingModal();
-            }else{
-                document.getElementById('alertErrorTitle').textContent='Booking tidak dapat diubah';
-                document.getElementById('alertErrorMsg').textContent=data.message;
+            } else {
+                document.getElementById('alertErrorTitle').textContent = 'Booking tidak dapat diubah';
+                document.getElementById('alertErrorMsg').textContent = data.message;
                 alertErr.classList.remove('d-none');
             }
-        }catch(err){
-            document.getElementById('alertErrorTitle').textContent='Terjadi kesalahan';
-            document.getElementById('alertErrorMsg').textContent='Gagal menghubungi server.';
+        } catch (err) {
+            document.getElementById('alertErrorTitle').textContent = 'Terjadi kesalahan';
+            document.getElementById('alertErrorMsg').textContent = 'Gagal menghubungi server.';
             alertErr.classList.remove('d-none');
-        }finally{
-            btn.disabled=false;
-            btn.innerHTML='<span class="material-symbols-outlined" style="font-size:1.15rem;">search</span> Cari Booking';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.15rem;">search</span> Cari Booking';
         }
         return false;
     };
 
     // ─── Modal ───
-    function showBookingModal(){
-        const b=currentBooking;
-        document.getElementById('modalKode').textContent=b.kode_sewa;
-        document.getElementById('modalNama').textContent=b.nama_penyewa;
-        
-        if(currentJadwals.length === 1) {
-            document.getElementById('modalLapang').textContent=currentJadwals[0].nama_lapangan;
-            document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
-            document.getElementById('modalJam').textContent=fmtJam(currentJadwals[0].jam_mulai)+' - '+fmtJam(currentJadwals[0].jam_selesai);
-            document.getElementById('modalSisa').textContent=fmtRp(b.sisa_bayar);
+    function showBookingModal() {
+        const b = currentBooking;
+        document.getElementById('modalKode').textContent = b.kode_sewa;
+        document.getElementById('modalNama').textContent = b.nama_penyewa;
+
+        if (currentJadwals.length === 1) {
+            document.getElementById('modalLapang').textContent = currentJadwals[0].nama_lapangan;
+            document.getElementById('modalTanggal').textContent = fmtTgl(currentJadwals[0].tanggal_main);
+            document.getElementById('modalJam').textContent = fmtJam(currentJadwals[0].jam_mulai) + ' - ' + fmtJam(currentJadwals[0].jam_selesai);
+            document.getElementById('modalSisa').textContent = fmtRp(b.sisa_bayar);
         } else {
-            document.getElementById('modalLapang').textContent=currentJadwals.length + ' Lapangan';
-            document.getElementById('modalTanggal').textContent=fmtTgl(currentJadwals[0].tanggal_main);
-            document.getElementById('modalJam').textContent='Multi Jadwal';
-            document.getElementById('modalSisa').textContent=fmtRp(b.sisa_bayar);
+            document.getElementById('modalLapang').textContent = currentJadwals.length + ' Lapangan';
+            document.getElementById('modalTanggal').textContent = fmtTgl(currentJadwals[0].tanggal_main);
+            document.getElementById('modalJam').textContent = 'Multi Jadwal';
+            document.getElementById('modalSisa').textContent = fmtRp(b.sisa_bayar);
         }
 
-        document.getElementById('modalHarga').textContent=fmtRp(b.total_bayar);
-        const pill=document.getElementById('modalStatus');
-        pill.textContent=b.status_pesanan;
-        const s=b.status_pesanan;
-        if(s==='Dikonfirmasi'||s==='Selesai')pill.style.cssText='background:rgba(16,185,129,.15);color:#10b981;';
-        else if(s.startsWith('Menunggu'))pill.style.cssText='background:rgba(245,158,11,.15);color:#f59e0b;';
-        else pill.style.cssText='background:rgba(239,68,68,.15);color:#ef4444;';
+        document.getElementById('modalHarga').textContent = fmtRp(b.total_bayar);
+        const pill = document.getElementById('modalStatus');
+        pill.textContent = b.status_pesanan;
+        const s = b.status_pesanan;
+        if (s === 'Dikonfirmasi' || s === 'Selesai') pill.style.cssText = 'background:rgba(16,185,129,.15);color:#10b981;';
+        else if (s.startsWith('Menunggu')) pill.style.cssText = 'background:rgba(245,158,11,.15);color:#f59e0b;';
+        else pill.style.cssText = 'background:rgba(239,68,68,.15);color:#ef4444;';
 
-        document.getElementById('btnEditBooking').onclick=function(){
+        document.getElementById('btnEditBooking').onclick = function () {
             bootstrap.Modal.getInstance(document.getElementById('detailBookingModal')).hide();
             showJadwalList();
         };
@@ -105,13 +105,13 @@
     }
 
     // ─── Jadwal List ───
-    window.showJadwalList=function(){
+    window.showJadwalList = function () {
         document.getElementById('bookingLookup').classList.add('d-none');
         document.getElementById('bookingSuccess').classList.add('d-none');
         document.getElementById('rescheduleSection').classList.add('d-none');
-        const sec=document.getElementById('jadwalListSection');
+        const sec = document.getElementById('jadwalListSection');
         sec.classList.remove('d-none');
-        sec.style.animation='none';sec.offsetHeight;sec.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
+        sec.style.animation = 'none'; sec.offsetHeight; sec.style.animation = 'slideUp .45s cubic-bezier(.22,1,.36,1) both';
 
         const container = document.getElementById('jadwalListContainer');
         let html = '';
@@ -131,82 +131,90 @@
     };
 
     // ─── Start Edit Jadwal ───
-    window.startEditJadwal=function(idx){
+    window.startEditJadwal = function (idx) {
         currentEditJadwal = currentJadwals[idx];
         document.getElementById('jadwalListSection').classList.add('d-none');
-        const sec=document.getElementById('rescheduleSection');
+        const sec = document.getElementById('rescheduleSection');
         sec.classList.remove('d-none');
-        sec.style.animation='none';sec.offsetHeight;sec.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
+        sec.style.animation = 'none'; sec.offsetHeight; sec.style.animation = 'slideUp .45s cubic-bezier(.22,1,.36,1) both';
 
-        document.getElementById('editTitle').textContent=currentEditJadwal.nama_lapangan;
-        document.getElementById('editCode').textContent=currentBooking.kode_sewa;
-        document.getElementById('editStatus').textContent=currentBooking.status_pesanan;
-        document.getElementById('editTanggal').textContent=fmtTgl(currentEditJadwal.tanggal_main);
-        document.getElementById('editJam').textContent=fmtJam(currentEditJadwal.jam_mulai)+' - '+fmtJam(currentEditJadwal.jam_selesai);
+        document.getElementById('editTitle').textContent = currentEditJadwal.nama_lapangan;
+        document.getElementById('editCode').textContent = currentBooking.kode_sewa;
+        document.getElementById('editStatus').textContent = currentBooking.status_pesanan;
+        document.getElementById('editTanggal').textContent = fmtTgl(currentEditJadwal.tanggal_main);
+        document.getElementById('editJam').textContent = fmtJam(currentEditJadwal.jam_mulai) + ' - ' + fmtJam(currentEditJadwal.jam_selesai);
 
         const durasiLama = parseInt(currentEditJadwal.durasi);
         const selDurasi = document.getElementById('rcDurasiBaru');
-        if (selDurasi) selDurasi.value = durasiLama > 12 ? 12 : durasiLama;
+        if (selDurasi) {
+            selDurasi.value = durasiLama > 12 ? 12 : durasiLama;
+            const durasiCard = selDurasi.closest('.booking-card');
+            if (durasiCard) {
+                const ts = (currentBooking && currentBooking.tipe_sewa) ? currentBooking.tipe_sewa.toLowerCase().trim() : '';
+                const isDaily = (ts === 'harian' || ts === 'per hari' || ts.includes('hari'));
+                durasiCard.style.display = isDaily ? 'none' : 'block';
+            }
+        }
 
-        rcSelectedDate=null;
-        rcSelectedSlot=null;
-        document.getElementById('rcSlotSection').style.display='none';
-        document.getElementById('rcConfirmWrap').style.display='none';
+        rcSelectedDate = null;
+        rcSelectedSlot = null;
+        document.getElementById('rcSlotSection').style.display = 'none';
+        document.getElementById('rcConfirmWrap').style.display = 'none';
 
         renderCalendar();
     };
 
-    window.showLookup=function(){
+    window.showLookup = function () {
         document.getElementById('jadwalListSection').classList.add('d-none');
         document.getElementById('rescheduleSection').classList.add('d-none');
         document.getElementById('bookingSuccess').classList.add('d-none');
-        const lk=document.getElementById('bookingLookup');
+        const lk = document.getElementById('bookingLookup');
         lk.classList.remove('d-none');
     };
 
     // ─── Calendar ───
-    async function renderCalendar(){
-        const calDates=document.getElementById('rcCalDates');
-        const calLabel=document.getElementById('rcCalLabel');
-        calLabel.textContent=`${MN[rcMonth]} ${rcYear}`;
+    async function renderCalendar() {
+        const calDates = document.getElementById('rcCalDates');
+        const calLabel = document.getElementById('rcCalLabel');
+        calLabel.textContent = `${MN[rcMonth]} ${rcYear}`;
 
-        if(lapangsData.length===0)await fetchLapangs();
+        if (lapangsData.length === 0) await fetchLapangs();
 
-        let firstDay=new Date(rcYear,rcMonth,1).getDay();
-        firstDay=(firstDay+6)%7;
-        const daysInMonth=new Date(rcYear,rcMonth+1,0).getDate();
+        let firstDay = new Date(rcYear, rcMonth, 1).getDay();
+        firstDay = (firstDay + 6) % 7;
+        const daysInMonth = new Date(rcYear, rcMonth + 1, 0).getDate();
 
-        let html='';
-        for(let i=0;i<firstDay;i++)html+='<span class="cal-cell cal-cell--empty"></span>';
+        let html = '';
+        for (let i = 0; i < firstDay; i++)html += '<span class="cal-cell cal-cell--empty"></span>';
 
-        for(let d=1;d<=daysInMonth;d++){
-            const ds=dateStr(rcYear,rcMonth,d);
-            const isToday=ds===todayStr;
-            const isSel=ds===rcSelectedDate;
-            const isPast=ds<todayStr;
+        for (let d = 1; d <= daysInMonth; d++) {
+            const ds = dateStr(rcYear, rcMonth, d);
+            const isToday = ds === todayStr;
+            const isSel = ds === rcSelectedDate;
+            const isPast = ds < todayStr;
 
-            let cls='cal-cell';
-            if(isToday)cls+=' cal-cell--today';
-            if(isSel)cls+=' cal-cell--selected';
-            if(isPast)cls+=' cal-cell--past';
+            let cls = 'cal-cell';
+            if (isToday) cls += ' cal-cell--today';
+            if (isSel) cls += ' cal-cell--selected';
+            if (isPast) cls += ' cal-cell--past';
 
-            html+=`<span class="${cls}" data-date="${ds}" role="button" tabindex="0" ${isPast?'aria-disabled="true"':''}><span class="cal-cell__num">${d}</span></span>`;
+            html += `<span class="${cls}" data-date="${ds}" role="button" tabindex="0" ${isPast ? 'aria-disabled="true"' : ''}><span class="cal-cell__num">${d}</span></span>`;
         }
-        calDates.innerHTML=html;
+        calDates.innerHTML = html;
 
-        calDates.querySelectorAll('.cal-cell:not(.cal-cell--empty):not(.cal-cell--past)').forEach(cell=>{
-            cell.addEventListener('click',()=>selectRcDate(cell.dataset.date));
+        calDates.querySelectorAll('.cal-cell:not(.cal-cell--empty):not(.cal-cell--past)').forEach(cell => {
+            cell.addEventListener('click', () => selectRcDate(cell.dataset.date));
         });
     }
 
-    document.getElementById('rcCalPrev').addEventListener('click',()=>{
-        rcMonth--;if(rcMonth<0){rcMonth=11;rcYear--;}renderCalendar();
+    document.getElementById('rcCalPrev').addEventListener('click', () => {
+        rcMonth--; if (rcMonth < 0) { rcMonth = 11; rcYear--; } renderCalendar();
     });
-    document.getElementById('rcCalNext').addEventListener('click',()=>{
-        rcMonth++;if(rcMonth>11){rcMonth=0;rcYear++;}renderCalendar();
+    document.getElementById('rcCalNext').addEventListener('click', () => {
+        rcMonth++; if (rcMonth > 11) { rcMonth = 0; rcYear++; } renderCalendar();
     });
 
-    window.changeRcDurasi = function(step) {
+    window.changeRcDurasi = function (step) {
         const input = document.getElementById('rcDurasiBaru');
         if (!input) return;
         let val = parseInt(input.value) + step;
@@ -218,156 +226,245 @@
         }
     };
 
-    window.updateRcDurasi = function() {
+    window.updateRcDurasi = function () {
         if (rcSelectedDate) {
             selectRcDate(rcSelectedDate);
         }
     };
 
     // ─── Select Date → Show Timeslots ───
-    async function selectRcDate(ds){
-        rcSelectedDate=ds;
-        rcSelectedSlot=null;
+    async function selectRcDate(ds) {
+        rcSelectedDate = ds;
+        rcSelectedSlot = null;
         renderCalendar();
 
-        const sec=document.getElementById('rcSlotSection');
-        const loading=document.getElementById('rcSlotLoading');
-        const card=document.getElementById('rcTimeslotCard');
-        const confirmWrap=document.getElementById('rcConfirmWrap');
-        const dateLabel=document.getElementById('rcDateLabel');
-        const summary=document.getElementById('rcSlotSummary');
-        const summaryText=document.getElementById('rcSlotSummaryText');
+        const sec = document.getElementById('rcSlotSection');
+        const loading = document.getElementById('rcSlotLoading');
+        const card = document.getElementById('rcTimeslotCard');
+        const confirmWrap = document.getElementById('rcConfirmWrap');
+        const dateLabel = document.getElementById('rcDateLabel');
+        const summary = document.getElementById('rcSlotSummary');
+        const summaryText = document.getElementById('rcSlotSummaryText');
 
-        sec.style.display='block';
-        loading.style.display='block';
-        card.innerHTML='';
-        confirmWrap.style.display='none';
+        sec.style.display = 'block';
+        loading.style.display = 'block';
+        card.innerHTML = '';
+        confirmWrap.style.display = 'none';
         document.getElementById('rcError').classList.add('d-none');
 
-        dateLabel.innerHTML=`<span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:-3px;">today</span> ${fmtTgl(ds)}`;
+        dateLabel.innerHTML = `<span class="material-symbols-outlined" style="font-size:.95rem;vertical-align:-3px;">today</span> ${fmtTgl(ds)}`;
 
-        try{
-            const res=await fetch(`${BASE}/api/getBookedSlots?tanggal=${ds}`);
-            bookedSlotsData=await res.json();
-        }catch(e){bookedSlotsData={};}
+        try {
+            const res = await fetch(`${BASE}/api/getBookedSlots?tanggal=${ds}`);
+            bookedSlotsData = await res.json();
+        } catch (e) { bookedSlotsData = {}; }
 
-        loading.style.display='none';
+        loading.style.display = 'none';
 
-        const lap=lapangsData.find(l=>l.id_lapang==currentEditJadwal.id_lapang);
-        if(!lap){card.innerHTML='<p class="text-center text-muted">Lapangan tidak ditemukan.</p>';return;}
+        const lap = lapangsData.find(l => l.id_lapang == currentEditJadwal.id_lapang);
+        if (!lap) { card.innerHTML = '<p class="text-center text-muted">Lapangan tidak ditemukan.</p>'; return; }
 
-        const{jamBuka,jamTutup,isWeekend}=getOpHours(lap,ds);
-        const bookedSlots=bookedSlotsData[currentEditJadwal.id_lapang]||[];
+        const { jamBuka, jamTutup, isWeekend } = getOpHours(lap, ds);
+        const bookedSlots = bookedSlotsData[currentEditJadwal.id_lapang] || [];
         const durasiStr = document.getElementById('rcDurasiBaru') ? document.getElementById('rcDurasiBaru').value : currentEditJadwal.durasi;
-        const durasi=parseInt(durasiStr);
+        const durasi = parseInt(durasiStr);
 
         // Exclude own booking hours if same date and same lapang
-        let ownHours=[];
-        if(ds===currentEditJadwal.tanggal_main){
-            const sh=parseInt(currentEditJadwal.jam_mulai.substring(0,2));
-            for(let h=sh;h<sh+durasi;h++)ownHours.push(pad(h)+':00');
+        let ownHours = [];
+        if (ds === currentEditJadwal.tanggal_main) {
+            const sh = parseInt(currentEditJadwal.jam_mulai.substring(0, 2));
+            for (let h = sh; h < sh + durasi; h++)ownHours.push(pad(h) + ':00');
         }
 
-        let slotsHtml='';
-        let availCount=0,bookedCount=0;
+        let slotsHtml = '';
+        let availCount = 0, bookedCount = 0;
+        const jamLabel = isWeekend ? 'Weekend' : 'Weekday';
+        const ts = (currentBooking && currentBooking.tipe_sewa) ? currentBooking.tipe_sewa.toLowerCase().trim() : '';
+        const isDailyMode = (ts === 'harian' || ts === 'per hari' || ts.includes('hari'));
 
-        for(let h=jamBuka;h<=jamTutup-durasi;h++){
-            let ok=true;
-            for(let d=0;d<durasi;d++){
-                const sl=pad(h+d)+':00';
-                if(bookedSlots.includes(sl)&&!ownHours.includes(sl)){ok=false;break;}
-            }
-            if(isPastSlot(ds,h))ok=false;
-
-            const jm=pad(h)+':00',js=pad(h+durasi)+':00';
-            const label=`${pad(h)}.00`;
-            let boxClass='timeslot-box';
-            let icon='schedule',badge='';
-
-            if(!ok){
-                const isBooked=bookedSlots.some((sl,_)=>{const hh=parseInt(sl);return hh>=h&&hh<h+durasi;})&&!ownHours.length;
-                if(isPastSlot(ds,h)){
-                    boxClass+=' timeslot-box--past';icon='history';
-                    badge='<span class="timeslot-badge timeslot-badge--lewat">Lewat</span>';
-                }else{
-                    boxClass+=' timeslot-box--booked';icon='event_busy';bookedCount++;
-                    badge='<span class="timeslot-badge timeslot-badge--terisi">Terisi</span>';
+        if (isDailyMode) {
+            let isFullyAvailable = true;
+            for (let h = jamBuka; h < jamTutup; h++) {
+                const sl = pad(h) + ':00';
+                if (bookedSlots.includes(sl) && !ownHours.includes(sl)) {
+                    isFullyAvailable = false; break;
                 }
-            }else{
-                boxClass+=' timeslot-box--available';availCount++;
-                badge='<span class="timeslot-badge timeslot-badge--kosong">Kosong</span>';
+            }
+            if (isPastSlot(ds, jamBuka)) {
+                isFullyAvailable = false;
             }
 
-            slotsHtml+=`<div class="${boxClass}" data-jam="${jm}" data-jam-selesai="${js}" tabindex="${ok?'0':''}" style="animation-delay:${0.03*(h-jamBuka)}s">
-                <span class="material-symbols-outlined timeslot-box__icon">${icon}</span>
-                <span class="timeslot-box__label">${label}</span>
-                ${badge}
+            const totalSlots = jamTutup - jamBuka;
+            const bCount = bookedSlots.filter(s => {
+                const hh = parseInt(s);
+                return hh >= jamBuka && hh < jamTutup && !ownHours.includes(s);
+            }).length;
+
+            let headerBg = isFullyAvailable
+                ? 'background:linear-gradient(135deg,#059669,#10b981);'
+                : 'background:linear-gradient(135deg,#d97706,#f59e0b);';
+            const statusText = isFullyAvailable ? 'Tersedia Full Day' : `${totalSlots - bCount}/${totalSlots} slot tersedia`;
+
+            let btnHtml = '';
+            if (!isFullyAvailable) {
+                bookedCount = bCount;
+                availCount = totalSlots - bookedCount;
+                btnHtml = `<div class="p-3 text-center" style="background:#fef2f2;border-radius:.5rem;color:#dc2626;border:1px dashed #fca5a5;">
+                    <span class="material-symbols-outlined" style="font-size:2rem;opacity:.5;">event_busy</span>
+                    <div style="font-weight:700;margin-top:.5rem;">Tidak Tersedia (Full Day)</div>
+                    <div style="font-size:.85rem;">Terdapat jam yang sudah terisi di hari ini.</div>
+                </div>`;
+            } else {
+                availCount = totalSlots;
+                btnHtml = `<button type="button" class="timeslot-box--available adm-daily-select-btn" data-jam="${pad(jamBuka)}:00" data-jam-selesai="${pad(jamTutup)}:00" style="width:100%;padding:0.85rem;border:none;border-radius:0.6rem;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;background:#0d6efd;color:#fff;transition:all .2s;">
+                    <span class="material-symbols-outlined" style="font-size:1.2rem;">event_available</span>
+                    <span class="btn-text">Pilih Lapangan (Full Day)</span>
+                </button>`;
+            }
+
+            card.innerHTML = `<div class="adm-lapang-card" style="animation:slideUp .5s cubic-bezier(.22,1,.36,1) both; border:1px solid #e2e8f0; border-radius:1rem; box-shadow:0 10px 20px -5px rgba(0,0,0,0.05); overflow:hidden;">
+                <div style="${headerBg} padding:1.25rem; color:#fff;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 style="margin:0; font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:1.4rem;">stadium</span>
+                            ${lap.nama_lapangan}
+                        </h6>
+                        <span style="background:rgba(255,255,255,0.2); padding:0.25rem 0.6rem; border-radius:2rem; font-size:0.75rem; font-weight:700;">${statusText}</span>
+                    </div>
+                    <div style="font-size:0.8rem; font-weight:600; opacity:0.9;">
+                        <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:-3px;">schedule</span>
+                        ${jamLabel} · ${pad(jamBuka)}:00 - ${pad(jamTutup)}:00
+                    </div>
+                </div>
+                <div style="padding:1.25rem; background:#fff;">
+                    ${btnHtml}
+                </div>
+            </div>`;
+        } else {
+            for (let h = jamBuka; h <= jamTutup - durasi; h++) {
+                let ok = true;
+                for (let d = 0; d < durasi; d++) {
+                    const sl = pad(h + d) + ':00';
+                    if (bookedSlots.includes(sl) && !ownHours.includes(sl)) { ok = false; break; }
+                }
+                if (isPastSlot(ds, h)) ok = false;
+
+                const jm = pad(h) + ':00', js = pad(h + durasi) + ':00';
+                const label = `${pad(h)}.00`;
+                let boxClass = 'timeslot-box';
+                let icon = 'schedule', badge = '';
+
+                if (!ok) {
+                    const isBooked = bookedSlots.some((sl, _) => { const hh = parseInt(sl); return hh >= h && hh < h + durasi; }) && !ownHours.length;
+                    if (isPastSlot(ds, h)) {
+                        boxClass += ' timeslot-box--past'; icon = 'history';
+                        badge = '<span class="timeslot-badge timeslot-badge--lewat">Lewat</span>';
+                    } else {
+                        boxClass += ' timeslot-box--booked'; icon = 'event_busy'; bookedCount++;
+                        badge = '<span class="timeslot-badge timeslot-badge--terisi">Terisi</span>';
+                    }
+                } else {
+                    boxClass += ' timeslot-box--available'; availCount++;
+                    badge = '<span class="timeslot-badge timeslot-badge--kosong">Kosong</span>';
+                }
+
+                slotsHtml += `<div class="${boxClass}" data-jam="${jm}" data-jam-selesai="${js}" tabindex="${ok ? '0' : ''}" style="animation-delay:${0.03 * (h - jamBuka)}s">
+                    <span class="material-symbols-outlined timeslot-box__icon">${icon}</span>
+                    <span class="timeslot-box__label">${label}</span>
+                    ${badge}
+                </div>`;
+            }
+
+            card.innerHTML = `<div class="lapang-card" style="animation:slideUp .5s cubic-bezier(.22,1,.36,1) both;">
+                <div class="lapang-card__header">
+                    <span class="material-symbols-outlined lapang-card__icon">stadium</span>
+                    <div>
+                        <span class="lapang-card__title">${lap.nama_lapangan}</span>
+                        <div class="lapang-card__subtitle">${jamLabel} · ${pad(jamBuka)}.00 - ${pad(jamTutup)}.00 · Durasi ${durasi} Jam</div>
+                    </div>
+                </div>
+                <div class="lapang-card__stats">
+                    <span class="lapang-card__stat stat--available"><span class="material-symbols-outlined">check_circle</span> ${availCount} tersedia</span>
+                    <span class="lapang-card__stat stat--booked"><span class="material-symbols-outlined">block</span> ${bookedCount} terisi</span>
+                </div>
+                <div class="lapang-card__body"><div class="timeslot-grid">${slotsHtml}</div></div>
             </div>`;
         }
 
-        const jamLabel=isWeekend?'Weekend':'Weekday';
-        card.innerHTML=`<div class="lapang-card" style="animation:slideUp .5s cubic-bezier(.22,1,.36,1) both;">
-            <div class="lapang-card__header">
-                <span class="material-symbols-outlined lapang-card__icon">stadium</span>
-                <div>
-                    <span class="lapang-card__title">${lap.nama_lapangan}</span>
-                    <div class="lapang-card__subtitle">${jamLabel} · ${pad(jamBuka)}.00 - ${pad(jamTutup)}.00 · Durasi ${durasi} Jam</div>
-                </div>
-            </div>
-            <div class="lapang-card__stats">
-                <span class="lapang-card__stat stat--available"><span class="material-symbols-outlined">check_circle</span> ${availCount} tersedia</span>
-                <span class="lapang-card__stat stat--booked"><span class="material-symbols-outlined">block</span> ${bookedCount} terisi</span>
-            </div>
-            <div class="lapang-card__body"><div class="timeslot-grid">${slotsHtml}</div></div>
-        </div>`;
+        summary.style.display = 'flex';
+        summaryText.textContent = `${availCount} slot tersedia · ${bookedCount} terisi`;
 
-        summary.style.display='flex';
-        summaryText.textContent=`${availCount} slot tersedia · ${bookedCount} terisi`;
-
-        card.querySelectorAll('.timeslot-box--available').forEach(box=>{
-            box.addEventListener('click',function(){
-                card.querySelectorAll('.timeslot-box--selected').forEach(s=>{if(s!==box)s.classList.remove('timeslot-box--selected');});
-                box.classList.toggle('timeslot-box--selected');
-                const sel=card.querySelector('.timeslot-box--selected');
-                if(sel){
-                    rcSelectedSlot={jam_mulai:sel.dataset.jam,jam_selesai:sel.dataset.jamSelesai};
-                    confirmWrap.style.display='block';
-                    confirmWrap.style.animation='slideUp .35s cubic-bezier(.22,1,.36,1) both';
-                }else{
-                    rcSelectedSlot=null;
-                    confirmWrap.style.display='none';
+        card.querySelectorAll('.timeslot-box--available').forEach(box => {
+            box.addEventListener('click', function () {
+                if (box.classList.contains('adm-daily-select-btn')) {
+                    const isSelected = box.classList.contains('timeslot-box--selected');
+                    if (isSelected) {
+                        box.classList.remove('timeslot-box--selected');
+                        box.style.background = '#0d6efd';
+                        const btnText = box.querySelector('.btn-text');
+                        if (btnText) btnText.textContent = 'Pilih Lapangan (Full Day)';
+                        const btnIcon = box.querySelector('.material-symbols-outlined');
+                        if (btnIcon) btnIcon.textContent = 'event_available';
+                        rcSelectedSlot = null;
+                        confirmWrap.style.display = 'none';
+                    } else {
+                        card.querySelectorAll('.timeslot-box--selected').forEach(s => s.classList.remove('timeslot-box--selected'));
+                        box.classList.add('timeslot-box--selected');
+                        box.style.background = '#059669';
+                        const btnText = box.querySelector('.btn-text');
+                        if (btnText) btnText.textContent = 'Terpilih (Full Day)';
+                        const btnIcon = box.querySelector('.material-symbols-outlined');
+                        if (btnIcon) btnIcon.textContent = 'check_circle';
+                        rcSelectedSlot = { jam_mulai: box.dataset.jam, jam_selesai: box.dataset.jamSelesai };
+                        confirmWrap.style.display = 'block';
+                        confirmWrap.style.animation = 'slideUp .35s cubic-bezier(.22,1,.36,1) both';
+                    }
+                } else {
+                    card.querySelectorAll('.timeslot-box--selected').forEach(s => {
+                        if (s !== box) s.classList.remove('timeslot-box--selected');
+                    });
+                    box.classList.toggle('timeslot-box--selected');
+                    const sel = card.querySelector('.timeslot-box--selected');
+                    if (sel) {
+                        rcSelectedSlot = { jam_mulai: sel.dataset.jam, jam_selesai: sel.dataset.jamSelesai };
+                        confirmWrap.style.display = 'block';
+                        confirmWrap.style.animation = 'slideUp .35s cubic-bezier(.22,1,.36,1) both';
+                    } else {
+                        rcSelectedSlot = null;
+                        confirmWrap.style.display = 'none';
+                    }
                 }
             });
         });
 
-        setTimeout(()=>{sec.scrollIntoView({behavior:'smooth',block:'start'});},100);
+        setTimeout(() => { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
     }
 
     // ─── Confirm Reschedule ───
-    window.confirmReschedule=async function(){
-        if(!rcSelectedDate||!rcSelectedSlot||!currentEditJadwal){alert('Pilih tanggal dan jam baru.');return;}
+    window.confirmReschedule = async function () {
+        if (!rcSelectedDate || !rcSelectedSlot || !currentEditJadwal) { alert('Pilih tanggal dan jam baru.'); return; }
         const durasiBaru = document.getElementById('rcDurasiBaru') ? parseInt(document.getElementById('rcDurasiBaru').value) : parseInt(currentEditJadwal.durasi);
-        if(rcSelectedDate===currentEditJadwal.tanggal_main && rcSelectedSlot.jam_mulai===currentEditJadwal.jam_mulai.substring(0,5) && durasiBaru === parseInt(currentEditJadwal.durasi)){
-            alert('Jadwal baru sama dengan jadwal saat ini.');return;
+        if (rcSelectedDate === currentEditJadwal.tanggal_main && rcSelectedSlot.jam_mulai === currentEditJadwal.jam_mulai.substring(0, 5) && durasiBaru === parseInt(currentEditJadwal.durasi)) {
+            alert('Jadwal baru sama dengan jadwal saat ini.'); return;
         }
-        const btn=document.getElementById('btnConfirm');
-        const errDiv=document.getElementById('rcError');
+        const btn = document.getElementById('btnConfirm');
+        const errDiv = document.getElementById('rcError');
         errDiv.classList.add('d-none');
-        btn.disabled=true;btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span> Memproses...';
-        try{
-            const fd=new FormData();
-            fd.append('kode_sewa',currentBooking.kode_sewa);
+        btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Memproses...';
+        try {
+            const fd = new FormData();
+            fd.append('kode_sewa', currentBooking.kode_sewa);
             fd.append('id_jadwal', currentEditJadwal.id_jadwal);
-            fd.append('tanggal_baru',rcSelectedDate);
-            fd.append('jam_mulai_baru',rcSelectedSlot.jam_mulai);
+            fd.append('tanggal_baru', rcSelectedDate);
+            fd.append('jam_mulai_baru', rcSelectedSlot.jam_mulai);
             fd.append('durasi_baru', durasiBaru);
-            const res=await fetch(`${BASE}/api/processUbahJadwalItem`,{method:'POST',body:fd});
-            const data=await res.json();
-            if(data.success){
+            const res = await fetch(`${BASE}/api/processUbahJadwalItem`, { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
                 document.getElementById('rescheduleSection').classList.add('d-none');
-                document.getElementById('successDate').textContent=fmtTgl(data.data.tanggal_baru);
-                document.getElementById('successTime').textContent=fmtJam(data.data.jam_mulai)+' - '+fmtJam(data.data.jam_selesai);
-                
+                document.getElementById('successDate').textContent = fmtTgl(data.data.tanggal_baru);
+                document.getElementById('successTime').textContent = fmtJam(data.data.jam_mulai) + ' - ' + fmtJam(data.data.jam_selesai);
+
                 const pd = document.getElementById('paymentDetails');
                 if (data.data.price_diff !== 0) {
                     pd.style.display = 'flex';
@@ -378,18 +475,18 @@
                     pd.style.display = 'none';
                 }
 
-                const sc=document.getElementById('bookingSuccess');sc.classList.remove('d-none');
-                sc.style.animation='slideUp .45s cubic-bezier(.22,1,.36,1) both';
-                window.scrollTo({top:0,behavior:'smooth'});
-            }else{
-                document.getElementById('rcErrorMsg').textContent=data.message;
+                const sc = document.getElementById('bookingSuccess'); sc.classList.remove('d-none');
+                sc.style.animation = 'slideUp .45s cubic-bezier(.22,1,.36,1) both';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                document.getElementById('rcErrorMsg').textContent = data.message;
                 errDiv.classList.remove('d-none');
             }
-        }catch(err){
-            document.getElementById('rcErrorMsg').textContent='Gagal menghubungi server.';
+        } catch (err) {
+            document.getElementById('rcErrorMsg').textContent = 'Gagal menghubungi server.';
             errDiv.classList.remove('d-none');
-        }finally{
-            btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined" style="font-size:1.15rem;">check_circle</span> Konfirmasi Perubahan Jadwal';
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.15rem;">check_circle</span> Konfirmasi Perubahan Jadwal';
         }
     };
 

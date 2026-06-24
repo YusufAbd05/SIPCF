@@ -155,10 +155,16 @@ class BookingController extends BaseController
         $jenisPembayaran = ($jumlahBayar < $totalBayar) ? 'DP' : 'Full';
         $statusPesanan = 'Dikonfirmasi'; // Status awal selalu Dikonfirmasi, pelunasan menjadi Selesai nanti dilakukan secara terpisah jika diperlukan, atau mainnya selesai.
 
-        // Generate Kode Booking
+        $tipeSewa = $this->request->getPost('tipe_sewa') ?? 'Per Jam'; // Default to Per Jam if not provided
+
+        // Generate Kode Booking with correct prefix
+        $prefix = 'BK';
+        if ($tipeSewa === 'Harian' || $tipeSewa === 'Per Hari') $prefix = 'HR';
+        elseif ($tipeSewa === 'Membership') $prefix = 'MB';
+
         $dateStr = date('Ymd');
-        $countToday = $bookingModel->like('kode_sewa', "BK-{$dateStr}-")->countAllResults();
-        $kodeSewa = "BK-{$dateStr}-" . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+        $countToday = $bookingModel->like('kode_sewa', "{$prefix}-{$dateStr}-")->countAllResults();
+        $kodeSewa = "{$prefix}-{$dateStr}-" . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
 
         $itemsJson = $this->request->getPost('items_json');
         $cartItems = [];
@@ -168,7 +174,6 @@ class BookingController extends BaseController
 
         $idLapang = $this->request->getPost('id_lapang'); // Fallback primary lapang ID
         $durasiJam = $this->request->getPost('durasi_jam'); // Total durasi
-        $tipeSewa = $this->request->getPost('tipe_sewa') ?? 'Per Jam'; // Default to Per Jam if not provided
 
         // Save Booking (no schedule columns — those go to t_jadwal)
         $dataBooking = [
@@ -215,28 +220,61 @@ class BookingController extends BaseController
                 } else {
                     $jamSelesai = str_pad((int)substr($jamMulai, 0, 2) + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
                 }
-                
-                $jadwalModel->insert([
-                    'id_sewa'      => $idSewa,
-                    'id_lapang'    => $item['id_lapang'],
-                    'sesi_ke'      => $sesiKe++,
-                    'tanggal_main' => $item['tanggal'],
-                    'jam_mulai'    => $jamMulai,
-                    'jam_selesai'  => $jamSelesai,
-                    'status_sesi'  => 'Terjadwal',
-                ]);
+                if ($tipeSewa === 'Membership') {
+                    $baseDate = new \DateTime($item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d'));
+                    for ($w = 0; $w < 4; $w++) {
+                        $dateObj = clone $baseDate;
+                        $dateObj->modify("+{$w} weeks");
+                        $jadwalModel->insert([
+                            'id_sewa'      => $idSewa,
+                            'id_lapang'    => $item['id_lapang'],
+                            'sesi_ke'      => $sesiKe++,
+                            'tanggal_main' => $dateObj->format('Y-m-d'),
+                            'jam_mulai'    => $jamMulai,
+                            'jam_selesai'  => $jamSelesai,
+                            'status_sesi'  => 'Terjadwal',
+                        ]);
+                    }
+                } else {
+                    $jadwalModel->insert([
+                        'id_sewa'      => $idSewa,
+                        'id_lapang'    => $item['id_lapang'],
+                        'sesi_ke'      => $sesiKe++,
+                        'tanggal_main' => $item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d'),
+                        'jam_mulai'    => $jamMulai,
+                        'jam_selesai'  => $jamSelesai,
+                        'status_sesi'  => 'Terjadwal',
+                    ]);
+                }
             }
         } else {
             // Fallback for single item (if JSON not provided)
-            $jadwalModel->insert([
-                'id_sewa'      => $idSewa,
-                'id_lapang'    => $idLapang,
-                'sesi_ke'      => 1,
-                'tanggal_main' => $this->request->getPost('tanggal_main'),
-                'jam_mulai'    => $this->request->getPost('jam_mulai'),
-                'jam_selesai'  => $this->request->getPost('jam_selesai'),
-                'status_sesi'  => 'Terjadwal',
-            ]);
+            if ($tipeSewa === 'Membership') {
+                $baseDate = new \DateTime($this->request->getPost('tanggal_main'));
+                for ($w = 0; $w < 4; $w++) {
+                    $dateObj = clone $baseDate;
+                    $dateObj->modify("+{$w} weeks");
+                    $jadwalModel->insert([
+                        'id_sewa'      => $idSewa,
+                        'id_lapang'    => $idLapang,
+                        'sesi_ke'      => $w + 1,
+                        'tanggal_main' => $dateObj->format('Y-m-d'),
+                        'jam_mulai'    => $this->request->getPost('jam_mulai'),
+                        'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                        'status_sesi'  => 'Terjadwal',
+                    ]);
+                }
+            } else {
+                $jadwalModel->insert([
+                    'id_sewa'      => $idSewa,
+                    'id_lapang'    => $idLapang,
+                    'sesi_ke'      => 1,
+                    'tanggal_main' => $this->request->getPost('tanggal_main'),
+                    'jam_mulai'    => $this->request->getPost('jam_mulai'),
+                    'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                    'status_sesi'  => 'Terjadwal',
+                ]);
+            }
         }
 
         // Save Pembayaran (Dinamis: Lunas / DP)

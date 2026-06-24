@@ -539,17 +539,8 @@
                                     <input type="tel" name="no_hp" id="editNoHp" class="form-control-custom"
                                         placeholder="08xxxxxxxxxx" required />
                                 </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label-custom">
-                                        <span class="material-symbols-outlined">timer</span> Durasi Bermain
-                                    </label>
-                                    <select class="form-control-custom" id="editDurasi" required>
-                                        <option value="1" selected>1 Jam</option>
-                                        <option value="2">2 Jam</option>
-                                        <option value="3">3 Jam</option>
-                                        <option value="4">4 Jam</option>
-                                        <option value="5">5 Jam</option>
-                                    </select>
+                                <div class="col-12 col-md-12">
+                                    <!-- Jenis sewa sudah ada di atas -->
                                 </div>
                             </div>
 
@@ -942,21 +933,26 @@
 </div>
 
     <script>
+        let adminSewaMode = 'Per Jam'; // 'Per Jam' | 'Harian' | 'Membership'
+
         function setAdminSewa(mode, btn) {
+            adminSewaMode = mode;
             document.getElementById('inputAddTipeSewa').value = mode;
             document.querySelectorAll('.add-booking-right .sewa-pill').forEach(p => {
                 p.classList.remove('sewa-pill--active');
             });
             btn.classList.add('sewa-pill--active');
+            // Clear cart and re-render when mode changes
+            addCartItems = [];
+            renderAddCart();
+            if (calSelectedDay) {
+                renderLapangCards();
+            }
         }
 
-        function setAdminEditSewa(mode, btn) {
-            document.getElementById('editInputTipeSewa').value = mode;
-            document.querySelectorAll('#formEditBooking .sewa-pill').forEach(p => {
-                p.classList.remove('sewa-pill--active');
-            });
-            btn.classList.add('sewa-pill--active');
-        }
+        let editSewaMode = 'Per Jam'; // 'Per Jam' | 'Harian' | 'Membership'
+
+        // setAdminEditSewa is defined inside the IIFE below so it can access cart variables
 
     (function () {
         /* ===== CONSTANTS ===== */
@@ -973,7 +969,14 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                                                                                                            { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+            {
+                id: <?= $lapang['id_lapang'] ?>,
+                name: '<?= esc($lapang['nama_lapangan']) ?>',
+                jam_buka_weekday: <?= (int)($lapang['jam_buka_weekday'] ?? 8) ?>,
+                jam_tutup_weekday: <?= (int)($lapang['jam_tutup_weekday'] ?? 24) ?>,
+                jam_buka_weekend: <?= (int)($lapang['jam_buka_weekend'] ?? 8) ?>,
+                jam_tutup_weekend: <?= (int)($lapang['jam_tutup_weekend'] ?? 24) ?>
+            },
             <?php endforeach; ?>
         ];
 
@@ -1041,8 +1044,24 @@
 
                     try {
                         lapangCards.innerHTML = `<div class="no-selection-placeholder"><span class="material-symbols-outlined">hourglass_empty</span><p>Memuat jadwal...</p></div>`;
-                        const res = await fetch(`${API_BOOKED}?tanggal=${tanggal}`);
-                        bookedSlotsData = await res.json();
+                        
+                        if (adminSewaMode === 'Membership') {
+                            bookedSlotsData = {};
+                            const baseDate = new Date(calYear, calMonth, calSelectedDay);
+                            for (let w = 0; w < 4; w++) {
+                                const d = new Date(baseDate.getTime() + w * 7 * 24 * 60 * 60 * 1000);
+                                const tStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                const res = await fetch(`${API_BOOKED}?tanggal=${tStr}`);
+                                const wData = await res.json();
+                                for (const lapId in wData) {
+                                    if (!bookedSlotsData[lapId]) bookedSlotsData[lapId] = [];
+                                    bookedSlotsData[lapId] = [...new Set([...bookedSlotsData[lapId], ...wData[lapId]])];
+                                }
+                            }
+                        } else {
+                            const res = await fetch(`${API_BOOKED}?tanggal=${tanggal}`);
+                            bookedSlotsData = await res.json();
+                        }
                     } catch (e) {
                         bookedSlotsData = {};
                     }
@@ -1081,6 +1100,16 @@
             `;
         }
 
+        function getAdminOperatingHours(lapang, tanggal) {
+            const dt = new Date(tanggal);
+            const dow = dt.getDay();
+            const isWeekend = (dow === 0 || dow === 6);
+            const jamBuka = parseInt(isWeekend ? lapang.jam_buka_weekend : lapang.jam_buka_weekday) || 8;
+            let jamTutup = parseInt(isWeekend ? lapang.jam_tutup_weekend : lapang.jam_tutup_weekday) || 24;
+            if (jamTutup <= jamBuka) jamTutup = 24;
+            return { jamBuka, jamTutup, isWeekend };
+        }
+
         /**
          * Cek apakah sebuah slot awal bisa menampung durasi yang dipilih.
          * Slot dianggap tidak bisa jika salah satu jam di range-nya sudah terbooking
@@ -1098,6 +1127,12 @@
 
         function renderLapangCards() {
             if (!calSelectedDay) { renderLapangPlaceholder(); return; }
+
+            // Delegate to daily card renderer when Harian mode is active
+            if (adminSewaMode === 'Harian') {
+                renderDailyLapangCards();
+                return;
+            }
 
             let html = '';
             LAPANGS.forEach(lap => {
@@ -1163,13 +1198,19 @@
                         if (inCartIndex !== -1) {
                             addCartItems.splice(inCartIndex, 1);
                         } else {
+                            let calculatedHarga = getHargaForHour(lapId, slotStart);
+                            if (adminSewaMode === 'Membership') {
+                                const normalHarga = calculatedHarga * 4;
+                                calculatedHarga = normalHarga - Math.round(normalHarga * 0.1);
+                            }
+                            
                             addCartItems.push({
                                 id_lapang: lapId,
                                 nama_lapang: lapName,
                                 tanggal: tanggal,
                                 jam_mulai: slotStart,
                                 durasi: 1,
-                                harga: getHargaForHour(lapId, slotStart)
+                                harga: calculatedHarga
                             });
                         }
                         
@@ -1178,6 +1219,121 @@
                     });
                 });
             });
+        }
+
+        /* ===== DAILY CARD RENDERER (Harian mode) ===== */
+        function renderDailyLapangCards() {
+            if (!calSelectedDay) { renderLapangPlaceholder(); return; }
+
+            const m = String(calMonth + 1).padStart(2, '0');
+            const d = String(calSelectedDay).padStart(2, '0');
+            const tanggal = `${calYear}-${m}-${d}`;
+
+            let html = '';
+            LAPANGS.forEach(lap => {
+                const { jamBuka, jamTutup, isWeekend } = getAdminOperatingHours(lap, tanggal);
+                const bookedHours = bookedSlotsData[lap.id] || [];
+                const totalSlots = jamTutup - jamBuka;
+                const bookedCount = bookedHours.length;
+                const isFullyAvailable = bookedCount === 0;
+                const isSelected = addCartItems.some(i => String(i.id_lapang) === String(lap.id) && i.tanggal === tanggal);
+
+                const statusText = isFullyAvailable ? 'Tersedia Full Day' : `${totalSlots - bookedCount}/${totalSlots} slot tersedia`;
+                const statusIcon = isFullyAvailable ? 'check_circle' : 'info';
+                const statusColor = isFullyAvailable ? '#059669' : '#d97706';
+                const jamLabel = isWeekend ? 'Weekend' : 'Weekday';
+
+                // Get harga harian from tarif cache
+                const tarifInfo = tarifCache[lap.id];
+                let hargaHarian = 0;
+                if (tarifInfo && tarifInfo.tarifs && tarifInfo.tarifs.length > 0) {
+                    const harianTarif = tarifInfo.tarifs.find(t => parseInt(t.harga_harian) > 0);
+                    hargaHarian = harianTarif ? parseInt(harianTarif.harga_harian) : 0;
+                }
+                const hargaLabel = hargaHarian > 0 ? `Rp ${hargaHarian.toLocaleString('id-ID')}/hari` : '';
+
+                let headerBg = isFullyAvailable
+                    ? 'background:linear-gradient(135deg,#059669,#10b981);'
+                    : 'background:linear-gradient(135deg,#d97706,#f59e0b);';
+                if (isSelected) {
+                    headerBg = 'background:linear-gradient(135deg,#1d4ed8,#4f46e5);';
+                }
+
+                let btnHtml = '';
+                if (isFullyAvailable) {
+                    if (isSelected) {
+                        btnHtml = `<button type="button" class="adm-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#059669;color:#fff;margin-top:0.75rem;">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
+                            Terpilih (Full Day)
+                        </button>`;
+                    } else {
+                        btnHtml = `<button type="button" class="adm-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:var(--admin-primary,#0d6efd);color:#fff;margin-top:0.75rem;transition:all .2s;">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">event_available</span>
+                            Pilih Lapangan (Full Day)
+                        </button>`;
+                    }
+                } else {
+                    btnHtml = `<div style="font-size:0.75rem;color:#94a3b8;text-align:center;margin-top:0.75rem;">Tidak tersedia untuk sewa per hari (ada slot yang sudah terisi)</div>`;
+                }
+
+                html += `
+                <div class="adm-lapang-card" data-lapang-id="${lap.id}" style="margin-bottom:0.75rem;border:${isSelected ? '2px solid #4f46e5' : '1px solid #e2e8f0'};border-radius:0.85rem;overflow:hidden;transition:all .2s;">
+                    <div style="${headerBg}padding:0.85rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="color:#fff;font-size:1.2rem;">stadium</span>
+                        <div style="flex:1;">
+                            <div style="color:#fff;font-weight:700;font-size:0.88rem;">${lap.name}</div>
+                            <div style="color:rgba(255,255,255,0.8);font-size:0.72rem;">${jamLabel} · ${String(jamBuka).padStart(2,'0')}.00 - ${String(jamTutup).padStart(2,'0')}.00</div>
+                        </div>
+                        ${hargaLabel ? `<span style="font-size:0.72rem;color:rgba(255,255,255,0.9);font-weight:700;background:rgba(255,255,255,0.2);padding:0.2rem 0.5rem;border-radius:0.4rem;">${hargaLabel}</span>` : ''}
+                    </div>
+                    <div style="padding:0.85rem 1rem;background:var(--admin-surface,#fff);">
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:${statusColor};font-weight:600;margin-bottom:0.35rem;">
+                            <span class="material-symbols-outlined" style="font-size:1rem;">${statusIcon}</span>
+                            ${statusText}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.75rem;color:var(--admin-secondary,#64748b);">
+                            <span class="material-symbols-outlined" style="font-size:0.9rem;">schedule</span>
+                            Jam operasional: ${String(jamBuka).padStart(2,'0')}.00 - ${String(jamTutup).padStart(2,'0')}.00 (${totalSlots} jam)
+                        </div>
+                        ${btnHtml}
+                    </div>
+                </div>`;
+            });
+
+            lapangCards.innerHTML = html;
+
+            // Bind daily card click handlers
+            lapangCards.querySelectorAll('.adm-daily-select-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lapId = parseInt(btn.dataset.lapangId);
+                    const lapName = btn.dataset.lapangName;
+                    const jamBuka = parseInt(btn.dataset.jamBuka);
+                    const hargaHarian = parseInt(btn.dataset.harga) || 0;
+                    handleAdminDailySelection(lapId, lapName, tanggal, jamBuka, hargaHarian);
+                });
+            });
+        }
+
+        function handleAdminDailySelection(lapId, lapName, tanggal, jamBuka, hargaHarian) {
+            const idx = addCartItems.findIndex(i => String(i.id_lapang) === String(lapId) && i.tanggal === tanggal);
+            if (idx !== -1) {
+                // Deselect
+                addCartItems.splice(idx, 1);
+            } else {
+                // Select
+                addCartItems.push({
+                    id_lapang: lapId,
+                    nama_lapang: lapName,
+                    tanggal: tanggal,
+                    jam_mulai: String(jamBuka).padStart(2, '0') + ':00',
+                    durasi: 1,
+                    harga_satuan: hargaHarian,
+                    harga: hargaHarian,
+                    is_harian: true
+                });
+            }
+            renderDailyLapangCards();
+            renderAddCart();
         }
 
         function getHargaForHour(lapangId, hourStr) {
@@ -1210,39 +1366,52 @@
             const newDurasi = item.durasi + delta;
             if (newDurasi < 1) return;
 
-            if (delta > 0) {
-                const checkHour = parseInt(item.jam_mulai) + item.durasi;
-                if (checkHour >= 24) return;
-                const slotKey = String(checkHour).padStart(2, '0') + ':00';
-                
-                const booked = bookedSlotsData[item.id_lapang] || [];
-                if (booked.includes(slotKey)) {
-                    alert('Jam berikutnya sudah terisi. Tidak dapat menambah durasi.');
-                    return;
-                }
-                
-                const overlaps = addCartItems.some((other, oIdx) => {
-                    if (oIdx === idx) return false;
-                    if (String(other.id_lapang) !== String(item.id_lapang) || other.tanggal !== item.tanggal) return false;
-                    const otherStart = parseInt(other.jam_mulai);
-                    const otherEnd = otherStart + other.durasi;
-                    return (checkHour >= otherStart && checkHour < otherEnd);
-                });
-                if (overlaps) {
-                    alert('Jam berikutnya bertabrakan dengan item lain di keranjang Anda.');
-                    return;
-                }
-            }
+            const isHarian = adminSewaMode === 'Harian' || item.is_harian;
 
-            item.durasi = newDurasi;
-            
-            let total = 0;
-            const startH = parseInt(item.jam_mulai);
-            for (let i = 0; i < item.durasi; i++) {
-                const hStr = String(startH + i).padStart(2, '0') + ':00';
-                total += getHargaForHour(item.id_lapang, hStr);
+            if (isHarian) {
+                // For daily mode, simply update durasi and recalc price
+                item.durasi = newDurasi;
+                item.harga = (item.harga_satuan || 0) * newDurasi;
+            } else {
+                if (delta > 0) {
+                    const checkHour = parseInt(item.jam_mulai) + item.durasi;
+                    if (checkHour >= 24) return;
+                    const slotKey = String(checkHour).padStart(2, '0') + ':00';
+                    
+                    const booked = bookedSlotsData[item.id_lapang] || [];
+                    if (booked.includes(slotKey)) {
+                        alert('Jam berikutnya sudah terisi. Tidak dapat menambah durasi.');
+                        return;
+                    }
+                    
+                    const overlaps = addCartItems.some((other, oIdx) => {
+                        if (oIdx === idx) return false;
+                        if (String(other.id_lapang) !== String(item.id_lapang) || other.tanggal !== item.tanggal) return false;
+                        const otherStart = parseInt(other.jam_mulai);
+                        const otherEnd = otherStart + other.durasi;
+                        return (checkHour >= otherStart && checkHour < otherEnd);
+                    });
+                    if (overlaps) {
+                        alert('Jam berikutnya bertabrakan dengan item lain di keranjang Anda.');
+                        return;
+                    }
+                }
+
+                item.durasi = newDurasi;
+                
+                let total = 0;
+                const startH = parseInt(item.jam_mulai);
+                for (let i = 0; i < item.durasi; i++) {
+                    const hStr = String(startH + i).padStart(2, '0') + ':00';
+                    total += getHargaForHour(item.id_lapang, hStr);
+                }
+                let calculatedHarga = total;
+                if (adminSewaMode === 'Membership') {
+                    const normalHarga = total * 4;
+                    calculatedHarga = normalHarga - Math.round(normalHarga * 0.1);
+                }
+                item.harga = calculatedHarga;
             }
-            item.harga = total;
 
             renderLapangCards();
             renderAddCart();
@@ -1277,7 +1446,12 @@
 
             addCartItems.forEach((item, idx) => {
                 totalHarga += item.harga;
-                const jamEnd = String(parseInt(item.jam_mulai) + item.durasi).padStart(2, '0') + ':00';
+                const isHarian = adminSewaMode === 'Harian' || item.is_harian;
+                const isMembership = adminSewaMode === 'Membership';
+                const jamEnd = isHarian ? '(Full Day)' : String(parseInt(item.jam_mulai) + item.durasi).padStart(2, '0') + ':00';
+                const durasiLabel = isHarian ? item.durasi + ' Hari' : item.durasi + ' Jam';
+                const mbLabel = isMembership ? ' <span style="color:#0284c7;font-weight:700;">(4x Mingguan)</span>' : '';
+                const subTglText = isHarian ? `${item.tanggal} · Full Day` : `${item.tanggal} · ${item.jam_mulai} - ${jamEnd}${mbLabel}`;
 
                 html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--admin-surface);border:1px solid #cbd5e1;border-radius:0.65rem;margin-bottom:0.4rem;">
                     <div style="flex:1;min-width:0;">
@@ -1286,7 +1460,7 @@
                             ${item.nama_lapang}
                         </div>
                         <div style="font-size:0.72rem;color:var(--admin-secondary);margin-top:1px;">
-                            ${item.tanggal} · ${item.jam_mulai} - ${jamEnd}
+                            ${subTglText}
                         </div>
                         <div style="font-size:0.75rem;font-weight:700;color:var(--admin-primary);margin-top:2px;">
                             Rp ${item.harga.toLocaleString('id-ID')}
@@ -1296,7 +1470,7 @@
                         <button type="button" onclick="updateAddCartItemDurasi(${idx}, -1)" style="border:none; background:none; cursor:pointer; padding:0; color:var(--admin-on-surface);" ${item.durasi <= 1 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">remove</span>
                         </button>
-                        <span style="font-size:0.8rem; font-weight:700; width:35px; text-align:center;">${item.durasi} Jam</span>
+                        <span style="font-size:0.8rem; font-weight:700; width:45px; text-align:center;">${durasiLabel}</span>
                         <button type="button" onclick="updateAddCartItemDurasi(${idx}, 1)" style="border:none; background:none; cursor:pointer; padding:0; color:var(--admin-on-surface);">
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">add</span>
                         </button>
@@ -1431,7 +1605,14 @@
 
         const LAPANGS = [
             <?php foreach ($lapangs as $lapang): ?>
-                                                                                                { id: <?= $lapang['id_lapang'] ?>, name: '<?= esc($lapang['nama_lapangan']) ?>' },
+            {
+                id: <?= $lapang['id_lapang'] ?>,
+                name: '<?= esc($lapang['nama_lapangan']) ?>',
+                jam_buka_weekday: <?= (int)($lapang['jam_buka_weekday'] ?? 8) ?>,
+                jam_tutup_weekday: <?= (int)($lapang['jam_tutup_weekday'] ?? 24) ?>,
+                jam_buka_weekend: <?= (int)($lapang['jam_buka_weekend'] ?? 8) ?>,
+                jam_tutup_weekend: <?= (int)($lapang['jam_tutup_weekend'] ?? 24) ?>
+            },
             <?php endforeach; ?>
         ];
 
@@ -1546,8 +1727,24 @@
             </div>`;
         }
 
+        function ecGetOperatingHours(lapang, tanggal) {
+            const dt = new Date(tanggal);
+            const dow = dt.getDay();
+            const isWeekend = (dow === 0 || dow === 6);
+            const jamBuka = parseInt(isWeekend ? lapang.jam_buka_weekend : lapang.jam_buka_weekday) || 8;
+            let jamTutup = parseInt(isWeekend ? lapang.jam_tutup_weekend : lapang.jam_tutup_weekday) || 24;
+            if (jamTutup <= jamBuka) jamTutup = 24;
+            return { jamBuka, jamTutup, isWeekend };
+        }
+
         function ecRenderLapangCards() {
             if (!ecSelectedDay) { ecRenderPlaceholder(); return; }
+
+            // Delegate to daily card renderer when Harian mode is active
+            if (editSewaMode === 'Harian') {
+                ecRenderDailyLapangCards();
+                return;
+            }
 
             let html = '';
             LAPANGS.forEach(lap => {
@@ -1626,6 +1823,117 @@
             });
         }
 
+        /* ===== EDIT DAILY CARD RENDERER (Harian mode) ===== */
+        function ecRenderDailyLapangCards() {
+            if (!ecSelectedDay) { ecRenderPlaceholder(); return; }
+
+            const m = String(ecMonth + 1).padStart(2, '0');
+            const d = String(ecSelectedDay).padStart(2, '0');
+            const tanggal = `${ecYear}-${m}-${d}`;
+
+            let html = '';
+            LAPANGS.forEach(lap => {
+                const { jamBuka, jamTutup, isWeekend } = ecGetOperatingHours(lap, tanggal);
+                const bookedHours = ecBookedSlotsData[lap.id] || [];
+                const totalSlots = jamTutup - jamBuka;
+                const bookedCount = bookedHours.length;
+                const isFullyAvailable = bookedCount === 0;
+                const isSelected = editCartItems.some(i => String(i.id_lapang) === String(lap.id) && i.tanggal === tanggal);
+
+                const statusText = isFullyAvailable ? 'Tersedia Full Day' : `${totalSlots - bookedCount}/${totalSlots} slot tersedia`;
+                const statusIcon = isFullyAvailable ? 'check_circle' : 'info';
+                const statusColor = isFullyAvailable ? '#059669' : '#d97706';
+                const jamLabel = isWeekend ? 'Weekend' : 'Weekday';
+
+                const tarifInfo = ecTarifCache[lap.id];
+                let hargaHarian = 0;
+                if (tarifInfo && tarifInfo.tarifs && tarifInfo.tarifs.length > 0) {
+                    const harianTarif = tarifInfo.tarifs.find(t => parseInt(t.harga_harian) > 0);
+                    hargaHarian = harianTarif ? parseInt(harianTarif.harga_harian) : 0;
+                }
+                const hargaLabel = hargaHarian > 0 ? `Rp ${hargaHarian.toLocaleString('id-ID')}/hari` : '';
+
+                let headerBg = isFullyAvailable
+                    ? 'background:linear-gradient(135deg,#059669,#10b981);'
+                    : 'background:linear-gradient(135deg,#d97706,#f59e0b);';
+                if (isSelected) {
+                    headerBg = 'background:linear-gradient(135deg,#1d4ed8,#4f46e5);';
+                }
+
+                let btnHtml = '';
+                if (isFullyAvailable) {
+                    if (isSelected) {
+                        btnHtml = `<button type="button" class="ec-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#059669;color:#fff;margin-top:0.75rem;">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
+                            Terpilih (Full Day)
+                        </button>`;
+                    } else {
+                        btnHtml = `<button type="button" class="ec-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:var(--admin-primary,#0d6efd);color:#fff;margin-top:0.75rem;transition:all .2s;">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">event_available</span>
+                            Pilih Lapangan (Full Day)
+                        </button>`;
+                    }
+                } else {
+                    btnHtml = `<div style="font-size:0.75rem;color:#94a3b8;text-align:center;margin-top:0.75rem;">Tidak tersedia untuk sewa per hari (ada slot yang sudah terisi)</div>`;
+                }
+
+                html += `
+                <div class="adm-lapang-card" data-lapang-id="${lap.id}" style="margin-bottom:0.75rem;border:${isSelected ? '2px solid #4f46e5' : '1px solid #e2e8f0'};border-radius:0.85rem;overflow:hidden;transition:all .2s;">
+                    <div style="${headerBg}padding:0.85rem 1rem;display:flex;align-items:center;gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="color:#fff;font-size:1.2rem;">stadium</span>
+                        <div style="flex:1;">
+                            <div style="color:#fff;font-weight:700;font-size:0.88rem;">${lap.name}</div>
+                            <div style="color:rgba(255,255,255,0.8);font-size:0.72rem;">${jamLabel} · ${String(jamBuka).padStart(2,'0')}.00 - ${String(jamTutup).padStart(2,'0')}.00</div>
+                        </div>
+                        ${hargaLabel ? `<span style="font-size:0.72rem;color:rgba(255,255,255,0.9);font-weight:700;background:rgba(255,255,255,0.2);padding:0.2rem 0.5rem;border-radius:0.4rem;">${hargaLabel}</span>` : ''}
+                    </div>
+                    <div style="padding:0.85rem 1rem;background:var(--admin-surface,#fff);">
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.8rem;color:${statusColor};font-weight:600;margin-bottom:0.35rem;">
+                            <span class="material-symbols-outlined" style="font-size:1rem;">${statusIcon}</span>
+                            ${statusText}
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.35rem;font-size:0.75rem;color:var(--admin-secondary,#64748b);">
+                            <span class="material-symbols-outlined" style="font-size:0.9rem;">schedule</span>
+                            Jam operasional: ${String(jamBuka).padStart(2,'0')}.00 - ${String(jamTutup).padStart(2,'0')}.00 (${totalSlots} jam)
+                        </div>
+                        ${btnHtml}
+                    </div>
+                </div>`;
+            });
+
+            ecLapangCards.innerHTML = html;
+
+            ecLapangCards.querySelectorAll('.ec-daily-select-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const lapId = parseInt(btn.dataset.lapangId);
+                    const lapName = btn.dataset.lapangName;
+                    const jamBuka = parseInt(btn.dataset.jamBuka);
+                    const hargaHarian = parseInt(btn.dataset.harga) || 0;
+                    ecHandleDailySelection(lapId, lapName, tanggal, jamBuka, hargaHarian);
+                });
+            });
+        }
+
+        function ecHandleDailySelection(lapId, lapName, tanggal, jamBuka, hargaHarian) {
+            const idx = editCartItems.findIndex(i => String(i.id_lapang) === String(lapId) && i.tanggal === tanggal);
+            if (idx !== -1) {
+                editCartItems.splice(idx, 1);
+            } else {
+                editCartItems.push({
+                    id_lapang: lapId,
+                    nama_lapang: lapName,
+                    tanggal: tanggal,
+                    jam_mulai: String(jamBuka).padStart(2, '0') + ':00',
+                    durasi: 1,
+                    harga_satuan: hargaHarian,
+                    harga: hargaHarian,
+                    is_harian: true
+                });
+            }
+            ecRenderDailyLapangCards();
+            renderEditCart();
+        }
+
         function ecGetHargaForHour(lapangId, hourStr) {
             const tarifInfo = ecTarifCache[lapangId];
             if (!tarifInfo || !tarifInfo.tarifs || tarifInfo.tarifs.length === 0) return 0;
@@ -1649,39 +1957,46 @@
             const newDurasi = item.durasi + delta;
             if (newDurasi < 1) return;
 
-            if (delta > 0) {
-                const checkHour = parseInt(item.jam_mulai) + item.durasi;
-                if (checkHour >= 24) return;
-                const slotKey = String(checkHour).padStart(2, '0') + ':00';
-                
-                const booked = ecBookedSlotsData[item.id_lapang] || [];
-                if (booked.includes(slotKey)) {
-                    alert('Jam berikutnya sudah terisi. Tidak dapat menambah durasi.');
-                    return;
-                }
-                
-                const overlaps = editCartItems.some((other, oIdx) => {
-                    if (oIdx === idx) return false;
-                    if (String(other.id_lapang) !== String(item.id_lapang) || other.tanggal !== item.tanggal) return false;
-                    const otherStart = parseInt(other.jam_mulai);
-                    const otherEnd = otherStart + other.durasi;
-                    return (checkHour >= otherStart && checkHour < otherEnd);
-                });
-                if (overlaps) {
-                    alert('Jam berikutnya bertabrakan dengan item lain di keranjang Anda.');
-                    return;
-                }
-            }
+            const isHarian = editSewaMode === 'Harian' || item.is_harian;
 
-            item.durasi = newDurasi;
-            
-            let total = 0;
-            const startH = parseInt(item.jam_mulai);
-            for (let i = 0; i < item.durasi; i++) {
-                const hStr = String(startH + i).padStart(2, '0') + ':00';
-                total += ecGetHargaForHour(item.id_lapang, hStr);
+            if (isHarian) {
+                item.durasi = newDurasi;
+                item.harga = (item.harga_satuan || 0) * newDurasi;
+            } else {
+                if (delta > 0) {
+                    const checkHour = parseInt(item.jam_mulai) + item.durasi;
+                    if (checkHour >= 24) return;
+                    const slotKey = String(checkHour).padStart(2, '0') + ':00';
+                    
+                    const booked = ecBookedSlotsData[item.id_lapang] || [];
+                    if (booked.includes(slotKey)) {
+                        alert('Jam berikutnya sudah terisi. Tidak dapat menambah durasi.');
+                        return;
+                    }
+                    
+                    const overlaps = editCartItems.some((other, oIdx) => {
+                        if (oIdx === idx) return false;
+                        if (String(other.id_lapang) !== String(item.id_lapang) || other.tanggal !== item.tanggal) return false;
+                        const otherStart = parseInt(other.jam_mulai);
+                        const otherEnd = otherStart + other.durasi;
+                        return (checkHour >= otherStart && checkHour < otherEnd);
+                    });
+                    if (overlaps) {
+                        alert('Jam berikutnya bertabrakan dengan item lain di keranjang Anda.');
+                        return;
+                    }
+                }
+
+                item.durasi = newDurasi;
+                
+                let total = 0;
+                const startH = parseInt(item.jam_mulai);
+                for (let i = 0; i < item.durasi; i++) {
+                    const hStr = String(startH + i).padStart(2, '0') + ':00';
+                    total += ecGetHargaForHour(item.id_lapang, hStr);
+                }
+                item.harga = total;
             }
-            item.harga = total;
 
             ecRenderLapangCards();
             renderEditCart();
@@ -1716,7 +2031,10 @@
 
             editCartItems.forEach((item, idx) => {
                 totalHarga += item.harga;
-                const jamEnd = String(parseInt(item.jam_mulai) + item.durasi).padStart(2, '0') + ':00';
+                const isHarian = editSewaMode === 'Harian' || item.is_harian;
+                const jamEnd = isHarian ? '(Full Day)' : String(parseInt(item.jam_mulai) + item.durasi).padStart(2, '0') + ':00';
+                const durasiLabel = isHarian ? item.durasi + ' Hari' : item.durasi + ' Jam';
+                const subTglText = isHarian ? `${item.tanggal} · Full Day` : `${item.tanggal} · ${item.jam_mulai} - ${jamEnd}`;
 
                 html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:var(--admin-surface);border:1px solid #cbd5e1;border-radius:0.65rem;margin-bottom:0.4rem;">
                     <div style="flex:1;min-width:0;">
@@ -1725,7 +2043,7 @@
                             ${item.nama_lapang}
                         </div>
                         <div style="font-size:0.72rem;color:var(--admin-secondary);margin-top:1px;">
-                            ${item.tanggal} · ${item.jam_mulai} - ${jamEnd}
+                            ${subTglText}
                         </div>
                         <div style="font-size:0.75rem;font-weight:700;color:var(--admin-primary);margin-top:2px;">
                             Rp ${item.harga.toLocaleString('id-ID')}
@@ -1735,7 +2053,7 @@
                         <button type="button" onclick="updateEditCartItemDurasi(${idx}, -1)" style="border:none; background:none; cursor:pointer; padding:0; color:var(--admin-on-surface);" ${item.durasi <= 1 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">remove</span>
                         </button>
-                        <span style="font-size:0.8rem; font-weight:700; width:35px; text-align:center;">${item.durasi} Jam</span>
+                        <span style="font-size:0.8rem; font-weight:700; width:45px; text-align:center;">${durasiLabel}</span>
                         <button type="button" onclick="updateEditCartItemDurasi(${idx}, 1)" style="border:none; background:none; cursor:pointer; padding:0; color:var(--admin-on-surface);">
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">add</span>
                         </button>
@@ -1769,11 +2087,22 @@
             document.getElementById('editInputDurasi').value = editCartItems.reduce((acc, curr) => acc + curr.durasi, 0);
         }
 
-        document.getElementById('editDurasi').addEventListener('change', function () {
-            document.getElementById('editInputDurasi').value = this.value;
-            ecRenderLapangCards();
+        window.setAdminEditSewa = function(mode, btn) {
+            editSewaMode = mode;
+            document.getElementById('editInputTipeSewa').value = mode;
+            document.querySelectorAll('#formEditBooking .sewa-pill').forEach(p => {
+                p.classList.remove('sewa-pill--active');
+            });
+            btn.classList.add('sewa-pill--active');
+            
+            editCartItems = [];
+            if (ecSelectedDay) {
+                ecRenderLapangCards();
+            } else {
+                ecRenderPlaceholder();
+            }
             renderEditCart();
-        });
+        };
 
         ecRoot.querySelectorAll('.adm-cal__nav').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1801,6 +2130,7 @@
         
         // Select correct Jenis Sewa pill
         tipeSewa = tipeSewa || 'Per Jam';
+        editSewaMode = tipeSewa;
         document.getElementById('editInputTipeSewa').value = tipeSewa;
         document.querySelectorAll('#formEditBooking .sewa-pill').forEach(p => {
             if(p.dataset.sewa === tipeSewa) {
@@ -1815,7 +2145,7 @@
         document.getElementById('editKodeSewa').value = kodeSewa;
         document.getElementById('editNamaPenyewa').value = namaPenyewa;
         document.getElementById('editNoHp').value = noHp;
-        document.getElementById('editDurasi').value = durasi;
+        document.getElementById('editInputDurasi').value = durasi;
         document.getElementById('editInputDurasi').value = durasi;
         document.getElementById('editTotalDisplay').value = total;
         document.getElementById('editInputTotal').value = total;
@@ -1840,14 +2170,16 @@
                 ];
                 initialItems = data.jadwals.map(j => {
                     const lName = lapangList.find(l => l.id == j.id_lapang)?.name || ('Lapang ' + j.id_lapang);
-                    const dur = parseInt(j.jam_selesai) - parseInt(j.jam_mulai);
+                    let dur = parseInt(j.jam_selesai) - parseInt(j.jam_mulai);
+                    if (tipeSewa === 'Harian') dur = 1;
                     return {
                         id_lapang: j.id_lapang,
                         nama_lapang: lName,
                         tanggal: j.tanggal_main,
                         jam_mulai: j.jam_mulai.substring(0, 5),
                         durasi: dur > 0 ? dur : 1,
-                        harga: 0 
+                        harga: 0,
+                        is_harian: tipeSewa === 'Harian'
                     };
                 });
                 
@@ -1857,19 +2189,29 @@
                         const resT = await fetch(`<?= base_url('/admin/booking/getTarif') ?>?id_lapang=${item.id_lapang}&tanggal=${item.tanggal}`);
                         const tData = await resT.json();
                         let itemHarga = 0;
-                        const startH = parseInt(item.jam_mulai);
-                        for (let i = 0; i < item.durasi; i++) {
-                            const h = startH + i;
-                            let hHarga = 0;
+                        if (tipeSewa === 'Harian') {
                             if (tData.tarifs) {
-                                for (const t of tData.tarifs) {
-                                    if (h >= parseInt(t.jam_mulai) && h < parseInt(t.jam_selesai)) {
-                                        hHarga = parseInt(t.harga_umum); break;
-                                    }
+                                const harianTarif = tData.tarifs.find(t => parseInt(t.harga_harian) > 0);
+                                if (harianTarif) {
+                                    item.harga_satuan = parseInt(harianTarif.harga_harian);
+                                    itemHarga = item.harga_satuan * item.durasi;
                                 }
-                                if (hHarga === 0 && tData.tarifs.length > 0) hHarga = parseInt(tData.tarifs[0].harga_umum);
                             }
-                            itemHarga += hHarga;
+                        } else {
+                            const startH = parseInt(item.jam_mulai);
+                            for (let i = 0; i < item.durasi; i++) {
+                                const h = startH + i;
+                                let hHarga = 0;
+                                if (tData.tarifs) {
+                                    for (const t of tData.tarifs) {
+                                        if (h >= parseInt(t.jam_mulai) && h < parseInt(t.jam_selesai)) {
+                                            hHarga = parseInt(t.harga_umum); break;
+                                        }
+                                    }
+                                    if (hHarga === 0 && tData.tarifs.length > 0) hHarga = parseInt(tData.tarifs[0].harga_umum);
+                                }
+                                itemHarga += hHarga;
+                            }
                         }
                         item.harga = itemHarga;
                     } catch(e) {}

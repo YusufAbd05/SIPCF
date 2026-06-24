@@ -775,6 +775,7 @@ class Home extends BaseController
                 'total_bayar' => $booking['total_bayar'],
                 'status_pesanan' => $booking['status_pesanan'],
                 'tipe_pesanan' => $booking['tipe_pesanan'],
+                'tipe_sewa' => $booking['tipe_sewa'],
                 'sisa_bayar' => $sisaBayar,
             ],
             'jadwals' => $jadwals
@@ -856,12 +857,19 @@ class Home extends BaseController
 
         // Calculate old price for this jadwal
         $tarifModel = new TarifModel();
-        function getHarga($tarifModel, $id_lapang, $tanggal, $jamStart, $durasi) {
+        function getHarga($tarifModel, $id_lapang, $tanggal, $jamStart, $durasi, $tipe_sewa) {
             $dow = date('w', strtotime($tanggal));
             $kategoriHari = ($dow == 0 || $dow == 6) ? 'Weekend' : 'Weekday';
             $tarifs = $tarifModel->where('id_lapang', $id_lapang)->where('hari', $kategoriHari)->findAll();
             if (empty($tarifs)) $tarifs = $tarifModel->where('id_lapang', $id_lapang)->findAll();
             
+            if ($tipe_sewa === 'Harian') {
+                foreach($tarifs as $t) {
+                    if (isset($t['harga_harian']) && (int)$t['harga_harian'] > 0) return (int)$t['harga_harian'];
+                }
+                return 0; // fallback if no harga_harian found
+            }
+
             $total = 0;
             for ($h = $jamStart; $h < $jamStart + $durasi; $h++) {
                 $slotTime = str_pad($h, 2, '0', STR_PAD_LEFT) . ':00';
@@ -877,8 +885,8 @@ class Home extends BaseController
             return $total;
         }
 
-        $oldPrice = getHarga($tarifModel, $jadwal['id_lapang'], $jadwal['tanggal_main'], (int)substr($jadwal['jam_mulai'], 0, 2), $durasiLama);
-        $newPrice = getHarga($tarifModel, $jadwal['id_lapang'], $tanggalBaru, $jamMulaiHour, $durasiBaru);
+        $oldPrice = getHarga($tarifModel, $jadwal['id_lapang'], $jadwal['tanggal_main'], (int)substr($jadwal['jam_mulai'], 0, 2), $durasiLama, $booking['tipe_sewa']);
+        $newPrice = getHarga($tarifModel, $jadwal['id_lapang'], $tanggalBaru, $jamMulaiHour, $durasiBaru, $booking['tipe_sewa']);
 
         $priceDiff = $newPrice - $oldPrice;
         $newTotal = (int)$booking['total_bayar'] + $priceDiff;

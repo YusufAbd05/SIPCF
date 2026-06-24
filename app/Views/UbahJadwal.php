@@ -626,6 +626,6 @@
 </style>
 
 <!-- PART 2: JavaScript in separate script tag -->
-<script src="/js/ubah-jadwal.js"></script>
+<script src="/js/ubah-jadwal.js?v=<?= time() ?>"></script>
 
 <?= $this->endSection() ?>
