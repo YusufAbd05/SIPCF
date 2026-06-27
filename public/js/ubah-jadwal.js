@@ -147,7 +147,7 @@
         const durasiLama = parseInt(currentEditJadwal.durasi);
         const selDurasi = document.getElementById('rcDurasiBaru');
         if (selDurasi) {
-            selDurasi.value = durasiLama > 12 ? 12 : durasiLama;
+            selDurasi.value = durasiLama > 24 ? 24 : durasiLama;
             const durasiCard = selDurasi.closest('.booking-card');
             if (durasiCard) {
                 const ts = (currentBooking && currentBooking.tipe_sewa) ? currentBooking.tipe_sewa.toLowerCase().trim() : '';
@@ -219,7 +219,7 @@
         if (!input) return;
         let val = parseInt(input.value) + step;
         if (val < 1) val = 1;
-        if (val > 12) val = 12;
+        if (val > 24) val = 24;
         if (val !== parseInt(input.value)) {
             input.value = val;
             updateRcDurasi();
@@ -443,7 +443,17 @@
     // ─── Confirm Reschedule ───
     window.confirmReschedule = async function () {
         if (!rcSelectedDate || !rcSelectedSlot || !currentEditJadwal) { alert('Pilih tanggal dan jam baru.'); return; }
-        const durasiBaru = document.getElementById('rcDurasiBaru') ? parseInt(document.getElementById('rcDurasiBaru').value) : parseInt(currentEditJadwal.durasi);
+        let durasiBaru = document.getElementById('rcDurasiBaru') ? parseInt(document.getElementById('rcDurasiBaru').value) : parseInt(currentEditJadwal.durasi);
+        
+        const ts = (currentBooking && currentBooking.tipe_sewa) ? currentBooking.tipe_sewa.toLowerCase().trim() : '';
+        const isDailyMode = (ts === 'harian' || ts === 'per hari' || ts.includes('hari'));
+        if (isDailyMode && rcSelectedSlot) {
+            const sh = parseInt(rcSelectedSlot.jam_mulai.substring(0, 2));
+            let eh = parseInt(rcSelectedSlot.jam_selesai.substring(0, 2));
+            if (eh === 0) eh = 24;
+            durasiBaru = eh - sh;
+        }
+
         if (rcSelectedDate === currentEditJadwal.tanggal_main && rcSelectedSlot.jam_mulai === currentEditJadwal.jam_mulai.substring(0, 5) && durasiBaru === parseInt(currentEditJadwal.durasi)) {
             alert('Jadwal baru sama dengan jadwal saat ini.'); return;
         }
@@ -458,6 +468,21 @@
             fd.append('tanggal_baru', rcSelectedDate);
             fd.append('jam_mulai_baru', rcSelectedSlot.jam_mulai);
             fd.append('durasi_baru', durasiBaru);
+
+            // Fetch CSRF Token
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+            const csrfToken = getCookie('csrf_cookie_name');
+            if (csrfToken) {
+                fd.append('csrf_test_name', csrfToken);
+            } else {
+                const csrfInput = document.querySelector('input[name="csrf_test_name"]');
+                if (csrfInput) fd.append('csrf_test_name', csrfInput.value);
+            }
+
             const res = await fetch(`${BASE}/api/processUbahJadwalItem`, { method: 'POST', body: fd });
             const data = await res.json();
             if (data.success) {

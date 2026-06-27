@@ -35,8 +35,8 @@ $routes->get('/logout', 'AuthController::logout');
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     // ─── Semua role (Admin, Manajer, Owner) ───
     $routes->get('/', 'DashboardController::index');
-    $routes->get('laporan', 'LaporanController::index');
-    $routes->get('laporan/exportData', 'LaporanController::exportData');
+    // ─── Semua role (Admin, Manajer, Owner) ───
+    $routes->get('/', 'DashboardController::index');
 
     // ─── Admin & Manajer: Kelola Booking ───
     $routes->group('', ['filter' => 'role:Admin,Manajer'], function ($routes) {
@@ -56,6 +56,9 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('tarif/save', 'TarifController::save');
         $routes->post('tarif/update', 'TarifController::update');
         $routes->post('tarif/delete', 'TarifController::delete');
+        
+        $routes->get('laporan', 'LaporanController::index');
+        $routes->get('laporan/exportData', 'LaporanController::exportData');
     });
 
     // ─── Manajer only: Kelola Lapang, Kelola User ───

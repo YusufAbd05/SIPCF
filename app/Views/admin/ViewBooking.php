@@ -186,7 +186,7 @@
                                             </button>
                                         <?php endif; ?>
                                         <button class="action-btn edit" title="Edit Booking"
-                                            onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>, '<?= esc($booking['tipe_sewa'] ?? 'Per Jam') ?>')">
+                                            onclick="openEditBookingModal(<?= $booking['id_sewa'] ?>, '<?= esc($booking['kode_sewa']) ?>', <?= $booking['id_lapang'] ?>, '<?= esc($booking['nama_penyewa']) ?>', '<?= esc($booking['no_hp_penyewa']) ?>', '<?= $booking['tanggal_main'] ?>', '<?= substr($booking['jam_mulai'], 0, 5) ?>', '<?= substr($booking['jam_selesai'], 0, 5) ?>', <?= $booking['durasi_jam'] ?>, <?= $booking['total_bayar'] ?>, '<?= esc($booking['tipe_sewa'] ?? 'Per Jam') ?>', <?= $booking['jumlah_bayar'] ?? $booking['total_bayar'] ?>)">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
                                     </div>
@@ -2012,7 +2012,7 @@
             if (editCartItems.length === 0) {
                 listEl.innerHTML = '';
                 emptyEl.style.display = 'block';
-                itemsJsonInput.value = '';
+                itemsJsonInput.value = '[]';
                 document.getElementById('editInputTotal').value = 0;
                 totalDisplay.value = '';
                 
@@ -2078,7 +2078,7 @@
             itemsJsonInput.value = JSON.stringify(editCartItems);
             document.getElementById('editInputTotal').value = totalHarga;
             totalDisplay.value = totalHarga;
-            uangMasukInput.value = totalHarga;
+            // uangMasukInput.value = totalHarga;
 
             document.getElementById('editInputLapangId').value = editCartItems[0].id_lapang;
             document.getElementById('editInputTanggal').value = editCartItems[0].tanggal;
@@ -2125,7 +2125,7 @@
     })();
 
     /* ===== OPEN EDIT BOOKING MODAL ===== */
-    async function openEditBookingModal(idSewa, kodeSewa, idLapang, namaPenyewa, noHp, tanggal, jamMulai, jamSelesai, durasi, total, tipeSewa) {
+    async function openEditBookingModal(idSewa, kodeSewa, idLapang, namaPenyewa, noHp, tanggal, jamMulai, jamSelesai, durasi, total, tipeSewa, jumlahBayar) {
         document.getElementById('editIdSewa').value = idSewa;
         
         // Select correct Jenis Sewa pill
@@ -2149,7 +2149,7 @@
         document.getElementById('editInputDurasi').value = durasi;
         document.getElementById('editTotalDisplay').value = total;
         document.getElementById('editInputTotal').value = total;
-        document.getElementById('editUangMasuk').value = total;
+        document.getElementById('editUangMasuk').value = (jumlahBayar !== undefined && jumlahBayar !== null) ? jumlahBayar : total;
 
         // Set hidden fields
         document.getElementById('editInputLapangId').value = idLapang;

@@ -278,6 +278,7 @@
                     </div>
                     <div class="bf-form-body">
                         <form id="bookingForm" action="<?= base_url('/booking') ?>" method="post" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
                             <!-- Hidden fields for booking data -->
                             <input type="hidden" name="id_lapang" id="formIdLapang">
                             <input type="hidden" name="tanggal_main" id="formTanggal">

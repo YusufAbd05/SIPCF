@@ -142,6 +142,9 @@ class BookingController extends BaseController
 
     public function save()
     {
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
         $bookingModel = new BookingModel();
         $pembayaranModel = new PembayaranModel();
 
@@ -225,22 +228,54 @@ class BookingController extends BaseController
                     for ($w = 0; $w < 4; $w++) {
                         $dateObj = clone $baseDate;
                         $dateObj->modify("+{$w} weeks");
+                        
+                        $tgl = $dateObj->format('Y-m-d');
+                        $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$item['id_lapang']]);
+                        $occupied = [];
+                        foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                            if ((string)$s['id_lapang'] === (string)$item['id_lapang']) {
+                                for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                            }
+                        }
+                        for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                            if (in_array($h, $occupied)) {
+                                $db->transRollback();
+                                return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                            }
+                        }
+
                         $jadwalModel->insert([
                             'id_sewa'      => $idSewa,
                             'id_lapang'    => $item['id_lapang'],
                             'sesi_ke'      => $sesiKe++,
-                            'tanggal_main' => $dateObj->format('Y-m-d'),
+                            'tanggal_main' => $tgl,
                             'jam_mulai'    => $jamMulai,
                             'jam_selesai'  => $jamSelesai,
                             'status_sesi'  => 'Terjadwal',
                         ]);
                     }
                 } else {
+                    $tgl = $item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d');
+                    
+                    $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$item['id_lapang']]);
+                    $occupied = [];
+                    foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                        if ((string)$s['id_lapang'] === (string)$item['id_lapang']) {
+                            for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                        }
+                    }
+                    for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                        if (in_array($h, $occupied)) {
+                            $db->transRollback();
+                            return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                        }
+                    }
+
                     $jadwalModel->insert([
                         'id_sewa'      => $idSewa,
                         'id_lapang'    => $item['id_lapang'],
                         'sesi_ke'      => $sesiKe++,
-                        'tanggal_main' => $item['tanggal'] ?? $item['tanggal_main'] ?? date('Y-m-d'),
+                        'tanggal_main' => $tgl,
                         'jam_mulai'    => $jamMulai,
                         'jam_selesai'  => $jamSelesai,
                         'status_sesi'  => 'Terjadwal',
@@ -254,24 +289,61 @@ class BookingController extends BaseController
                 for ($w = 0; $w < 4; $w++) {
                     $dateObj = clone $baseDate;
                     $dateObj->modify("+{$w} weeks");
+                    
+                    $tgl = $dateObj->format('Y-m-d');
+                    $jamMulai = $this->request->getPost('jam_mulai');
+                    $jamSelesai = $this->request->getPost('jam_selesai');
+
+                    $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$idLapang]);
+                    $occupied = [];
+                    foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                        if ((string)$s['id_lapang'] === (string)$idLapang) {
+                            for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                        }
+                    }
+                    for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                        if (in_array($h, $occupied)) {
+                            $db->transRollback();
+                            return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                        }
+                    }
+
                     $jadwalModel->insert([
                         'id_sewa'      => $idSewa,
                         'id_lapang'    => $idLapang,
                         'sesi_ke'      => $w + 1,
-                        'tanggal_main' => $dateObj->format('Y-m-d'),
-                        'jam_mulai'    => $this->request->getPost('jam_mulai'),
-                        'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                        'tanggal_main' => $tgl,
+                        'jam_mulai'    => $jamMulai,
+                        'jam_selesai'  => $jamSelesai,
                         'status_sesi'  => 'Terjadwal',
                     ]);
                 }
             } else {
+                $tgl = $this->request->getPost('tanggal_main');
+                $jamMulai = $this->request->getPost('jam_mulai');
+                $jamSelesai = $this->request->getPost('jam_selesai');
+
+                $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$idLapang]);
+                $occupied = [];
+                foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                    if ((string)$s['id_lapang'] === (string)$idLapang) {
+                        for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                    }
+                }
+                for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                    if (in_array($h, $occupied)) {
+                        $db->transRollback();
+                        return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                    }
+                }
+
                 $jadwalModel->insert([
                     'id_sewa'      => $idSewa,
                     'id_lapang'    => $idLapang,
                     'sesi_ke'      => 1,
-                    'tanggal_main' => $this->request->getPost('tanggal_main'),
-                    'jam_mulai'    => $this->request->getPost('jam_mulai'),
-                    'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                    'tanggal_main' => $tgl,
+                    'jam_mulai'    => $jamMulai,
+                    'jam_selesai'  => $jamSelesai,
                     'status_sesi'  => 'Terjadwal',
                 ]);
             }
@@ -289,11 +361,16 @@ class BookingController extends BaseController
         ];
         $pembayaranModel->insert($dataPembayaran);
 
+        $db->transCommit();
+
         return redirect()->to('/admin/booking')->with('success', "Pesanan $tipePesanan berhasil ditambahkan dengan status pembayaran $jenisPembayaran!");
     }
 
     public function update()
     {
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
         $bookingModel = new BookingModel();
         $id = $this->request->getPost('id_sewa');
 
@@ -313,7 +390,7 @@ class BookingController extends BaseController
         $jadwalModel = new \App\Models\JadwalModel();
         $itemsJson = $this->request->getPost('items_json');
 
-        if (!empty($itemsJson)) {
+        if ($itemsJson !== null && $itemsJson !== '') {
             $cartItems = json_decode($itemsJson, true);
             if (is_array($cartItems) && count($cartItems) > 0) {
                 // Remove existing
@@ -348,29 +425,76 @@ class BookingController extends BaseController
                         $jamSelesai = str_pad($itemJamMulaiHour + (int)$item['durasi'], 2, '0', STR_PAD_LEFT) . ':00';
                     }
                     
+                    $tgl = $item['tanggal'] ?? $this->request->getPost('tanggal_main') ?? date('Y-m-d');
+                    
+                    $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$item['id_lapang']]);
+                    $occupied = [];
+                    foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                        if ((string)$s['id_lapang'] === (string)$item['id_lapang'] && (string)$s['id_sewa'] !== (string)$id) {
+                            for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                        }
+                    }
+                    for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                        if (in_array($h, $occupied)) {
+                            $db->transRollback();
+                            return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                        }
+                    }
+
                     $jadwalModel->insert([
                         'id_sewa'      => $id,
                         'id_lapang'    => $item['id_lapang'],
                         'sesi_ke'      => $sesiKe++,
-                        'tanggal_main' => $item['tanggal'],
+                        'tanggal_main' => $tgl,
                         'jam_mulai'    => $jamMulai,
                         'jam_selesai'  => $jamSelesai,
                         'status_sesi'  => 'Terjadwal',
                     ]);
                 }
+            } elseif (is_array($cartItems) && count($cartItems) === 0) {
+                // Keranjang kosong -> batalkan booking
+                $jadwalModel->where('id_sewa', $id)->delete();
+                $bookingModel->update($id, [
+                    'status_pesanan' => 'Dibatalkan',
+                    'durasi_jam' => 0,
+                    'total_bayar' => 0
+                ]);
+                $db->transCommit();
+                return redirect()->to('/admin/booking')->with('success', 'Jadwal dikosongkan. Pesanan otomatis dibatalkan.');
             }
         } else {
             // Backward compatibility
             $jadwal = $jadwalModel->where('id_sewa', $id)->where('sesi_ke', 1)->first();
             if ($jadwal) {
+                $tgl = $this->request->getPost('tanggal_main');
+                $jamMulai = $this->request->getPost('jam_mulai');
+                $jamSelesai = $this->request->getPost('jam_selesai');
+                $idLapang = $this->request->getPost('id_lapang');
+
+                $db->query("SELECT id_lapang FROM t_lapang WHERE id_lapang = ? FOR UPDATE", [$idLapang]);
+                $occupied = [];
+                foreach ($jadwalModel->getBookedSlotsForDate($tgl) as $s) {
+                    if ((string)$s['id_lapang'] === (string)$idLapang && (string)$s['id_sewa'] !== (string)$id) {
+                        for ($h = (int)substr($s['jam_mulai'], 0, 2); $h < (int)substr($s['jam_selesai'], 0, 2); $h++) $occupied[] = $h;
+                    }
+                }
+                for ($h = (int)substr($jamMulai, 0, 2); $h < (int)substr($jamSelesai, 0, 2); $h++) {
+                    if (in_array($h, $occupied)) {
+                        $db->transRollback();
+                        return redirect()->back()->withInput()->with('error', "Jadwal tanggal $tgl jam $h:00 sudah terisi.");
+                    }
+                }
+
                 $jadwalModel->update($jadwal['id_jadwal'], [
-                    'id_lapang'    => $this->request->getPost('id_lapang'),
-                    'tanggal_main' => $this->request->getPost('tanggal_main'),
-                    'jam_mulai'    => $this->request->getPost('jam_mulai'),
-                    'jam_selesai'  => $this->request->getPost('jam_selesai'),
+                    'id_lapang'    => $idLapang,
+                    'tanggal_main' => $tgl,
+                    'jam_mulai'    => $jamMulai,
+                    'jam_selesai'  => $jamSelesai,
                 ]);
             }
         }
+
+        $db->transCommit();
 
         return redirect()->to('/admin/booking')->with('success', 'Data pesanan berhasil diperbarui!');
     }

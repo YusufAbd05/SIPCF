@@ -25,6 +25,7 @@
             <p class="booking-card__desc">Kode booking terdapat pada halaman konfirmasi atau catatan Anda saat melakukan
                 pemesanan.</p>
             <form id="formBookingCode" class="booking-form" onsubmit="return handleLookup(event)">
+                <?= csrf_field() ?>
                 <div class="booking-input-group">
                     <span class="material-symbols-outlined booking-input-icon">tag</span>
                     <input type="text" id="inputBookingCode" class="booking-input" placeholder="Contoh: BK-20260515-001"
