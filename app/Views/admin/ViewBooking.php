@@ -932,6 +932,22 @@
     </div>
 </div>
 
+<style>
+    .adm-cal__day.past {
+        opacity: 0.35;
+        cursor: not-allowed !important;
+        pointer-events: none;
+        text-decoration: line-through;
+    }
+    .adm-slot.past {
+        opacity: 0.35;
+        cursor: not-allowed !important;
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+    }
+</style>
+
     <script>
         let adminSewaMode = 'Per Jam'; // 'Per Jam' | 'Harian' | 'Membership'
 
@@ -1023,11 +1039,20 @@
                 const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
                 const isSel = d === calSelectedDay;
                 const dow = new Date(calYear, calMonth, d).getDay();
+                
+                const mStr = String(calMonth + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const ds = `${calYear}-${mStr}-${dStr}`;
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const isPastDate = ds < todayStr;
+                
                 let cls = 'adm-cal__day';
                 if (isToday) cls += ' today';
                 if (isSel) cls += ' selected';
+                if (isPastDate) cls += ' past';
+                
                 // Sunday is no longer disabled
-                html += `<button type="button" class="${cls}" data-day="${d}">${d}</button>`;
+                html += `<button type="button" class="${cls}" data-day="${d}" ${isPastDate ? 'disabled' : ''}>${d}</button>`;
             }
 
             calGrid.innerHTML = html;
@@ -1175,14 +1200,21 @@
                     const inCartIndex = addCartItems.findIndex(i => String(i.id_lapang) === String(lap.id) && i.tanggal === tanggal && i.jam_mulai === slot.start);
                     const isSel = inCartIndex !== -1;
                     
+                    const today = new Date();
+                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const slotHour = parseInt(slot.start.split(':')[0]);
+                    const isPast = (tanggal === todayStr) && (slotHour <= today.getHours());
+
                     let cls = 'adm-slot';
                     if (isBooked) cls += ' disabled booked';
+                    else if (isPast && !isSel) cls += ' disabled past';
                     if (isSel) cls += ' selected';
 
                     let title = '';
                     if (isBooked) title = 'Sudah dipesan';
+                    else if (isPast && !isSel) title = 'Waktu sudah lewat';
 
-                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isBooked ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
+                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${(isBooked || (isPast && !isSel)) ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
                 });
                 grid.innerHTML = shtml;
 
@@ -1238,6 +1270,10 @@
                 const isFullyAvailable = bookedCount === 0;
                 const isSelected = addCartItems.some(i => String(i.id_lapang) === String(lap.id) && i.tanggal === tanggal);
 
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const isHariH = tanggal === todayStr;
+
                 const statusText = isFullyAvailable ? 'Tersedia Full Day' : `${totalSlots - bookedCount}/${totalSlots} slot tersedia`;
                 const statusIcon = isFullyAvailable ? 'check_circle' : 'info';
                 const statusColor = isFullyAvailable ? '#059669' : '#d97706';
@@ -1260,7 +1296,9 @@
                 }
 
                 let btnHtml = '';
-                if (isFullyAvailable) {
+                if (isHariH) {
+                    btnHtml = `<div style="font-size:0.75rem;color:#dc2626;text-align:center;margin-top:0.75rem;font-weight:600;">Tidak bisa melakukan booking harian pada hari H (Hari Ini)</div>`;
+                } else if (isFullyAvailable) {
                     if (isSelected) {
                         btnHtml = `<button type="button" class="adm-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#059669;color:#fff;margin-top:0.75rem;">
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>
@@ -1663,11 +1701,20 @@
                 const isToday = d === today.getDate() && ecMonth === today.getMonth() && ecYear === today.getFullYear();
                 const isSel = d === ecSelectedDay;
                 const dow = new Date(ecYear, ecMonth, d).getDay();
+                
+                const mStr = String(ecMonth + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const ds = `${ecYear}-${mStr}-${dStr}`;
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const isPastDate = ds < todayStr;
+
                 let cls = 'adm-cal__day';
                 if (isToday) cls += ' today';
                 if (isSel) cls += ' selected';
+                if (isPastDate) cls += ' past';
+                
                 // Sunday is no longer disabled
-                html += `<button type="button" class="${cls}" data-day="${d}">${d}</button>`;
+                html += `<button type="button" class="${cls}" data-day="${d}" ${isPastDate ? 'disabled' : ''}>${d}</button>`;
             }
 
             ecGrid.innerHTML = html;
@@ -1784,15 +1831,22 @@
                     let isBooked = bookedHours.includes(slot.start);
                     
                     if (isSel) isBooked = false;
+                    
+                    const today = new Date();
+                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const slotHour = parseInt(slot.start.split(':')[0]);
+                    const isPast = (tanggal === todayStr) && (slotHour <= today.getHours());
 
                     let cls = 'adm-slot';
                     if (isBooked) cls += ' disabled booked';
+                    else if (isPast && !isSel) cls += ' disabled past';
                     if (isSel) cls += ' selected';
 
                     let title = '';
                     if (isBooked) title = 'Sudah dipesan';
+                    else if (isPast && !isSel) title = 'Waktu sudah lewat';
 
-                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${isBooked ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
+                    shtml += `<button type="button" class="${cls}" data-slot="${slot.start}" data-lapang="${lap.id}" ${(isBooked || (isPast && !isSel)) ? 'disabled' : ''} title="${title}">${slot.start}</button>`;
                 });
                 grid.innerHTML = shtml;
 
@@ -1840,6 +1894,10 @@
                 const isFullyAvailable = bookedCount === 0;
                 const isSelected = editCartItems.some(i => String(i.id_lapang) === String(lap.id) && i.tanggal === tanggal);
 
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const isHariH = tanggal === todayStr;
+
                 const statusText = isFullyAvailable ? 'Tersedia Full Day' : `${totalSlots - bookedCount}/${totalSlots} slot tersedia`;
                 const statusIcon = isFullyAvailable ? 'check_circle' : 'info';
                 const statusColor = isFullyAvailable ? '#059669' : '#d97706';
@@ -1861,7 +1919,9 @@
                 }
 
                 let btnHtml = '';
-                if (isFullyAvailable) {
+                if (isHariH) {
+                    btnHtml = `<div style="font-size:0.75rem;color:#dc2626;text-align:center;margin-top:0.75rem;font-weight:600;">Tidak bisa melakukan booking harian pada hari H (Hari Ini)</div>`;
+                } else if (isFullyAvailable) {
                     if (isSelected) {
                         btnHtml = `<button type="button" class="ec-daily-select-btn" data-lapang-id="${lap.id}" data-lapang-name="${lap.name}" data-jam-buka="${jamBuka}" data-harga="${hargaHarian}" style="width:100%;padding:0.65rem;border:none;border-radius:0.6rem;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#059669;color:#fff;margin-top:0.75rem;">
                             <span class="material-symbols-outlined" style="font-size:1.1rem;">check_circle</span>

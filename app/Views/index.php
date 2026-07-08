@@ -587,6 +587,10 @@
         function renderDailyCards(ds, dt) {
             let html = '';
             let availableLapangs = 0;
+            
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+            const isHariH = ds === todayStr;
 
             lapangsData.forEach((lapang, idx) => {
                 const { jamBuka, jamTutup, isWeekend } = getOperatingHours(lapang, ds);
@@ -620,15 +624,16 @@
                                 <span class="material-symbols-outlined">schedule</span>
                                 <span>Jam operasional: ${pad(jamBuka)}.00 - ${pad(jamTutup)}.00 (${totalSlots} jam)</span>
                             </div>
-                            ${isFullyAvailable ? `<a href="${BOOKING_BASE}?lapang=${encodeURIComponent(lapang.nama_lapangan)}&tanggal=${ds}&sewa=per-hari" class="daily-card__btn">
+                            ${isHariH ? `<span style="font-size:.75rem;color:#dc2626;font-weight:600;display:block;text-align:center;margin-top:0.75rem;">Tidak bisa melakukan booking harian pada hari H (Hari Ini)</span>` 
+                              : (isFullyAvailable ? `<a href="${BOOKING_BASE}?lapang=${encodeURIComponent(lapang.nama_lapangan)}&tanggal=${ds}&sewa=per-hari" class="daily-card__btn">
                                 <span class="material-symbols-outlined" style="font-size:1.1rem;">event_available</span>
                                 Booking Full Day
-                            </a>` : `<span style="font-size:.75rem;color:#94a3b8;">Tidak tersedia untuk sewa per hari</span>`}
+                            </a>` : `<span style="font-size:.75rem;color:#94a3b8;display:block;text-align:center;margin-top:0.75rem;">Tidak tersedia untuk sewa per hari</span>`)}
                         </div>
                     </div>
                 </div>`;
 
-                if (isFullyAvailable) availableLapangs++;
+                if (isFullyAvailable && !isHariH) availableLapangs++;
             });
 
             if (lapangsData.length === 0) {
